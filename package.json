@@ -1,0 +1,31 @@
+{
+  "name": "tavern-sim-game",
+  "version": "1.0.0",
+  "description": "> 트래블러스 레스트 스타일의 픽셀 아트로 만드는 나만의 서재 > AI 아바타가 방문자를 응대하는 게이미피케이션 마이페이지",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "openai": "^6.34.0",
+    "phaser": "^4.0.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^7.14.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.1",
+    "vite": "^8.0.8"
+  }
+}

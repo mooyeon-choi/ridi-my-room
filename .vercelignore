@@ -1,0 +1,9 @@
+node_modules
+backend/node_modules
+.git
+docs
+*.md
+TODO.md
+DEVELOPMENT_SETUP.md
+START_HERE.md
+README.md

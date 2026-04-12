@@ -1,0 +1,154 @@
+/* 레트로 픽셀 폰트 (선택사항) */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* 기본 스타일 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+}
+
+.pixel-font {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 버튼 기본 스타일 */
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: 2px solid #333;
+  background: white;
+  padding: 10px 20px;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background: #333;
+  color: white;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* 말풍선 스타일 */
+.speech-bubble {
+  position: absolute;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  max-width: 200px;
+  animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+  z-index: 100;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-top-color: white;
+  transform: translateX(-50%);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 로딩 dots 애니메이션 */
+@keyframes blink {
+  0%, 20% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* QR 모달 */
+.qr-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.qr-modal {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  border: 2px solid #333;
+  text-align: center;
+  max-width: 400px;
+}
+
+.qr-modal h2 {
+  margin-bottom: 16px;
+}
+
+.qr-modal img {
+  margin: 16px 0;
+}
+
+.qr-modal-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* 로딩 스피너 */
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .qr-modal {
+    max-width: calc(100vw - 40px);
+  }
+}
