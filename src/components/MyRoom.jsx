@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PhaserGame from './PhaserGame';
 import QRCodeModal from './QRCodeModal';
 import RewardModal from './RewardModal';
+import MissionModal from './MissionModal';
 
 const SIDE_BUTTONS = [
   { key: 'mission',  label: '미션' },
@@ -21,6 +22,7 @@ function MyRoom() {
   const [currentAction, setCurrentAction] = useState('idle');
   const [showQR, setShowQR] = useState(false);
   const [showReward, setShowReward] = useState(false);
+  const [showMission, setShowMission] = useState(false);
   const [activeSlot, setActiveSlot] = useState(0);
   const [showGreeting, setShowGreeting] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
@@ -79,12 +81,21 @@ function MyRoom() {
         {/* 우측 사이드 버튼 */}
         <div style={styles.sideButtons}>
           {SIDE_BUTTONS.map(btn => (
-            <button key={btn.key} style={styles.sideBtn}>
+            <button
+              key={btn.key}
+              style={styles.sideBtn}
+              onClick={() => btn.key === 'mission' && setShowMission(true)}
+            >
               {btn.label}
             </button>
           ))}
         </div>
       </div>
+
+      {/* 미션 모달 — 전체 화면 오버레이 */}
+      {showMission && (
+        <MissionModal onClose={() => setShowMission(false)} />
+      )}
 
       {/* 하단 슬롯 바 + 대화창 wrapper */}
       <div style={styles.bottomWrapper}>
@@ -167,6 +178,7 @@ const styles = {
 
   // 중단 행
   middleRow: {
+    position: 'relative',
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
