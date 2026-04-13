@@ -3,48 +3,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PhaserGame from './PhaserGame';
 import ChatBox from './ChatBox';
 
-function isPortrait() {
-  return window.innerHeight > window.innerWidth;
-}
-
 function VisitorRoom() {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [roomData, setRoomData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showChat, setShowChat] = useState(false);
-  const [inputFocused, setInputFocused] = useState(false);
-  const [portrait, setPortrait] = useState(isPortrait());
+  const [activeTab, setActiveTab] = useState('chat');
   const gameRef = useRef(null);
 
-  useEffect(() => {
-    function handleResize() { setPortrait(isPortrait()); }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     loadRoomData();
   }, [userId]);
 
-  useEffect(() => {
-    async function lockOrientation() {
-      try {
-        if (document.documentElement.requestFullscreen) {
-          await document.documentElement.requestFullscreen().catch(() => {});
-        }
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock(showChat ? 'portrait' : 'landscape').catch(() => {});
-        }
-      } catch (e) {}
-    }
-    lockOrientation();
-  }, [showChat]);
-
   async function loadRoomData() {
     try {
       const dummyRoomData = {
-        userId: userId,
+        userId,
         roomConfig: {
           furniture: [
             { id: 'desk_01', type: 'desk', x: 250, y: 200 },
@@ -70,35 +45,11 @@ function VisitorRoom() {
     }
   }
 
-  function setTouchDir(dir, pressed) {
-    const scene = gameRef.current?.getScene();
-    if (scene && scene.touchDir) {
-      scene.touchDir[dir] = pressed;
-    }
-  }
-
-  function handleDirDown(dir) { setTouchDir(dir, true); }
-  function handleDirUp(dir) { setTouchDir(dir, false); }
-
-  function DirBtn({ dir, label }) {
-    return (
-      <button
-        style={styles.dpadBtn}
-        onTouchStart={(e) => { e.preventDefault(); handleDirDown(dir); }}
-        onTouchEnd={(e) => { e.preventDefault(); handleDirUp(dir); }}
-        onTouchCancel={(e) => { e.preventDefault(); handleDirUp(dir); }}
-        onMouseDown={() => handleDirDown(dir)}
-        onMouseUp={() => handleDirUp(dir)}
-        onMouseLeave={() => handleDirUp(dir)}
-      >{label}</button>
-    );
-  }
-
   if (loading) {
     return (
       <div style={styles.loadingScreen}>
         <div className="loading"></div>
-        <p style={{ color: '#fff' }}>서재 로딩 중...</p>
+        <p style={{ color: '#f5e6c8', fontSize: '14px' }}>서재 로딩 중...</p>
       </div>
     );
   }
@@ -106,74 +57,50 @@ function VisitorRoom() {
   if (!roomData) {
     return (
       <div style={styles.loadingScreen}>
-        <h2 style={{ color: '#fff' }}>서재를 찾을 수 없습니다</h2>
+        <h2 style={{ color: '#f5e6c8', fontSize: '16px' }}>서재를 찾을 수 없습니다</h2>
         <button onClick={() => navigate('/')} style={styles.exitBtn}>홈으로</button>
       </div>
     );
   }
 
-  // === 채팅 모드 ===
-  if (showChat) {
-    const needRotate = !portrait;
-    const wrapStyle = needRotate ? {
-      position: 'fixed', top: 0, left: 0,
-      width: '100vh', height: '100vw',
-      transform: 'rotate(-90deg) translateX(-100%)',
-      transformOrigin: 'top left', overflow: 'hidden'
-    } : {
-      position: 'fixed', top: 0, left: 0,
-      width: '100%', height: '100%', overflow: 'hidden'
-    };
-
-    return (
-      <div style={wrapStyle}>
-        <div style={styles.portraitContainer}>
-          {!inputFocused && (
-            <div style={styles.portraitGame}>
-              <PhaserGame
-                ref={gameRef}
-                mode="visitor"
-                hostUserId={userId}
-                roomConfig={roomData.roomConfig}
-                aiConfig={roomData.aiConfig}
-              />
+  function renderTabContent() {
+    switch (activeTab) {
+      case 'chat':
+        return (
+          <ChatBox
+            hostUserId={userId}
+            aiConfig={roomData.aiConfig}
+          />
+        );
+      case 'guestbook':
+        return (
+          <div style={styles.placeholderTab}>
+            <p style={styles.placeholderText}>방명록을 남겨보세요!</p>
+          </div>
+        );
+      case 'info':
+        return (
+          <div style={styles.placeholderTab}>
+            <div style={styles.statItem}>
+              <span style={styles.statLabel}>읽은 책</span>
+              <span style={styles.statValue}>{roomData.aiConfig.readingData.totalBooksRead}권</span>
             </div>
-          )}
-          <div style={inputFocused ? styles.portraitChatFull : styles.portraitChat}>
-            <div style={styles.portraitChatHeader}>
-              <span style={styles.chatTitle}>{userId}님의 AI와 대화</span>
-              <button style={styles.chatCloseBtn} onClick={() => setShowChat(false)}>✕ 게임으로</button>
-            </div>
-            <div style={styles.portraitChatBody}>
-              <ChatBox
-                hostUserId={userId}
-                aiConfig={roomData.aiConfig}
-                onInputFocus={() => setInputFocused(true)}
-                onInputBlur={() => setInputFocused(false)}
-              />
+            <div style={styles.statItem}>
+              <span style={styles.statLabel}>선호 장르</span>
+              <span style={styles.statValue}>{roomData.aiConfig.readingData.favoriteGenres.join(', ')}</span>
             </div>
           </div>
-        </div>
-      </div>
-    );
+        );
+      default:
+        return null;
+    }
   }
 
-  // === 게임 모드 ===
-  const needRotate = portrait;
-  const wrapStyle = needRotate ? {
-    position: 'fixed', top: 0, left: 0,
-    width: '100vh', height: '100vw',
-    transform: 'rotate(90deg) translateY(-100%)',
-    transformOrigin: 'top left', overflow: 'hidden'
-  } : {
-    position: 'fixed', top: 0, left: 0,
-    width: '100%', height: '100%', overflow: 'hidden'
-  };
-
   return (
-    <div style={wrapStyle}>
-      <div style={styles.container}>
-        <div style={styles.gameContainer}>
+    <div style={styles.container}>
+      {/* === 상단: 배경 + 아바타 === */}
+      <div style={styles.topSection}>
+        <div style={styles.gameArea}>
           <PhaserGame
             ref={gameRef}
             mode="visitor"
@@ -182,32 +109,59 @@ function VisitorRoom() {
             aiConfig={roomData.aiConfig}
           />
         </div>
+      </div>
 
-        <div style={styles.dpad}>
-          <div style={styles.dpadRow}>
-            <div style={styles.dpadSpacer} />
-            <DirBtn dir="up" label="▲" />
-            <div style={styles.dpadSpacer} />
-          </div>
-          <div style={styles.dpadRow}>
-            <DirBtn dir="left" label="◀" />
-            <div style={styles.dpadSpacer} />
-            <DirBtn dir="right" label="▶" />
-          </div>
-          <div style={styles.dpadRow}>
-            <div style={styles.dpadSpacer} />
-            <DirBtn dir="down" label="▼" />
-            <div style={styles.dpadSpacer} />
-          </div>
+      {/* === 캐릭터 일러스트 + 대사 박스 === */}
+      <div style={styles.dialogueOverlay}>
+        <div style={styles.portraitWrapper}>
+          <img
+            src="/assets/characters/portraits/maxy.png"
+            alt="맥시"
+            style={styles.portraitImg}
+          />
         </div>
+        <div style={styles.dialogueBox}>
+          <span style={styles.dialogueText}>
+            맥시 : 어서 와, 내 서재에 온 걸 환영해!
+          </span>
+        </div>
+      </div>
 
-        <div style={styles.rightButtons}>
-          <button style={styles.actionBtn} onClick={() => setShowChat(true)}>
-            <span style={styles.btnIcon}>💬</span>
-          </button>
-          <button style={styles.actionBtn} onClick={() => navigate('/')}>
-            <span style={styles.btnIcon}>🚪</span>
-          </button>
+      {/* === 하단: 나무 프레임 인터페이스 === */}
+      <div style={styles.woodFrame}>
+        <div style={styles.woodFrameInner}>
+          {/* 상단 헤더 바 */}
+          <div style={styles.panelHeader}>
+            <div style={styles.headerTitleArea}>
+              <button style={styles.backBtn} onClick={() => navigate('/')}>
+                ←
+              </button>
+              <span style={styles.headerTitle}>{userId}님의 서재</span>
+            </div>
+            <div style={styles.headerBtnArea}>
+              {[
+                { key: 'chat', label: 'AI채팅' },
+                { key: 'guestbook', label: '방명록' },
+                { key: 'info', label: '정보' },
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  style={{
+                    ...styles.headerBtn,
+                    ...(activeTab === tab.key ? styles.headerBtnActive : {})
+                  }}
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 콘텐츠 영역 */}
+          <div style={styles.panelContent}>
+            {renderTabContent()}
+          </div>
         </div>
       </div>
     </div>
@@ -217,102 +171,209 @@ function VisitorRoom() {
 const styles = {
   container: {
     width: '100%',
-    height: '100%',
-    position: 'relative',
+    height: '100dvh',
+    display: 'flex',
+    flexDirection: 'column',
+    background: '#1a1a1a',
     overflow: 'hidden',
-    background: '#000'
+    position: 'fixed',
+    top: 0,
+    left: 0
   },
-  gameContainer: {
-    position: 'absolute',
-    top: 0, left: 0,
-    width: '100%', height: '100%'
-  },
+
   loadingScreen: {
     position: 'fixed',
     top: 0, left: 0,
     width: '100%', height: '100%',
     display: 'flex', flexDirection: 'column',
     justifyContent: 'center', alignItems: 'center',
-    gap: '16px', background: '#000'
+    gap: '16px', background: '#3d2210'
   },
 
-  dpad: {
-    position: 'absolute',
-    bottom: '16px', left: '16px',
-    zIndex: 10,
-    display: 'flex', flexDirection: 'column',
-    gap: '2px', opacity: 0.6
+  topSection: {
+    position: 'relative',
+    width: '100%',
+    flexShrink: 0,
+    background: '#2a2018',
+    display: 'flex',
+    justifyContent: 'center'
   },
-  dpadRow: {
-    display: 'flex', gap: '2px', justifyContent: 'center'
+  gameArea: {
+    width: '100%',
+    maxWidth: '746px',
+    aspectRatio: '16 / 9',
+    overflow: 'hidden'
   },
-  dpadBtn: {
-    width: '52px', height: '52px',
-    borderRadius: '12px',
-    border: '2px solid rgba(255,255,255,0.2)',
-    background: 'rgba(0,0,0,0.4)',
-    color: '#fff', fontSize: '20px', fontWeight: 'bold',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    cursor: 'pointer', userSelect: 'none', WebkitUserSelect: 'none',
-    touchAction: 'none', WebkitTapHighlightColor: 'transparent', outline: 'none'
-  },
-  dpadSpacer: { width: '52px', height: '52px' },
-
-  rightButtons: {
-    position: 'absolute',
-    bottom: '16px', right: '16px',
-    zIndex: 10, display: 'flex', flexDirection: 'column',
-    gap: '12px', opacity: 0.6
-  },
-  actionBtn: {
-    width: '56px', height: '56px',
-    borderRadius: '50%',
-    border: '2px solid rgba(255,255,255,0.2)',
-    background: 'rgba(0,0,0,0.4)',
-    cursor: 'pointer', display: 'flex',
-    alignItems: 'center', justifyContent: 'center',
-    userSelect: 'none', WebkitTapHighlightColor: 'transparent', outline: 'none'
-  },
-  btnIcon: { fontSize: '24px', lineHeight: 1 },
   exitBtn: {
-    padding: '12px 24px',
-    background: 'rgba(255,255,255,0.2)',
-    color: '#fff', border: '1px solid rgba(255,255,255,0.3)',
-    borderRadius: '8px', cursor: 'pointer', fontSize: '14px'
+    padding: '10px 20px',
+    background: '#5c3322',
+    color: '#f5e6c8',
+    border: '2px solid #8b6914',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: 'bold'
   },
 
-  portraitContainer: {
-    width: '100%', height: '100%',
-    display: 'flex', flexDirection: 'column',
-    background: '#1a1a1a', overflow: 'hidden'
+  // === 캐릭터 일러스트 + 대사 ===
+  dialogueOverlay: {
+    position: 'relative',
+    width: '100%',
+    height: '0',
+    zIndex: 30
   },
-  portraitGame: {
-    width: '100%', height: '40%', minHeight: '180px',
-    background: '#000', flexShrink: 0
+  portraitWrapper: {
+    position: 'absolute',
+    bottom: '-50px',
+    left: '0px',
+    width: '110px',
+    zIndex: 31,
+    pointerEvents: 'none'
   },
-  portraitChat: {
-    flex: 1, display: 'flex', flexDirection: 'column',
-    overflow: 'hidden', background: '#1e1e1e'
+  portraitImg: {
+    width: '100%',
+    height: 'auto',
+    display: 'block',
+    filter: 'drop-shadow(2px 3px 4px rgba(0,0,0,0.4))'
   },
-  portraitChatFull: {
-    width: '100%', height: '100%',
-    display: 'flex', flexDirection: 'column',
-    overflow: 'hidden', background: '#1e1e1e'
+  dialogueBox: {
+    position: 'absolute',
+    bottom: '-24px',
+    left: '50px',
+    right: '12px',
+    background: 'linear-gradient(135deg, #f0ddb8 0%, #e8cfa0 50%, #dcc090 100%)',
+    borderRadius: '20px',
+    padding: '10px 16px 10px 60px',
+    minHeight: '40px',
+    display: 'flex',
+    alignItems: 'center',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3)',
+    border: '2px solid #c4a060'
   },
-  portraitChatHeader: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '10px 16px',
-    borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0
+  dialogueText: {
+    color: '#3d2210',
+    fontSize: '13px',
+    lineHeight: '1.5',
+    fontWeight: '500'
   },
-  chatTitle: { color: '#fff', fontSize: '16px', fontWeight: 'bold' },
-  chatCloseBtn: {
-    padding: '6px 14px', borderRadius: '16px', border: 'none',
-    background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '13px',
-    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
+
+  // === 나무 프레임 UI ===
+  woodFrame: {
+    flex: 1,
+    background: '#5c3a1e',
+    borderTop: '4px solid #3d2210',
+    padding: '6px',
+    paddingTop: '30px',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden'
   },
-  portraitChatBody: {
-    flex: 1, overflow: 'hidden',
-    display: 'flex', flexDirection: 'column'
+  woodFrameInner: {
+    flex: 1,
+    border: '3px solid #8b6914',
+    borderRadius: '4px',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    background: '#d4a843'
+  },
+  panelHeader: {
+    display: 'flex',
+    flexShrink: 0,
+    margin: '6px 6px 0 6px',
+    borderRadius: '3px',
+    overflow: 'hidden',
+    border: '2px solid #8b6914'
+  },
+  headerTitleArea: {
+    flex: 1,
+    background: '#5c3322',
+    padding: '10px 14px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px'
+  },
+  backBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#f5e6c8',
+    fontSize: '16px',
+    cursor: 'pointer',
+    padding: '0 4px'
+  },
+  headerTitle: {
+    color: '#f5e6c8',
+    fontSize: '13px',
+    fontWeight: 'bold',
+    letterSpacing: '0.5px'
+  },
+  headerBtnArea: {
+    display: 'flex',
+    gap: '6px',
+    background: '#e8cfa0',
+    padding: '6px 8px',
+    alignItems: 'center'
+  },
+  headerBtn: {
+    width: '42px',
+    height: '32px',
+    borderRadius: '4px',
+    border: '2px solid #8b6914',
+    background: '#a07030',
+    color: '#f5e6c8',
+    fontSize: '10px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.15s'
+  },
+  headerBtnActive: {
+    background: '#5c3322',
+    borderColor: '#d4a843',
+    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
+  },
+  panelContent: {
+    flex: 1,
+    margin: '6px',
+    background: '#dcb86a',
+    borderRadius: '3px',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+
+  placeholderTab: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '24px',
+    gap: '8px'
+  },
+  placeholderText: {
+    color: '#5c3a1e',
+    fontSize: '14px',
+    fontWeight: 'bold'
+  },
+  statItem: {
+    width: '100%',
+    maxWidth: '280px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    borderBottom: '1px solid rgba(92,58,30,0.15)'
+  },
+  statLabel: {
+    color: '#5c3a1e',
+    fontSize: '14px'
+  },
+  statValue: {
+    color: '#3d2210',
+    fontSize: '14px',
+    fontWeight: 'bold'
   }
 };
 

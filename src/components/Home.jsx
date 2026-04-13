@@ -1,44 +1,82 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Home() {
   const navigate = useNavigate();
+  const [transitioning, setTransitioning] = useState(false);
 
-  // TODO: 실제로는 로그인 시스템 연동
-  const handleStart = () => {
-    // 임시로 user123으로 설정
-    navigate('/my-room');
-  };
+  function handleStart() {
+    setTransitioning(true);
+    // 애니메이션(1.4s) 후 화면 전환
+    setTimeout(() => navigate('/web/my-room'), 1800);
+  }
 
   return (
     <div style={styles.container}>
-      <div style={styles.content}>
-        <h1 style={styles.title}>리디 마이룸</h1>
-        <p style={styles.subtitle}>픽셀 아트로 만드는 나만의 서재</p>
+      {/* 배경 이미지 — 전환 시 문 위치로 확대 */}
+      <div
+        className={transitioning ? 'bg zoom-in' : 'bg'}
+        style={styles.bg}
+      />
 
-        <div style={styles.features}>
-          <div style={styles.feature}>
-            📚 내 서재에서 AI 아바타와 함께
-          </div>
-          <div style={styles.feature}>
-            🎨 트래블러스 레스트 스타일 픽셀 아트
-          </div>
-          <div style={styles.feature}>
-            🤖 상수리나무 주인공처럼 따뜻한 AI
-          </div>
-          <div style={styles.feature}>
-            📱 QR 코드로 친구 초대
-          </div>
-        </div>
+      {/* 조명 글로우 레이어 */}
+      <div
+        className={transitioning ? 'glow-layer glow-burst' : 'glow-layer'}
+        style={styles.glowLayer}
+      />
 
-        <button onClick={handleStart} style={styles.button}>
-          내 서재 시작하기
-        </button>
+      {/* 화이트아웃 레이어 */}
+      {transitioning && <div className="whiteout" style={styles.whiteout} />}
 
-        <p style={styles.demo}>
-          데모용: <a href="/user123/room">다른 사람 서재 방문해보기</a>
-        </p>
-      </div>
+      <button
+        onClick={handleStart}
+        style={{ ...styles.button, ...(transitioning ? styles.buttonHidden : {}) }}
+        disabled={transitioning}
+      >
+        시작하기
+      </button>
+
+      <style>{`
+        @keyframes flicker {
+          0%   { opacity: 0.10; }
+          25%  { opacity: 0.18; }
+          50%  { opacity: 0.08; }
+          75%  { opacity: 0.20; }
+          100% { opacity: 0.10; }
+        }
+        .glow-layer {
+          animation: flicker 4s ease-in-out infinite;
+        }
+
+        /* 버튼 클릭 시 — 문 중앙 아래쪽(50% 75%)으로 확대 */
+        @keyframes zoomInDoor {
+          0%   { transform: scale(1);   transform-origin: 50% 85%; }
+          100% { transform: scale(1.5); transform-origin: 50% 85%; }
+        }
+        .bg.zoom-in {
+          animation: zoomInDoor 1.8s cubic-bezier(0.8, 0, 0.3, 1) forwards;
+        }
+
+        /* 조명 폭발적으로 밝아지기 */
+        @keyframes glowBurst {
+          0%   { opacity: 0.15; }
+          60%  { opacity: 0.35; }
+          100% { opacity: 0.5;  }
+        }
+        .glow-layer.glow-burst {
+          animation: glowBurst 1.8s ease-in forwards;
+        }
+
+        /* 화이트아웃 */
+        @keyframes whiteout {
+          0%   { opacity: 0; }
+          60%  { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        .whiteout {
+          animation: whiteout 1.8s ease-in forwards;
+        }
+      `}</style>
     </div>
   );
 }
@@ -46,58 +84,57 @@ function Home() {
 const styles = {
   container: {
     width: '100%',
-    minHeight: '100vh',
+    height: '100vh',
+    position: 'relative',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: '20px'
+    alignItems: 'flex-end',
+    paddingBottom: '13vh',
+    overflow: 'hidden'
   },
-  content: {
-    background: 'white',
-    padding: '40px',
-    borderRadius: '12px',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-    textAlign: 'center',
-    maxWidth: '500px',
-    width: '100%'
+  bg: {
+    position: 'absolute',
+    inset: 0,
+    backgroundImage: 'url(/assets/backgrounds/main.png)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    zIndex: 0
   },
-  title: {
-    fontSize: '32px',
-    fontWeight: 'bold',
-    marginBottom: '8px',
-    color: '#333'
+  glowLayer: {
+    position: 'absolute',
+    inset: 0,
+    background: `
+      radial-gradient(ellipse 38% 30% at 28% 58%, rgba(255, 200, 80, 1) 0%, transparent 100%),
+      radial-gradient(ellipse 38% 30% at 72% 58%, rgba(255, 200, 80, 1) 0%, transparent 100%),
+      radial-gradient(ellipse 15% 20% at 50% 62%, rgba(255, 180, 60, 1) 0%, transparent 100%)
+    `,
+    pointerEvents: 'none',
+    zIndex: 1
   },
-  subtitle: {
-    fontSize: '16px',
-    color: '#666',
-    marginBottom: '32px'
-  },
-  features: {
-    marginBottom: '32px'
-  },
-  feature: {
-    padding: '12px',
-    background: '#f5f5f5',
-    borderRadius: '8px',
-    marginBottom: '8px',
-    fontSize: '14px'
+  whiteout: {
+    position: 'absolute',
+    inset: 0,
+    background: 'rgba(255, 230, 150, 0.95)',
+    pointerEvents: 'none',
+    zIndex: 2
   },
   button: {
-    background: '#667eea',
-    color: 'white',
-    border: 'none',
-    padding: '16px 32px',
-    fontSize: '16px',
-    borderRadius: '8px',
-    cursor: 'pointer',
+    position: 'relative',
+    zIndex: 3,
+    background: '#4F0C0C',
+    color: '#f5e6c8',
+    border: '1px solid #8B3232',
+    borderRadius: '2px',
+    padding: '26px 160px',
+    fontSize: '26px',
     fontWeight: 'bold',
-    transition: 'all 0.2s'
+    cursor: 'pointer',
+    letterSpacing: '2px',
+    transition: 'opacity 0.2s'
   },
-  demo: {
-    marginTop: '24px',
-    fontSize: '14px',
-    color: '#666'
+  buttonHidden: {
+    opacity: 0,
+    pointerEvents: 'none'
   }
 };
 

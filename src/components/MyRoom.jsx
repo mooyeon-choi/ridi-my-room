@@ -2,76 +2,45 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PhaserGame from './PhaserGame';
 import QRCodeModal from './QRCodeModal';
 import ChatBox from './ChatBox';
-
-// 현재 기기가 세로 상태인지 판별
-function isPortrait() {
-  return window.innerHeight > window.innerWidth;
-}
+import RewardModal from './RewardModal';
 
 function MyRoom() {
   const userId = 'user123';
   const [currentAction, setCurrentAction] = useState('idle');
   const [monologue, setMonologue] = useState('');
   const [showQR, setShowQR] = useState(false);
-  const [showChat, setShowChat] = useState(false);
-  const [inputFocused, setInputFocused] = useState(false);
-  const [portrait, setPortrait] = useState(isPortrait());
-  const [bubblePosition, setBubblePosition] = useState({ x: 0, y: 0 });
+  const [showReward, setShowReward] = useState(false);
+  const [activeTab, setActiveTab] = useState('chat');
   const lastMonologueTime = useRef(0);
   const gameRef = useRef(null);
 
-  // 화면 방향 감지
+  // 뒤로가기로 돌아왔을 때 (앞으로가기 히스토리가 존재할 때) 모달 표시
   useEffect(() => {
-    function handleResize() {
-      setPortrait(isPortrait());
+    const navEntries = performance.getEntriesByType('navigation');
+    if (navEntries.length > 0 && navEntries[0].type === 'back_forward') {
+      setShowReward(true);
     }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
-  // orientation lock 시도
-  useEffect(() => {
-    async function lockOrientation() {
-      try {
-        // 전체화면 진입 시도 (orientation lock 필요)
-        if (document.documentElement.requestFullscreen) {
-          await document.documentElement.requestFullscreen().catch(() => {});
-        }
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock(showChat ? 'portrait' : 'landscape').catch(() => {});
-        }
-      } catch (e) {
-        // 무시
+    function handlePageShow(e) {
+      if (e.persisted) {
+        setShowReward(true);
       }
     }
-    lockOrientation();
-  }, [showChat]);
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
 
   useEffect(() => {
     if (currentAction !== 'idle') {
       const now = Date.now();
       const elapsed = now - lastMonologueTime.current;
-      if (elapsed >= 5000) {
+      if (elapsed >= 8000) {
         lastMonologueTime.current = now;
         generateMonologue(currentAction);
       }
     }
   }, [currentAction]);
-
-  function setTouchDir(dir, pressed) {
-    const scene = gameRef.current?.getScene();
-    if (scene && scene.touchDir) {
-      scene.touchDir[dir] = pressed;
-    }
-  }
-
-  function handleDirDown(dir) {
-    setTouchDir(dir, true);
-  }
-
-  function handleDirUp(dir) {
-    setTouchDir(dir, false);
-  }
 
   async function generateMonologue(action) {
     try {
@@ -79,8 +48,8 @@ function MyRoom() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: userId || 'user123',
-          action: action,
+          userId,
+          action,
           persona: 'sangsuri',
           context: {
             recentBooks: ['전지적 독자 시점', '달빛조각사'],
@@ -90,12 +59,10 @@ function MyRoom() {
       });
 
       if (!response.ok) throw new Error('API 호출 실패');
-
       const data = await response.json();
       setMonologue(data.monologue);
-      setTimeout(() => setMonologue(''), 3000);
+      setTimeout(() => setMonologue(''), 4000);
     } catch (error) {
-      console.error('혼잣말 생성 오류:', error);
       const fallbackMonologues = {
         walking: '오늘은 산책하기 좋은 날이네.',
         reading: '이 책 정말 재미있어.',
@@ -104,305 +71,321 @@ function MyRoom() {
         sitting: '여기 앉아 있으니 차분해져.'
       };
       setMonologue(fallbackMonologues[action] || '좋은 하루야.');
-      setTimeout(() => setMonologue(''), 3000);
+      setTimeout(() => setMonologue(''), 4000);
     }
   }
 
-  function DirBtn({ dir, label }) {
-    return (
-      <button
-        style={styles.dpadBtn}
-        onTouchStart={(e) => { e.preventDefault(); handleDirDown(dir); }}
-        onTouchEnd={(e) => { e.preventDefault(); handleDirUp(dir); }}
-        onTouchCancel={(e) => { e.preventDefault(); handleDirUp(dir); }}
-        onMouseDown={() => handleDirDown(dir)}
-        onMouseUp={() => handleDirUp(dir)}
-        onMouseLeave={() => handleDirUp(dir)}
-      >{label}</button>
-    );
-  }
-
-  // === 채팅 모드 ===
-  if (showChat) {
-    // 기기가 가로 상태인데 세로가 필요 → CSS로 강제 회전
-    const needRotate = !portrait;
-    const wrapStyle = needRotate ? {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vh',
-      height: '100vw',
-      transform: 'rotate(-90deg) translateX(-100%)',
-      transformOrigin: 'top left',
-      overflow: 'hidden'
-    } : {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      overflow: 'hidden'
-    };
-
-    return (
-      <div style={wrapStyle}>
-        <div style={styles.portraitContainer}>
-          {/* 상단: 게임 화면 (키보드 올라오면 숨김) */}
-          {!inputFocused && (
-            <div style={styles.portraitGame}>
-              <PhaserGame
-                ref={gameRef}
-                mode="owner"
-                userId={userId}
-                onActionChange={setCurrentAction}
-                onAvatarMove={setBubblePosition}
-              />
+  function renderTabContent() {
+    switch (activeTab) {
+      case 'chat':
+        return <ChatBox hostUserId={userId} />;
+      case 'guestbook':
+        return (
+          <div style={styles.placeholderTab}>
+            <p style={styles.placeholderText}>아직 방명록이 없습니다.</p>
+            <p style={styles.placeholderSubtext}>방문자가 남긴 메시지가 여기에 표시됩니다.</p>
+          </div>
+        );
+      case 'stats':
+        return (
+          <div style={styles.placeholderTab}>
+            <div style={styles.statItem}>
+              <span style={styles.statLabel}>읽은 책</span>
+              <span style={styles.statValue}>23권</span>
             </div>
-          )}
-
-          {/* 채팅창 */}
-          <div style={inputFocused ? styles.portraitChatFull : styles.portraitChat}>
-            <div style={styles.portraitChatHeader}>
-              <span style={styles.chatTitle}>채팅</span>
-              <button style={styles.chatCloseBtn} onClick={() => setShowChat(false)}>✕ 게임으로</button>
+            <div style={styles.statItem}>
+              <span style={styles.statLabel}>레벨</span>
+              <span style={styles.statValue}>Lv.5</span>
             </div>
-            <div style={styles.portraitChatBody}>
-              <ChatBox
-                hostUserId={userId}
-                onInputFocus={() => setInputFocused(true)}
-                onInputBlur={() => setInputFocused(false)}
-              />
+            <div style={styles.statItem}>
+              <span style={styles.statLabel}>방문자</span>
+              <span style={styles.statValue}>42명</span>
+            </div>
+            <div style={styles.statItem}>
+              <span style={styles.statLabel}>포인트</span>
+              <span style={styles.statValue}>1,200P</span>
             </div>
           </div>
-        </div>
-      </div>
-    );
+        );
+      default:
+        return null;
+    }
   }
 
-  // === 게임 모드 ===
-  // 기기가 세로 상태인데 가로가 필요 → CSS로 강제 회전
-  const needRotate = portrait;
-  const wrapStyle = needRotate ? {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vh',
-    height: '100vw',
-    transform: 'rotate(90deg) translateY(-100%)',
-    transformOrigin: 'top left',
-    overflow: 'hidden'
-  } : {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden'
-  };
-
   return (
-    <div style={wrapStyle}>
-      <div style={styles.container}>
-        <div style={styles.gameContainer}>
+    <div style={styles.container}>
+      {/* === 상단: 배경 + 아바타 영역 === */}
+      <div style={styles.topSection}>
+        <div style={styles.gameArea}>
           <PhaserGame
             ref={gameRef}
             mode="owner"
             userId={userId}
             onActionChange={setCurrentAction}
-            onAvatarMove={setBubblePosition}
           />
-
-          {monologue && (
-            <div
-              className="speech-bubble"
-              style={{
-                left: `${bubblePosition.x}px`,
-                top: `${bubblePosition.y - 60}px`
-              }}
-            >
-              {monologue}
-            </div>
-          )}
         </div>
-
-        {/* 왼쪽 하단 - D-Pad */}
-        <div style={styles.dpad}>
-          <div style={styles.dpadRow}>
-            <div style={styles.dpadSpacer} />
-            <DirBtn dir="up" label="▲" />
-            <div style={styles.dpadSpacer} />
-          </div>
-          <div style={styles.dpadRow}>
-            <DirBtn dir="left" label="◀" />
-            <div style={styles.dpadSpacer} />
-            <DirBtn dir="right" label="▶" />
-          </div>
-          <div style={styles.dpadRow}>
-            <div style={styles.dpadSpacer} />
-            <DirBtn dir="down" label="▼" />
-            <div style={styles.dpadSpacer} />
-          </div>
-        </div>
-
-        {/* 오른쪽 하단 - 채팅 버튼 */}
-        <button style={styles.chatBtn} onClick={() => setShowChat(true)}>
-          <span style={styles.chatBtnIcon}>💬</span>
-        </button>
-
-        {showQR && (
-          <QRCodeModal
-            url={`${window.location.origin}/${userId}/room`}
-            onClose={() => setShowQR(false)}
-          />
-        )}
       </div>
+
+      {/* === 캐릭터 일러스트 + 대사 박스 (게임과 인터페이스 사이에 걸침) === */}
+      <div style={styles.dialogueOverlay}>
+        {/* 캐릭터 일러스트 */}
+        <div style={styles.portraitWrapper}>
+          <img
+            src="/assets/characters/portraits/maxy.png"
+            alt="맥시"
+            style={styles.portraitImg}
+          />
+        </div>
+        {/* 대사 박스 */}
+        <div style={styles.dialogueBox}>
+          <span style={styles.dialogueText}>
+            {monologue || '맥시 : 어서 와, 내 서재에 온 걸 환영해!'}
+          </span>
+        </div>
+      </div>
+
+      {/* === 하단: 나무 프레임 인터페이스 === */}
+      <div style={styles.woodFrame}>
+        <div style={styles.woodFrameInner}>
+          {/* 상단 헤더 바 */}
+          <div style={styles.panelHeader}>
+            <div style={styles.headerTitleArea}>
+              <span style={styles.headerTitle}>{userId}의 서재</span>
+            </div>
+            <div style={styles.headerBtnArea}>
+              {[
+                { key: 'chat', label: '채팅' },
+                { key: 'guestbook', label: '방명록' },
+                { key: 'stats', label: '통계' },
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  style={{
+                    ...styles.headerBtn,
+                    ...(activeTab === tab.key ? styles.headerBtnActive : {})
+                  }}
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 콘텐츠 영역 */}
+          <div style={styles.panelContent}>
+            {renderTabContent()}
+          </div>
+        </div>
+      </div>
+
+      {showQR && (
+        <QRCodeModal
+          url={`${window.location.origin}/${userId}/room`}
+          onClose={() => setShowQR(false)}
+        />
+      )}
+
+      {showReward && (
+        <RewardModal
+          onConfirm={() => setShowReward(false)}
+          onCancel={() => setShowReward(false)}
+        />
+      )}
     </div>
   );
 }
 
 const styles = {
-  // === 게임 모드 (가로) ===
   container: {
     width: '100%',
-    height: '100%',
-    position: 'relative',
-    overflow: 'hidden',
-    background: '#000'
-  },
-  gameContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%'
-  },
-
-  // D-Pad
-  dpad: {
-    position: 'absolute',
-    bottom: '16px',
-    left: '16px',
-    zIndex: 10,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    opacity: 0.6
-  },
-  dpadRow: {
-    display: 'flex',
-    gap: '2px',
-    justifyContent: 'center'
-  },
-  dpadBtn: {
-    width: '52px',
-    height: '52px',
-    borderRadius: '12px',
-    border: '2px solid rgba(255,255,255,0.2)',
-    background: 'rgba(0,0,0,0.4)',
-    color: '#fff',
-    fontSize: '20px',
-    fontWeight: 'bold',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    touchAction: 'none',
-    WebkitTapHighlightColor: 'transparent',
-    outline: 'none'
-  },
-  dpadSpacer: {
-    width: '52px',
-    height: '52px'
-  },
-
-  // 채팅 버튼
-  chatBtn: {
-    position: 'absolute',
-    bottom: '40px',
-    right: '24px',
-    zIndex: 10,
-    width: '60px',
-    height: '60px',
-    borderRadius: '50%',
-    border: '2px solid rgba(255,255,255,0.2)',
-    background: 'rgba(0,0,0,0.4)',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    userSelect: 'none',
-    WebkitTapHighlightColor: 'transparent',
-    outline: 'none',
-    opacity: 0.6
-  },
-  chatBtnIcon: {
-    fontSize: '26px',
-    lineHeight: 1
-  },
-
-  // === 채팅 모드 (세로) ===
-  portraitContainer: {
-    width: '100%',
-    height: '100%',
+    height: '100dvh',
     display: 'flex',
     flexDirection: 'column',
     background: '#1a1a1a',
+    overflow: 'hidden',
+    position: 'fixed',
+    top: 0,
+    left: 0
+  },
+
+  // === 상단: 게임 영역 ===
+  topSection: {
+    position: 'relative',
+    width: '100%',
+    flexShrink: 0,
+    background: '#2a2018',
+    display: 'flex',
+    justifyContent: 'center'
+  },
+  gameArea: {
+    width: '100%',
+    maxWidth: '746px',
+    aspectRatio: '16 / 9',
     overflow: 'hidden'
   },
-  portraitGame: {
+
+  // === 캐릭터 일러스트 + 대사 박스 ===
+  dialogueOverlay: {
+    position: 'relative',
     width: '100%',
-    height: '40%',
-    minHeight: '180px',
-    background: '#000',
-    flexShrink: 0
+    height: '0',
+    zIndex: 30
   },
-  portraitChat: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    background: '#1e1e1e'
+  portraitWrapper: {
+    position: 'absolute',
+    bottom: '-50px',
+    left: '0px',
+    width: '110px',
+    zIndex: 31,
+    pointerEvents: 'none'
   },
-  portraitChatFull: {
+  portraitImg: {
     width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    background: '#1e1e1e'
+    height: 'auto',
+    display: 'block',
+    filter: 'drop-shadow(2px 3px 4px rgba(0,0,0,0.4))'
   },
-  portraitChatHeader: {
+  dialogueBox: {
+    position: 'absolute',
+    bottom: '-24px',
+    left: '50px',
+    right: '12px',
+    background: 'linear-gradient(135deg, #f0ddb8 0%, #e8cfa0 50%, #dcc090 100%)',
+    borderRadius: '20px',
+    padding: '10px 16px 10px 60px',
+    minHeight: '40px',
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '10px 16px',
-    borderBottom: '1px solid rgba(255,255,255,0.1)',
-    flexShrink: 0
+    boxShadow: '0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3)',
+    border: '2px solid #c4a060'
   },
-  chatTitle: {
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: 'bold'
-  },
-  chatCloseBtn: {
-    padding: '6px 14px',
-    borderRadius: '16px',
-    border: 'none',
-    background: 'rgba(255,255,255,0.15)',
-    color: '#fff',
+  dialogueText: {
+    color: '#3d2210',
     fontSize: '13px',
+    lineHeight: '1.5',
+    fontWeight: '500'
+  },
+
+  // === 하단: 나무 프레임 UI ===
+  woodFrame: {
+    flex: 1,
+    background: '#5c3a1e',
+    borderTop: '4px solid #3d2210',
+    padding: '6px',
+    paddingTop: '30px',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden'
+  },
+  woodFrameInner: {
+    flex: 1,
+    border: '3px solid #8b6914',
+    borderRadius: '4px',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    background: '#d4a843'
+  },
+
+  // 헤더 바 (상단)
+  panelHeader: {
+    display: 'flex',
+    flexShrink: 0,
+    margin: '6px 6px 0 6px',
+    borderRadius: '3px',
+    overflow: 'hidden',
+    border: '2px solid #8b6914'
+  },
+  headerTitleArea: {
+    flex: 1,
+    background: '#5c3322',
+    padding: '10px 14px',
+    display: 'flex',
+    alignItems: 'center'
+  },
+  headerTitle: {
+    color: '#f5e6c8',
+    fontSize: '13px',
+    fontWeight: 'bold',
+    letterSpacing: '0.5px'
+  },
+  headerBtnArea: {
+    display: 'flex',
+    gap: '6px',
+    background: '#e8cfa0',
+    padding: '6px 8px',
+    alignItems: 'center'
+  },
+  headerBtn: {
+    width: '42px',
+    height: '32px',
+    borderRadius: '4px',
+    border: '2px solid #8b6914',
+    background: '#a07030',
+    color: '#f5e6c8',
+    fontSize: '10px',
+    fontWeight: 'bold',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    gap: '4px'
+    justifyContent: 'center',
+    transition: 'all 0.15s'
   },
-  portraitChatBody: {
+  headerBtnActive: {
+    background: '#5c3322',
+    borderColor: '#d4a843',
+    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
+  },
+
+  // 콘텐츠 영역
+  panelContent: {
     flex: 1,
+    margin: '6px',
+    background: '#dcb86a',
+    borderRadius: '3px',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column'
+  },
+
+  // 플레이스홀더
+  placeholderTab: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '24px',
+    gap: '8px'
+  },
+  placeholderText: {
+    color: '#5c3a1e',
+    fontSize: '14px',
+    fontWeight: 'bold'
+  },
+  placeholderSubtext: {
+    color: '#8b6914',
+    fontSize: '12px'
+  },
+
+  // 통계
+  statItem: {
+    width: '100%',
+    maxWidth: '280px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    borderBottom: '1px solid rgba(92,58,30,0.15)'
+  },
+  statLabel: {
+    color: '#5c3a1e',
+    fontSize: '14px'
+  },
+  statValue: {
+    color: '#3d2210',
+    fontSize: '14px',
+    fontWeight: 'bold'
   }
 };
 
