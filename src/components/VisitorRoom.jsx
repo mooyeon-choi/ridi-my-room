@@ -3,13 +3,34 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PhaserGame from './PhaserGame';
 import ChatBox from './ChatBox';
 
+const GREETING_TEXT = '맥시 : 어서 와, 내 서재에 온 걸 환영해!';
+const TYPING_SPEED = 50;
+const DISPLAY_DURATION = 3000;
+
 function VisitorRoom() {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [roomData, setRoomData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('chat');
+  const [showGreeting, setShowGreeting] = useState(true);
+  const [displayedText, setDisplayedText] = useState('');
   const gameRef = useRef(null);
+
+  useEffect(() => {
+    if (!showGreeting) return;
+    let i = 0;
+    setDisplayedText('');
+    const interval = setInterval(() => {
+      i++;
+      setDisplayedText(GREETING_TEXT.slice(0, i));
+      if (i >= GREETING_TEXT.length) {
+        clearInterval(interval);
+        setTimeout(() => setShowGreeting(false), DISPLAY_DURATION);
+      }
+    }, TYPING_SPEED);
+    return () => clearInterval(interval);
+  }, []);
 
 
   useEffect(() => {
@@ -111,21 +132,21 @@ function VisitorRoom() {
         </div>
       </div>
 
-      {/* === 캐릭터 일러스트 + 대사 박스 === */}
-      <div style={styles.dialogueOverlay}>
-        <div style={styles.portraitWrapper}>
-          <img
-            src="/assets/characters/portraits/maxy.png"
-            alt="맥시"
-            style={styles.portraitImg}
-          />
+      {/* === 캐릭터 일러스트 + 대사 박스 (처음 진입 시만 표시) === */}
+      {showGreeting && (
+        <div style={styles.dialogueOverlay}>
+          <div style={styles.portraitWrapper}>
+            <img
+              src="/assets/characters/portraits/maxy.png"
+              alt="맥시"
+              style={styles.portraitImg}
+            />
+          </div>
+          <div style={styles.dialogueBox}>
+            <span style={styles.dialogueText}>{displayedText}</span>
+          </div>
         </div>
-        <div style={styles.dialogueBox}>
-          <span style={styles.dialogueText}>
-            맥시 : 어서 와, 내 서재에 온 걸 환영해!
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* === 하단: 나무 프레임 인터페이스 === */}
       <div style={styles.woodFrame}>
@@ -175,7 +196,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     background: '#1a1a1a',
-    overflow: 'hidden',
     position: 'fixed',
     top: 0,
     left: 0
@@ -224,9 +244,9 @@ const styles = {
   },
   portraitWrapper: {
     position: 'absolute',
-    bottom: '-50px',
-    left: '0px',
-    width: '110px',
+    bottom: '-120px',
+    left: '-90px',
+    width: '190px',
     zIndex: 31,
     pointerEvents: 'none'
   },
@@ -239,22 +259,23 @@ const styles = {
   dialogueBox: {
     position: 'absolute',
     bottom: '-24px',
-    left: '50px',
-    right: '12px',
+    left: '-30px',
+    right: '-28px',
     background: 'linear-gradient(135deg, #f0ddb8 0%, #e8cfa0 50%, #dcc090 100%)',
-    borderRadius: '20px',
-    padding: '10px 16px 10px 60px',
-    minHeight: '40px',
+    borderRadius: '9999px',
+    padding: '12px 20px 12px 130px',
+    minHeight: '60px',
     display: 'flex',
     alignItems: 'center',
     boxShadow: '0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3)',
-    border: '2px solid #c4a060'
+    border: '3px solid #753F22'
   },
   dialogueText: {
     color: '#3d2210',
-    fontSize: '13px',
+    fontSize: '18px',
     lineHeight: '1.5',
-    fontWeight: '500'
+    fontWeight: '500',
+    flex: 1
   },
 
   // === 나무 프레임 UI ===
