@@ -3,7 +3,30 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PhaserGame from './PhaserGame';
 import ChatBox from './ChatBox';
 
-const GREETING_TEXT = '맥시 : 어서 와, 내 서재에 온 걸 환영해!';
+// 유저별 방 설정 (배경 테마)
+const USER_ROOM_DATA = {
+  default: {
+    background: '/assets/backgrounds/background_default.png',
+    greeting: '안녕하세요! 기본 서재에 오신 것을 환영합니다.',
+    theme: 'default',
+  },
+  modern_user: {
+    background: '/assets/backgrounds/background_modern.png',
+    greeting: '어서와, 내 현대식 서재야!',
+    theme: 'modern',
+  },
+  wuxia_user: {
+    background: '/assets/backgrounds/background_wuxia.png',
+    greeting: '어서 오거라, 강호의 벗이여!',
+    theme: 'wuxia',
+  },
+  apocalypse_user: {
+    background: '/assets/backgrounds/background_apocalypse.png',
+    greeting: '살아남았군... 여긴 내 은신처야.',
+    theme: 'apocalypse',
+  },
+};
+
 const TYPING_SPEED = 50;
 const DISPLAY_DURATION = 3000;
 
@@ -12,53 +35,52 @@ function VisitorRoom() {
   const navigate = useNavigate();
   const [roomData, setRoomData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('chat');
   const [showGreeting, setShowGreeting] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
+  const [visitUserId, setVisitUserId] = useState('');
+  const [showVisitInput, setShowVisitInput] = useState(false);
   const gameRef = useRef(null);
-
-  useEffect(() => {
-    if (!showGreeting) return;
-    let i = 0;
-    setDisplayedText('');
-    const interval = setInterval(() => {
-      i++;
-      setDisplayedText(GREETING_TEXT.slice(0, i));
-      if (i >= GREETING_TEXT.length) {
-        clearInterval(interval);
-        setTimeout(() => setShowGreeting(false), DISPLAY_DURATION);
-      }
-    }, TYPING_SPEED);
-    return () => clearInterval(interval);
-  }, []);
-
 
   useEffect(() => {
     loadRoomData();
   }, [userId]);
 
+  useEffect(() => {
+    if (!roomData) return;
+    setShowGreeting(true);
+    setDisplayedText('');
+    const text = roomData.aiConfig.customGreeting;
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayedText(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(interval);
+        setTimeout(() => setShowGreeting(false), DISPLAY_DURATION);
+      }
+    }, TYPING_SPEED);
+    return () => clearInterval(interval);
+  }, [roomData]);
+
   async function loadRoomData() {
     try {
-      const dummyRoomData = {
+      const userRoom = USER_ROOM_DATA[userId] || USER_ROOM_DATA['default'];
+      setRoomData({
         userId,
         roomConfig: {
-          furniture: [
-            { id: 'desk_01', type: 'desk', x: 250, y: 200 },
-            { id: 'bookshelf_01', type: 'bookshelf', x: 100, y: 150 }
-          ],
-          theme: 'default'
+          theme: userRoom.theme,
+          background: userRoom.background,
         },
         aiConfig: {
           persona: 'sangsuri',
-          customGreeting: '안녕하세요. 책 향기 가득한 서재에 오신 것을 환영합니다.',
+          customGreeting: userRoom.greeting,
           readingData: {
             recentBooks: ['전지적 독자 시점', '달빛조각사', '나 혼자만 레벨업'],
             favoriteGenres: ['판타지', '로맨스'],
-            totalBooksRead: 15
-          }
-        }
-      };
-      setRoomData(dummyRoomData);
+            totalBooksRead: 15,
+          },
+        },
+      });
       setLoading(false);
     } catch (error) {
       console.error('서재 데이터 로딩 오류:', error);
@@ -84,107 +106,114 @@ function VisitorRoom() {
     );
   }
 
-  function renderTabContent() {
-    switch (activeTab) {
-      case 'chat':
-        return (
+  return (
+    <div style={styles.container}>
+
+      {/* 상단 타이틀 */}
+      <div style={styles.titleBar}>
+        <button style={styles.backBtn} onClick={() => navigate(-1)}>←</button>
+        <span style={styles.titleText}>{userId}님의 서재</span>
+      </div>
+
+      {/* 중단: 게임 + 사이드 버튼 */}
+      <div style={styles.middleRow}>
+        {/* 게임 영역 */}
+        <div style={styles.gameWrapper}>
+          <div style={styles.gameArea}>
+            <PhaserGame
+              ref={gameRef}
+              mode="visitor"
+              hostUserId={userId}
+              roomConfig={roomData.roomConfig}
+              aiConfig={roomData.aiConfig}
+            />
+          </div>
+        </div>
+
+        {/* 우측 사이드 버튼 */}
+        <div style={styles.sideButtons}>
+          <button style={styles.sideBtn} onClick={() => setShowVisitInput(true)}>
+            자랑하기
+          </button>
+        </div>
+      </div>
+
+      {/* 하단: 대화창 + 채팅창 wrapper */}
+      <div style={styles.bottomWrapper}>
+        {/* 진입 인사 대화창 */}
+        {showGreeting && (
+          <div style={styles.dialogueOverlay}>
+            <div style={styles.portraitWrapper}>
+              <img
+                src="/assets/characters/portraits/maxy.png"
+                alt="맥시"
+                style={styles.portraitImg}
+              />
+            </div>
+            <div style={styles.dialogueBox}>
+              <span style={styles.dialogueText}>{displayedText}</span>
+            </div>
+          </div>
+        )}
+
+        {/* 채팅창 */}
+        <div style={styles.chatArea}>
           <ChatBox
             hostUserId={userId}
             aiConfig={roomData.aiConfig}
           />
-        );
-      case 'guestbook':
-        return (
-          <div style={styles.placeholderTab}>
-            <p style={styles.placeholderText}>방명록을 남겨보세요!</p>
-          </div>
-        );
-      case 'info':
-        return (
-          <div style={styles.placeholderTab}>
-            <div style={styles.statItem}>
-              <span style={styles.statLabel}>읽은 책</span>
-              <span style={styles.statValue}>{roomData.aiConfig.readingData.totalBooksRead}권</span>
-            </div>
-            <div style={styles.statItem}>
-              <span style={styles.statLabel}>선호 장르</span>
-              <span style={styles.statValue}>{roomData.aiConfig.readingData.favoriteGenres.join(', ')}</span>
-            </div>
-          </div>
-        );
-      default:
-        return null;
-    }
-  }
-
-  return (
-    <div style={styles.container}>
-      {/* === 상단: 배경 + 아바타 === */}
-      <div style={styles.topSection}>
-        <div style={styles.gameArea}>
-          <PhaserGame
-            ref={gameRef}
-            mode="visitor"
-            hostUserId={userId}
-            roomConfig={roomData.roomConfig}
-            aiConfig={roomData.aiConfig}
-          />
         </div>
       </div>
 
-      {/* === 캐릭터 일러스트 + 대사 박스 (처음 진입 시만 표시) === */}
-      {showGreeting && (
-        <div style={styles.dialogueOverlay}>
-          <div style={styles.portraitWrapper}>
-            <img
-              src="/assets/characters/portraits/maxy.png"
-              alt="맥시"
-              style={styles.portraitImg}
-            />
-          </div>
-          <div style={styles.dialogueBox}>
-            <span style={styles.dialogueText}>{displayedText}</span>
-          </div>
-        </div>
-      )}
-
-      {/* === 하단: 나무 프레임 인터페이스 === */}
-      <div style={styles.woodFrame}>
-        <div style={styles.woodFrameInner}>
-          {/* 상단 헤더 바 */}
-          <div style={styles.panelHeader}>
-            <div style={styles.headerTitleArea}>
-              <button style={styles.backBtn} onClick={() => navigate('/')}>
-                ←
-              </button>
-              <span style={styles.headerTitle}>{userId}님의 서재</span>
-            </div>
-            <div style={styles.headerBtnArea}>
+      {/* 자랑하기 — 방 이동 모달 */}
+      {showVisitInput && (
+        <div style={styles.visitOverlay}>
+          <div style={styles.visitModal}>
+            <span style={styles.visitTitle}>다른 사람의 방 방문하기</span>
+            <div style={styles.visitRoomList}>
               {[
-                { key: 'chat', label: 'AI채팅' },
-                { key: 'guestbook', label: '방명록' },
-                { key: 'info', label: '정보' },
-              ].map(tab => (
+                { id: 'default',         label: '기본 서재',       theme: '기본' },
+                { id: 'modern_user',     label: '현대 서재',       theme: '현대' },
+                { id: 'wuxia_user',      label: '무협 서재',       theme: '무협' },
+                { id: 'apocalypse_user', label: '아포칼립스 서재', theme: '아포칼립스' },
+              ].map(room => (
                 <button
-                  key={tab.key}
-                  style={{
-                    ...styles.headerBtn,
-                    ...(activeTab === tab.key ? styles.headerBtnActive : {})
-                  }}
-                  onClick={() => setActiveTab(tab.key)}
+                  key={room.id}
+                  style={styles.visitRoomBtn}
+                  onClick={() => navigate(`/web/${room.id}/room`)}
                 >
-                  {tab.label}
+                  <span style={styles.visitRoomTheme}>{room.theme}</span>
+                  <span style={styles.visitRoomLabel}>{room.label}</span>
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* 콘텐츠 영역 */}
-          <div style={styles.panelContent}>
-            {renderTabContent()}
+            <div style={styles.visitDivider} />
+            <input
+              style={styles.visitInput}
+              type="text"
+              placeholder="유저 ID 직접 입력"
+              value={visitUserId}
+              onChange={e => setVisitUserId(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && visitUserId.trim())
+                  navigate(`/web/${visitUserId.trim()}/room`);
+              }}
+            />
+            <div style={styles.visitBtns}>
+              <button
+                style={styles.visitCancelBtn}
+                onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}
+              >취소</button>
+              <button
+                style={styles.visitConfirmBtn}
+                onClick={() => {
+                  if (visitUserId.trim()) navigate(`/web/${visitUserId.trim()}/room`);
+                }}
+              >방문하기</button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -195,10 +224,13 @@ const styles = {
     height: '100dvh',
     display: 'flex',
     flexDirection: 'column',
-    background: '#1a1a1a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: '#1a0505',
+    overflow: 'hidden',
     position: 'fixed',
-    top: 0,
-    left: 0
+    top: 0, left: 0,
+    gap: '16px',
   },
 
   loadingScreen: {
@@ -207,22 +239,7 @@ const styles = {
     width: '100%', height: '100%',
     display: 'flex', flexDirection: 'column',
     justifyContent: 'center', alignItems: 'center',
-    gap: '16px', background: '#3d2210'
-  },
-
-  topSection: {
-    position: 'relative',
-    width: '100%',
-    flexShrink: 0,
-    background: '#2a2018',
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  gameArea: {
-    width: '100%',
-    maxWidth: '746px',
-    aspectRatio: '16 / 9',
-    overflow: 'hidden'
+    gap: '16px', background: '#3d2210',
   },
   exitBtn: {
     padding: '10px 20px',
@@ -232,33 +249,109 @@ const styles = {
     borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '13px',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
 
-  // === 캐릭터 일러스트 + 대사 ===
-  dialogueOverlay: {
+  // 타이틀 바
+  titleBar: {
+    background: '#3a1010',
+    border: '1px solid #6b2a2a',
+    borderRadius: '4px',
+    padding: '10px 24px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  backBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#ffffff',
+    fontSize: '18px',
+    cursor: 'pointer',
+    padding: '0',
+    lineHeight: 1,
+  },
+  titleText: {
+    color: '#ffffff',
+    fontSize: '18px',
+    letterSpacing: '1px',
+  },
+
+  // 중단 행
+  middleRow: {
     position: 'relative',
-    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  },
+
+  // 게임 래퍼
+  gameWrapper: {
+    position: 'relative',
+    border: '3px solid #6b3a1a',
+    borderRadius: '8px',
+    background: '#2a1a0a',
+    padding: '4px',
+  },
+  gameArea: {
+    width: '560px',
+    aspectRatio: '16 / 9',
+    overflow: 'hidden',
+    borderRadius: '4px',
+  },
+
+  // 사이드 버튼
+  sideButtons: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    alignSelf: 'flex-start',
+  },
+  sideBtn: {
+    width: '110px',
+    padding: '14px 0',
+    background: '#3a1010',
+    border: '1px solid #6b2a2a',
+    borderRadius: '4px',
+    color: '#ffffff',
+    fontSize: '16px',
+    cursor: 'pointer',
+    letterSpacing: '1px',
+    transition: 'background 0.15s',
+  },
+
+  // 하단 wrapper
+  bottomWrapper: {
+    position: 'relative',
+    width: '560px',
+  },
+
+  // 진입 인사 대화창
+  dialogueOverlay: {
+    position: 'absolute',
+    bottom: '100%',
+    left: 0,
+    right: 0,
     height: '0',
-    zIndex: 30
+    zIndex: 30,
   },
   portraitWrapper: {
     position: 'absolute',
-    bottom: '-120px',
+    bottom: '-70px',
     left: '-90px',
     width: '190px',
     zIndex: 31,
-    pointerEvents: 'none'
+    pointerEvents: 'none',
   },
   portraitImg: {
     width: '100%',
     height: 'auto',
     display: 'block',
-    filter: 'drop-shadow(2px 3px 4px rgba(0,0,0,0.4))'
+    filter: 'drop-shadow(2px 3px 4px rgba(0,0,0,0.4))',
   },
   dialogueBox: {
     position: 'absolute',
-    bottom: '-24px',
+    bottom: '-20px',
     left: '-30px',
     right: '-28px',
     background: 'linear-gradient(135deg, #f0ddb8 0%, #e8cfa0 50%, #dcc090 100%)',
@@ -268,134 +361,122 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     boxShadow: '0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3)',
-    border: '3px solid #753F22'
+    border: '3px solid #753F22',
   },
   dialogueText: {
     color: '#3d2210',
     fontSize: '18px',
     lineHeight: '1.5',
     fontWeight: '500',
-    flex: 1
+    flex: 1,
   },
 
-  // === 나무 프레임 UI ===
-  woodFrame: {
-    flex: 1,
-    background: '#5c3a1e',
-    borderTop: '4px solid #3d2210',
-    padding: '6px',
-    paddingTop: '30px',
+  // 채팅창
+  chatArea: {
+    width: '100%',
+    height: '200px',
+    background: '#3a1010',
+    border: '2px solid #6b3a1a',
+    borderRadius: '6px',
+    overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'hidden'
   },
-  woodFrameInner: {
-    flex: 1,
-    border: '3px solid #8b6914',
-    borderRadius: '4px',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    background: '#d4a843'
-  },
-  panelHeader: {
-    display: 'flex',
-    flexShrink: 0,
-    margin: '6px 6px 0 6px',
-    borderRadius: '3px',
-    overflow: 'hidden',
-    border: '2px solid #8b6914'
-  },
-  headerTitleArea: {
-    flex: 1,
-    background: '#5c3322',
-    padding: '10px 14px',
+
+  // 자랑하기 방문 모달
+  visitOverlay: {
+    position: 'fixed',
+    top: 0, left: 0,
+    width: '100%', height: '100%',
+    zIndex: 200,
     display: 'flex',
     alignItems: 'center',
-    gap: '10px'
+    justifyContent: 'center',
+    background: 'rgba(0,0,0,0.5)',
   },
-  backBtn: {
-    background: 'none',
-    border: 'none',
+  visitModal: {
+    background: '#c8934a',
+    border: '4px solid #5c3018',
+    borderRadius: '8px',
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    width: '320px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+  },
+  visitTitle: {
     color: '#f5e6c8',
     fontSize: '16px',
-    cursor: 'pointer',
-    padding: '0 4px'
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
-  headerTitle: {
+  visitRoomList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  visitRoomBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    background: '#7a4e28',
+    border: '2px solid #5c3018',
+    borderRadius: '6px',
+    padding: '10px 14px',
+    cursor: 'pointer',
+  },
+  visitRoomTheme: {
+    background: '#5c3018',
+    color: '#f0c060',
+    fontSize: '11px',
+    fontWeight: 'bold',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    flexShrink: 0,
+  },
+  visitRoomLabel: {
+    color: '#f5e6c8',
+    fontSize: '14px',
+  },
+  visitDivider: {
+    borderTop: '1px solid #5c3018',
+    margin: '4px 0',
+  },
+  visitInput: {
+    background: '#e8d09a',
+    border: '2px solid #5c3018',
+    borderRadius: '6px',
+    padding: '10px 14px',
+    fontSize: '14px',
+    color: '#3d2210',
+    outline: 'none',
+  },
+  visitBtns: {
+    display: 'flex',
+    gap: '8px',
+    justifyContent: 'flex-end',
+  },
+  visitCancelBtn: {
+    background: '#7a4e28',
+    border: '2px solid #5c3018',
+    borderRadius: '4px',
     color: '#f5e6c8',
     fontSize: '13px',
     fontWeight: 'bold',
-    letterSpacing: '0.5px'
-  },
-  headerBtnArea: {
-    display: 'flex',
-    gap: '6px',
-    background: '#e8cfa0',
-    padding: '6px 8px',
-    alignItems: 'center'
-  },
-  headerBtn: {
-    width: '42px',
-    height: '32px',
-    borderRadius: '4px',
-    border: '2px solid #8b6914',
-    background: '#a07030',
-    color: '#f5e6c8',
-    fontSize: '10px',
-    fontWeight: 'bold',
+    padding: '8px 16px',
     cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.15s'
   },
-  headerBtnActive: {
-    background: '#5c3322',
-    borderColor: '#d4a843',
-    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
+  visitConfirmBtn: {
+    background: '#5c3018',
+    border: '2px solid #3d2010',
+    borderRadius: '4px',
+    color: '#f5e6c8',
+    fontSize: '13px',
+    fontWeight: 'bold',
+    padding: '8px 16px',
+    cursor: 'pointer',
   },
-  panelContent: {
-    flex: 1,
-    margin: '6px',
-    background: '#dcb86a',
-    borderRadius: '3px',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-
-  placeholderTab: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '24px',
-    gap: '8px'
-  },
-  placeholderText: {
-    color: '#5c3a1e',
-    fontSize: '14px',
-    fontWeight: 'bold'
-  },
-  statItem: {
-    width: '100%',
-    maxWidth: '280px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '12px 16px',
-    borderBottom: '1px solid rgba(92,58,30,0.15)'
-  },
-  statLabel: {
-    color: '#5c3a1e',
-    fontSize: '14px'
-  },
-  statValue: {
-    color: '#3d2210',
-    fontSize: '14px',
-    fontWeight: 'bold'
-  }
 };
 
 export default VisitorRoom;

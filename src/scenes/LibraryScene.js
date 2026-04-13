@@ -53,7 +53,8 @@ class LibraryScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('background', '/assets/backgrounds/background_1.png');
+    const bg = this.roomConfig?.background || '/assets/backgrounds/background_1.png';
+    this.load.image('background', bg);
     this.load.spritesheet('character_05', '/assets/characters/Premade_Character_48x48_05.png', {
       frameWidth: 48, frameHeight: 96
     });

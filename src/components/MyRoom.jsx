@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PhaserGame from './PhaserGame';
 import QRCodeModal from './QRCodeModal';
 import RewardModal from './RewardModal';
 import MissionModal from './MissionModal';
+import LibraryModal from './LibraryModal';
 
 const SIDE_BUTTONS = [
   { key: 'mission',  label: '미션' },
@@ -19,10 +21,14 @@ const DISPLAY_DURATION = 3000; // ms after typing finishes
 
 function MyRoom() {
   const userId = 'user123';
+  const navigate = useNavigate();
   const [currentAction, setCurrentAction] = useState('idle');
   const [showQR, setShowQR] = useState(false);
   const [showReward, setShowReward] = useState(false);
   const [showMission, setShowMission] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [showVisitInput, setShowVisitInput] = useState(false);
+  const [visitUserId, setVisitUserId] = useState('');
   const [activeSlot, setActiveSlot] = useState(0);
   const [showGreeting, setShowGreeting] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
@@ -84,7 +90,11 @@ function MyRoom() {
             <button
               key={btn.key}
               style={styles.sideBtn}
-              onClick={() => btn.key === 'mission' && setShowMission(true)}
+              onClick={() => {
+                if (btn.key === 'mission') setShowMission(true);
+                if (btn.key === 'library') setShowLibrary(true);
+                if (btn.key === 'share') setShowVisitInput(true);
+              }}
             >
               {btn.label}
             </button>
@@ -95,6 +105,67 @@ function MyRoom() {
       {/* 미션 모달 — 전체 화면 오버레이 */}
       {showMission && (
         <MissionModal onClose={() => setShowMission(false)} />
+      )}
+
+      {/* 나의 서재 모달 */}
+      {showLibrary && (
+        <LibraryModal onClose={() => setShowLibrary(false)} />
+      )}
+
+      {/* 자랑하기 — 방 이동 모달 */}
+      {showVisitInput && (
+        <div style={styles.visitOverlay}>
+          <div style={styles.visitModal}>
+            <span style={styles.visitTitle}>다른 사람의 방 방문하기</span>
+
+            {/* 테마별 샘플 유저 */}
+            <div style={styles.visitRoomList}>
+              {[
+                { id: 'default',          label: '기본 서재',       theme: '기본' },
+                { id: 'modern_user',      label: '현대 서재',       theme: '현대' },
+                { id: 'wuxia_user',       label: '무협 서재',       theme: '무협' },
+                { id: 'apocalypse_user',  label: '아포칼립스 서재', theme: '아포칼립스' },
+              ].map(room => (
+                <button
+                  key={room.id}
+                  style={styles.visitRoomBtn}
+                  onClick={() => navigate(`/web/${room.id}/room`)}
+                >
+                  <span style={styles.visitRoomTheme}>{room.theme}</span>
+                  <span style={styles.visitRoomLabel}>{room.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div style={styles.visitDivider} />
+
+            {/* 직접 입력 */}
+            <input
+              style={styles.visitInput}
+              type="text"
+              placeholder="유저 ID 직접 입력"
+              value={visitUserId}
+              onChange={e => setVisitUserId(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && visitUserId.trim()) {
+                  navigate(`/web/${visitUserId.trim()}/room`);
+                }
+              }}
+            />
+            <div style={styles.visitBtns}>
+              <button
+                style={styles.visitCancelBtn}
+                onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}
+              >취소</button>
+              <button
+                style={styles.visitConfirmBtn}
+                onClick={() => {
+                  if (visitUserId.trim()) navigate(`/web/${visitUserId.trim()}/room`);
+                }}
+              >방문하기</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 하단 슬롯 바 + 대화창 wrapper */}
@@ -216,6 +287,103 @@ const styles = {
     cursor: 'pointer',
     letterSpacing: '1px',
     transition: 'background 0.15s',
+  },
+
+  // 자랑하기 방문 모달
+  visitOverlay: {
+    position: 'fixed',
+    top: 0, left: 0,
+    width: '100%', height: '100%',
+    zIndex: 200,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'rgba(0,0,0,0.5)',
+  },
+  visitModal: {
+    background: '#c8934a',
+    border: '4px solid #5c3018',
+    borderRadius: '8px',
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    width: '320px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+  },
+  visitTitle: {
+    color: '#f5e6c8',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  visitRoomList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  visitRoomBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    background: '#7a4e28',
+    border: '2px solid #5c3018',
+    borderRadius: '6px',
+    padding: '10px 14px',
+    cursor: 'pointer',
+    textAlign: 'left',
+    transition: 'background 0.15s',
+  },
+  visitRoomTheme: {
+    background: '#5c3018',
+    color: '#f0c060',
+    fontSize: '11px',
+    fontWeight: 'bold',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    flexShrink: 0,
+  },
+  visitRoomLabel: {
+    color: '#f5e6c8',
+    fontSize: '14px',
+  },
+  visitDivider: {
+    borderTop: '1px solid #5c3018',
+    margin: '4px 0',
+  },
+  visitInput: {
+    background: '#e8d09a',
+    border: '2px solid #5c3018',
+    borderRadius: '6px',
+    padding: '10px 14px',
+    fontSize: '14px',
+    color: '#3d2210',
+    outline: 'none',
+  },
+  visitBtns: {
+    display: 'flex',
+    gap: '8px',
+    justifyContent: 'flex-end',
+  },
+  visitCancelBtn: {
+    background: '#7a4e28',
+    border: '2px solid #5c3018',
+    borderRadius: '4px',
+    color: '#f5e6c8',
+    fontSize: '13px',
+    fontWeight: 'bold',
+    padding: '8px 16px',
+    cursor: 'pointer',
+  },
+  visitConfirmBtn: {
+    background: '#5c3018',
+    border: '2px solid #3d2010',
+    borderRadius: '4px',
+    color: '#f5e6c8',
+    fontSize: '13px',
+    fontWeight: 'bold',
+    padding: '8px 16px',
+    cursor: 'pointer',
   },
 
   // 하단 wrapper

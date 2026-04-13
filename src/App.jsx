@@ -12,6 +12,11 @@ function RedirectVisitorRoom() {
   return <Navigate to={`/web/${userId}/room`} replace />;
 }
 
+function KeyedVisitorRoom() {
+  const { userId } = useParams();
+  return <VisitorRoom key={userId} />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -21,7 +26,7 @@ function App() {
 
         {/* PC용 (세로모드, 상단 배경 + 하단 인터페이스) */}
         <Route path="/web/my-room" element={<MyRoom />} />
-        <Route path="/web/:userId/room" element={<VisitorRoom />} />
+        <Route path="/web/:userId/room" element={<KeyedVisitorRoom />} />
 
         {/* 모바일용 (가로모드 강제, 전체화면 배경 + 하단 대사만) */}
         <Route path="/app/my-room" element={<MobileLayout><MobileMyRoom /></MobileLayout>} />
