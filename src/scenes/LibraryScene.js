@@ -248,7 +248,7 @@ class LibraryScene extends Phaser.Scene {
     const bh = 52;
     const r  = 22;   // 더 둥글게
     const tailH = 12; // 꼬리 높이
-    const offsetY = 25; // 아바타 머리 위 거리
+    const offsetY = 95; // 아바타 머리 위 거리
 
     const drawBubble = (g) => {
       g.clear();
