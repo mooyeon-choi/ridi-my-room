@@ -55,9 +55,13 @@ class LibraryScene extends Phaser.Scene {
   preload() {
     const bg = this.roomConfig?.background || '/assets/backgrounds/background_1.png';
     this.load.image('background', bg);
-    this.load.spritesheet('character_05', '/assets/characters/Premade_Character_48x48_05.png', {
-      frameWidth: 48, frameHeight: 96
+
+    // 맥시 모션 개별 이미지 (owner 아바타)
+    const maxyDir = '/assets/maxy_motion';
+    ['F1','F2','B1','B2','L1','L2','L3','L4','R1','R2','R3','R4'].forEach(name => {
+      this.load.image(`maxy_${name}`, `${maxyDir}/CM_${name}.png`);
     });
+
     this.load.spritesheet('character_08', '/assets/characters/Premade_Character_48x48_08.png', {
       frameWidth: 48, frameHeight: 96
     });
@@ -121,7 +125,7 @@ class LibraryScene extends Phaser.Scene {
   }
 
   createAnimations() {
-    const characters = ['character_05', 'character_08', 'character_12'];
+    const characters = ['character_08', 'character_12'];
     characters.forEach(charKey => {
       const defs = [
         { key: 'walk_right', start: 112, end: 115 },
@@ -141,6 +145,27 @@ class LibraryScene extends Phaser.Scene {
           frameRate: key.startsWith('walk') ? 8 : 6,
           repeat: -1
         });
+      });
+    });
+
+    // 맥시 모션 애니메이션 (개별 이미지 기반)
+    const maxyDefs = [
+      { key: 'maxy_walk_down',  frames: ['maxy_F1', 'maxy_F2'] },
+      { key: 'maxy_walk_up',    frames: ['maxy_B1', 'maxy_B2'] },
+      { key: 'maxy_walk_left',  frames: ['maxy_L1', 'maxy_L2', 'maxy_L3', 'maxy_L4'] },
+      { key: 'maxy_walk_right', frames: ['maxy_R1', 'maxy_R2', 'maxy_R3', 'maxy_R4'] },
+      { key: 'maxy_idle_down',  frames: ['maxy_F1'] },
+      { key: 'maxy_idle_up',    frames: ['maxy_B1'] },
+      { key: 'maxy_idle_left',  frames: ['maxy_L1'] },
+      { key: 'maxy_idle_right', frames: ['maxy_R1'] },
+      { key: 'maxy_idle',       frames: ['maxy_F1'] },
+    ];
+    maxyDefs.forEach(({ key, frames }) => {
+      this.anims.create({
+        key,
+        frames: frames.map(f => ({ key: f })),
+        frameRate: frames.length > 1 ? 8 : 1,
+        repeat: -1,
       });
     });
   }
@@ -174,14 +199,15 @@ class LibraryScene extends Phaser.Scene {
     const startX = this.bgW * 0.5;
     const startY = this.bgH * 0.78;
 
-    this.myAvatar = this.add.sprite(startX, startY, 'character_05').setOrigin(0.5);
-    this.myAvatar.setScale(0.75);
-    this.myAvatar.play('character_05_idle_down');
+    this.myAvatar = this.add.sprite(startX, startY, 'maxy_F1').setOrigin(0.5, 1);
+    this.myAvatar.setScale(0.15);
+    this.myAvatar.play('maxy_idle_down');
     this.myAvatar.setDepth(5);
+    this.ownerCharKey = 'maxy';
 
     this.showGreetingBubble(this.myAvatar);
 
-    this.myAvatarLabel = this.add.text(startX, startY + 56, '맥시', {
+    this.myAvatarLabel = this.add.text(startX, startY + 4, '맥시', {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
@@ -331,7 +357,7 @@ class LibraryScene extends Phaser.Scene {
 
     const avatar = this.myAvatar;
     const label = this.myAvatarLabel;
-    const charKey = 'character_05';
+    const charKey = this.ownerCharKey || 'maxy';
 
     const up    = this.cursors.up.isDown    || this.wasd.up.isDown;
     const down  = this.cursors.down.isDown  || this.wasd.down.isDown;
@@ -366,7 +392,7 @@ class LibraryScene extends Phaser.Scene {
         const nextX = avatar.x + dx;
         const nextY = avatar.y + dy;
 
-        if (!this.isBlocked(nextX, nextY + 5)) {
+        if (!this.isBlocked(nextX, nextY - 15)) {
           avatar.x = nextX;
           avatar.y = nextY;
           moved = true;
@@ -374,7 +400,7 @@ class LibraryScene extends Phaser.Scene {
 
         avatar.play(`${charKey}_walk_${this.lastDir}`, true);
         avatar.setDepth(5 + avatar.y * 0.01);
-        if (label) label.setPosition(avatar.x, avatar.y + 22);
+        if (label) label.setPosition(avatar.x, avatar.y + 4);
         if (this.onAvatarMove) this.onAvatarMove({ x: avatar.x, y: avatar.y });
       }
     }
