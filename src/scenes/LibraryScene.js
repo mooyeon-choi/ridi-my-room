@@ -235,10 +235,44 @@ class LibraryScene extends Phaser.Scene {
     this.dialogueActive = false;
     this.dialogueContainer = null;
 
+    // 상호작용 시스템 초기화
+    this.interactTarget = null; // 현재 상호작용 가능한 대상
+    this.interactBubble = null; // 상호작용 힌트 말풍선
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.spaceJustPressed = false;
+
+    // 상호작용 가능 오브젝트 정의
+    this.interactables = [];
+
     if (this.mode === 'owner') {
       this.createOwnerMode();
     } else {
       this.createVisitorMode();
+    }
+
+    // 상호작용 오브젝트 등록 (sangsuri 테마)
+    if (theme === 'sangsuri') {
+      const mirrorOb = this.currentObstacles[6];
+      if (mirrorOb) this.interactables.push({
+        name: 'mirror', emoji: '🪞',
+        cx: mirrorOb.x * this.scaleX,
+        cy: (mirrorOb.y + mirrorOb.h + 20) * this.scaleY,
+        range: 50, action: () => this.onMirrorClick(),
+      });
+      const bookOb = this.currentObstacles[7];
+      if (bookOb) this.interactables.push({
+        name: 'bookshelf', emoji: '📚',
+        cx: (bookOb.x + bookOb.w / 2) * this.scaleX,
+        cy: (bookOb.y + bookOb.h) * this.scaleY,
+        range: 40, action: () => { if (this.onBookshelfClick) this.onBookshelfClick(); },
+      });
+      const crystalOb = this.currentObstacles[12];
+      if (crystalOb) this.interactables.push({
+        name: 'crystal', emoji: '🔮',
+        cx: (crystalOb.x + crystalOb.w / 2) * this.scaleX,
+        cy: (crystalOb.y + crystalOb.h) * this.scaleY,
+        range: 40, action: () => this.onCrystalClick(),
+      });
     }
   }
 
@@ -397,6 +431,48 @@ class LibraryScene extends Phaser.Scene {
     this.hostCharKey = hostCharKey;
     this.startAutoMovement(this.hostAvatar, hostCharKey);
     this.showGreetingBubble(this.hostAvatar);
+
+    // 호스트 아바타 상호작용 등록
+    const persona = this.roomConfig?.theme || 'sangsuri';
+    const hostInteractLines = {
+      sangsuri: [
+        '찾아와 주셔서 반가워요. 책 한 잔... 아, 차 한 잔 할래요?',
+        '이 서재에서 가장 좋아하는 자리는 창가예요.',
+        '요즘 읽고 있는 책이 정말 좋아요. 추천해드릴까요?',
+        '조용한 오후... 이런 시간이 참 좋네요.',
+        '혹시 좋아하는 작가가 있으신가요?',
+      ],
+      neosokbam: [
+        '왜 그렇게 쳐다보는 거예요...?',
+        '이 방의 비밀을 알고 싶으신 건가요?',
+        '밤이 깊어지면... 더 재미있는 이야기를 해줄게요.',
+        '그 눈빛... 뭔가 숨기고 있는 것 같은데요.',
+        '후... 호기심이 많군요. 싫지 않아요.',
+      ],
+      betrayer: [
+        '...뭐요.',
+        '할 말이 있으면 빨리 하세요.',
+        '그 책장에 꽤 괜찮은 와인이 있죠.',
+        '...당신, 취향이 나쁘지 않군요.',
+        '조용히 있어주면 감사하겠는데... 농담이에요.',
+      ],
+    };
+    this.hostInteractLines = hostInteractLines[persona] || hostInteractLines.sangsuri;
+
+    this.interactables.push({
+      name: 'host', emoji: '💬',
+      getPos: () => ({ cx: this.hostAvatar.x, cy: this.hostAvatar.y }),
+      range: 50,
+      action: () => this.onHostInteract(),
+    });
+  }
+
+  onHostInteract() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+    const hostName = this.roomConfig?.hostName || '맥시';
+    const line = this.hostInteractLines[Math.floor(Math.random() * this.hostInteractLines.length)];
+    this.showDialogue(hostName, line, () => this.endDialogue());
   }
 
   showGreetingBubble(avatar) {
@@ -561,6 +637,16 @@ class LibraryScene extends Phaser.Scene {
         text.setPosition(avatar.x, avatar.y - offsetY - tailH - bh / 2);
       }
     }
+
+    // 상호작용 힌트 말풍선 추적
+    if (this.interactHintData) {
+      const { bubble, emoji, spaceHint, avatar, offsetY, tailH, bh } = this.interactHintData;
+      if (avatar && avatar.active) {
+        bubble.setPosition(avatar.x, avatar.y - offsetY);
+        emoji.setPosition(avatar.x, avatar.y - offsetY - tailH - bh / 2);
+        spaceHint.setPosition(avatar.x, avatar.y - offsetY + 8);
+      }
+    }
   }
 
   startAutoMovement(avatar, charKey) {
@@ -635,35 +721,49 @@ class LibraryScene extends Phaser.Scene {
     this.catsAdded = true;
     this.catClicksRemaining = 2; // 2회 포인트 획득 가능
 
-    const catKeys = ['cat_white', 'cat_black', 'cat_gray'];
+    const catPositions = [
+      { key: 'cat_white', name: '로라',  x: this.bgW * 0.3,           y: this.bgH * 0.75 },  // 바닥
+      { key: 'cat_black', name: '리프',  x: 850 * this.scaleX + 22,   y: 650 * this.scaleY + 26 }, // 책상 위
+      { key: 'cat_gray',  name: '탄이',  x: 1600 * this.scaleX - 8,   y: 400 * this.scaleY + 90 }, // 침대 위
+    ];
 
-    catKeys.forEach((key, i) => {
-      const x = this.bgW * (0.3 + i * 0.2);
-      const y = this.bgH * 0.75;
+    this.catSprites = [];
+    catPositions.forEach(({ key, name, x, y }) => {
       const cat = this.add.sprite(x, y, key).setOrigin(0.5, 1);
       cat.setScale(0.4);
       cat.setDepth(y);
       cat.setInteractive({ useHandCursor: true });
-      cat.on('pointerdown', () => this.onCatClick());
+      cat.catName = name;
+      cat.on('pointerdown', () => this.onCatClick(name));
+      this.catSprites.push(cat);
+
+      // 상호작용 등록
+      this.interactables.push({
+        name: `cat_${name}`, emoji: '🐱',
+        getPos: () => ({ cx: cat.x, cy: cat.y }),
+        range: 40,
+        action: () => this.onCatClick(name),
+      });
     });
   }
 
-  onCatClick() {
+  onCatClick(catName) {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
+    const name = catName || '로라';
 
     if (this.catClicksRemaining > 0) {
       const points = Phaser.Math.Between(1, 10);
       this.catClicksRemaining--;
 
-      this.showDialogue('로라', '그르릉..', () => {
-        this.showDialogue('맥시', `로라의 기분이 좋아요. ${points} 포인트를 물어왔어요!`, () => {
+      this.showDialogue(name, '그르릉..', () => {
+        this.showDialogue('맥시', `${name}의 기분이 좋아요. ${points} 포인트를 물어왔어요!`, () => {
           this.endDialogue();
         });
       });
     } else {
-      this.showDialogue('로라', 'zZz..', () => {
-        this.showDialogue('맥시', '오늘은 로라가 졸린 것 같아요.', () => {
+      this.showDialogue(name, 'zZz..', () => {
+        this.showDialogue('맥시', `오늘은 ${name}가 졸린 것 같아요.`, () => {
           this.endDialogue();
         });
       });
@@ -708,6 +808,28 @@ class LibraryScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(y + 0.1);
 
     this.startRaptanMovement();
+
+    // 라프탄 상호작용 등록
+    this.interactables.push({
+      name: 'raptan', emoji: '💬',
+      getPos: () => ({ cx: this.raptan.x, cy: this.raptan.y }),
+      range: 50,
+      action: () => this.onRaptanInteract(),
+    });
+  }
+
+  onRaptanInteract() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+    const lines = [
+      '라, 라프탄이에요... 반가워요.',
+      '오, 오늘 읽은 책은 어떠셨어요?',
+      '저, 저기... 같이 책 읽을래요?',
+      '리, 리프탄이 또 뭐라 했나요...?',
+      '맥, 맥시는... 참 좋은 사람이에요.',
+    ];
+    const line = lines[Math.floor(Math.random() * lines.length)];
+    this.showDialogue('라프탄', line, () => this.endDialogue());
   }
 
   startRaptanMovement() {
@@ -893,7 +1015,14 @@ class LibraryScene extends Phaser.Scene {
     this.dialogueContainer.add(bg);
 
     // 화자 이름
-    const nameColor = speaker === '라프탄' ? '#7ec8e3' : speaker === '거울' ? '#c0e0ff' : speaker === '로라' ? '#f0a0c0' : '#f0c060';
+    const hostName = this.roomConfig?.hostName;
+    const catNames = ['로라', '리프', '탄이'];
+    const nameColor = speaker === '라프탄' ? '#7ec8e3'
+      : speaker === '거울' ? '#c0e0ff'
+      : catNames.includes(speaker) ? '#f0a0c0'
+      : speaker === '맥시' ? '#f0c060'
+      : (hostName && speaker === hostName) ? '#a0d8a0'
+      : '#f0c060';
     const nameText = this.add.text(boxX + 16, boxY + 10, speaker, {
       fontSize: '13px', fontStyle: 'bold', color: nameColor,
     });
@@ -913,13 +1042,23 @@ class LibraryScene extends Phaser.Scene {
         msgText.setText(text.slice(0, i));
         if (i >= text.length) {
           interval.remove();
-          // 터치/클릭으로 다음 진행
+          // 터치/클릭 또는 스페이스바로 다음 진행
           const clickZone = this.add.zone(width / 2, height / 2, width, height)
             .setInteractive().setDepth(1001);
           this.dialogueContainer.add(clickZone);
-          clickZone.once('pointerdown', () => {
+          let advanced = false;
+          const advance = () => {
+            if (advanced) return;
+            advanced = true;
+            if (this._dialogueSpaceHandler) {
+              this.spaceKey.off('down', this._dialogueSpaceHandler);
+              this._dialogueSpaceHandler = null;
+            }
             if (onComplete) onComplete();
-          });
+          };
+          clickZone.once('pointerdown', advance);
+          this._dialogueSpaceHandler = advance;
+          this.spaceKey.on('down', advance);
         }
       },
       loop: true,
@@ -947,45 +1086,100 @@ class LibraryScene extends Phaser.Scene {
     bg.strokeRoundedRect(boxX, boxY, boxW, totalH, 10);
     this.dialogueContainer.add(bg);
 
+    let selectedIdx = 0;
+    const btnBgs = [];
+    const btnTexts = [];
+
+    const drawBtn = (idx, highlighted) => {
+      const btnBg = btnBgs[idx];
+      const bY = boxY + 12 + idx * (btnH + gap);
+      btnBg.clear();
+      if (highlighted) {
+        btnBg.fillStyle(0x7a4e28, 1);
+        btnBg.fillRoundedRect(boxX + 12, bY, boxW - 24, btnH, 6);
+        btnBg.lineStyle(2, 0xf0c060, 1);
+        btnBg.strokeRoundedRect(boxX + 12, bY, boxW - 24, btnH, 6);
+      } else {
+        btnBg.fillStyle(0x5c3018, 1);
+        btnBg.fillRoundedRect(boxX + 12, bY, boxW - 24, btnH, 6);
+        btnBg.lineStyle(2, 0x7a4e28, 1);
+        btnBg.strokeRoundedRect(boxX + 12, bY, boxW - 24, btnH, 6);
+      }
+    };
+
+    const updateSelection = (newIdx) => {
+      drawBtn(selectedIdx, false);
+      selectedIdx = newIdx;
+      drawBtn(selectedIdx, true);
+    };
+
     choices.forEach((choice, idx) => {
-      const btnY = boxY + 12 + idx * (btnH + gap);
+      const bY = boxY + 12 + idx * (btnH + gap);
       const btnBg = this.add.graphics();
-      btnBg.fillStyle(0x5c3018, 1);
-      btnBg.fillRoundedRect(boxX + 12, btnY, boxW - 24, btnH, 6);
-      btnBg.lineStyle(2, 0x7a4e28, 1);
-      btnBg.strokeRoundedRect(boxX + 12, btnY, boxW - 24, btnH, 6);
+      btnBgs.push(btnBg);
       this.dialogueContainer.add(btnBg);
 
-      const btnText = this.add.text(boxX + boxW / 2, btnY + btnH / 2, choice.text, {
+      const btnText = this.add.text(boxX + boxW / 2, bY + btnH / 2, choice.text, {
         fontSize: '13px', color: '#f5e6c8',
       }).setOrigin(0.5).setDepth(1001);
+      btnTexts.push(btnText);
       this.dialogueContainer.add(btnText);
 
-      const btnZone = this.add.zone(boxX + boxW / 2, btnY + btnH / 2, boxW - 24, btnH)
+      const btnZone = this.add.zone(boxX + boxW / 2, bY + btnH / 2, boxW - 24, btnH)
         .setInteractive({ useHandCursor: true }).setDepth(1002);
       this.dialogueContainer.add(btnZone);
 
-      btnZone.on('pointerover', () => {
-        btnBg.clear();
-        btnBg.fillStyle(0x7a4e28, 1);
-        btnBg.fillRoundedRect(boxX + 12, btnY, boxW - 24, btnH, 6);
-        btnBg.lineStyle(2, 0xf0c060, 1);
-        btnBg.strokeRoundedRect(boxX + 12, btnY, boxW - 24, btnH, 6);
-      });
-      btnZone.on('pointerout', () => {
-        btnBg.clear();
-        btnBg.fillStyle(0x5c3018, 1);
-        btnBg.fillRoundedRect(boxX + 12, btnY, boxW - 24, btnH, 6);
-        btnBg.lineStyle(2, 0x7a4e28, 1);
-        btnBg.strokeRoundedRect(boxX + 12, btnY, boxW - 24, btnH, 6);
-      });
+      btnZone.on('pointerover', () => updateSelection(idx));
       btnZone.on('pointerdown', () => {
+        this._removeChoiceKeys();
         choice.onSelect();
       });
     });
+
+    // 초기 선택 표시
+    drawBtn(0, true);
+    for (let j = 1; j < choices.length; j++) drawBtn(j, false);
+
+    // 키보드: 위/아래로 선택, 스페이스/엔터로 확정
+    const upKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    const downKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    const wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    const sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+    const enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+
+    const onUp = () => updateSelection((selectedIdx - 1 + choices.length) % choices.length);
+    const onDown = () => updateSelection((selectedIdx + 1) % choices.length);
+    const onConfirm = () => {
+      this._removeChoiceKeys();
+      choices[selectedIdx].onSelect();
+    };
+
+    upKey.on('down', onUp);
+    wKey.on('down', onUp);
+    downKey.on('down', onDown);
+    sKey.on('down', onDown);
+    this.spaceKey.on('down', onConfirm);
+    enterKey.on('down', onConfirm);
+
+    this._removeChoiceKeys = () => {
+      upKey.off('down', onUp);
+      wKey.off('down', onUp);
+      downKey.off('down', onDown);
+      sKey.off('down', onDown);
+      this.spaceKey.off('down', onConfirm);
+      enterKey.off('down', onConfirm);
+      this._removeChoiceKeys = null;
+    };
   }
 
   clearDialogueUI() {
+    if (this._dialogueSpaceHandler) {
+      this.spaceKey.off('down', this._dialogueSpaceHandler);
+      this._dialogueSpaceHandler = null;
+    }
+    if (this._removeChoiceKeys) {
+      this._removeChoiceKeys();
+    }
     if (this.dialogueContainer) {
       this.dialogueContainer.destroy();
       this.dialogueContainer = null;
@@ -994,7 +1188,12 @@ class LibraryScene extends Phaser.Scene {
 
   endDialogue() {
     this.clearDialogueUI();
-    this.dialogueActive = false;
+    // 짧은 쿨다운으로 스페이스바 재트리거 방지
+    this.interactCooldown = true;
+    this.time.delayedCall(300, () => {
+      this.dialogueActive = false;
+      this.interactCooldown = false;
+    });
   }
 
   setAction(action) {
@@ -1007,6 +1206,9 @@ class LibraryScene extends Phaser.Scene {
   update() {
     this.updateGreetingBubbles();
     if (!this.myAvatar) return;
+
+    // 대화 중이면 이동 차단
+    if (this.dialogueActive) return;
 
     const avatar = this.myAvatar;
     const label = this.myAvatarLabel;
@@ -1067,6 +1269,101 @@ class LibraryScene extends Phaser.Scene {
       if (avatar.anims.currentAnim?.key !== idleAnim) {
         avatar.play(idleAnim, true);
       }
+    }
+
+    // ── 상호작용 감지 ──
+    this.checkInteraction(avatar);
+  }
+
+  checkInteraction(avatar) {
+    if (this.dialogueActive || this.interactCooldown) {
+      this.hideInteractHint();
+      return;
+    }
+
+    // 아바타 앞 방향 기준 감지 포인트
+    const dir = this.lastDir;
+    let checkX = avatar.x;
+    let checkY = avatar.y;
+    const reach = 30;
+    if (dir === 'up') checkY -= reach;
+    else if (dir === 'down') checkY += reach;
+    else if (dir === 'left') checkX -= reach;
+    else if (dir === 'right') checkX += reach;
+
+    let closest = null;
+    let closestDist = Infinity;
+
+    for (const obj of this.interactables) {
+      let cx, cy;
+      if (obj.getPos) {
+        const pos = obj.getPos();
+        cx = pos.cx;
+        cy = pos.cy;
+      } else {
+        cx = obj.cx;
+        cy = obj.cy;
+      }
+      const dist = Math.sqrt((checkX - cx) ** 2 + (checkY - cy) ** 2);
+      if (dist < obj.range && dist < closestDist) {
+        closest = obj;
+        closestDist = dist;
+      }
+    }
+
+    if (closest) {
+      if (this.interactTarget !== closest) {
+        this.interactTarget = closest;
+        this.showInteractHint(avatar, closest.emoji);
+      }
+      // 스페이스바 처리
+      if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+        this.hideInteractHint();
+        this.interactTarget = null;
+        closest.action();
+      }
+    } else {
+      if (this.interactTarget) {
+        this.interactTarget = null;
+        this.hideInteractHint();
+      }
+    }
+  }
+
+  showInteractHint(avatar, emoji) {
+    this.hideInteractHint();
+
+    const bw = 52;
+    const bh = 44;
+    const r = 18;
+    const tailH = 10;
+    const offsetY = 95;
+
+    const bubble = this.add.graphics().setDepth(20);
+    bubble.fillStyle(0xffffff, 0.92);
+    bubble.fillRoundedRect(-bw / 2, -bh - tailH - 2, bw, bh, r);
+    bubble.fillTriangle(0, -2, -8, -tailH - 2, 8, -tailH - 2);
+    bubble.setPosition(avatar.x, avatar.y - offsetY);
+
+    const emojiText = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2, emoji, {
+      fontSize: '22px',
+    }).setOrigin(0.5).setDepth(21);
+
+    // SPACE 안내 텍스트
+    const spaceHint = this.add.text(avatar.x, avatar.y - offsetY + 8, 'SPACE', {
+      fontSize: '7px', color: '#888', fontStyle: 'bold',
+    }).setOrigin(0.5).setDepth(21);
+
+    this.interactHintData = { bubble, emoji: emojiText, spaceHint, avatar, offsetY, tailH, bh };
+  }
+
+  hideInteractHint() {
+    if (this.interactHintData) {
+      const { bubble, emoji, spaceHint } = this.interactHintData;
+      if (bubble) bubble.destroy();
+      if (emoji) emoji.destroy();
+      if (spaceHint) spaceHint.destroy();
+      this.interactHintData = null;
     }
   }
 }
