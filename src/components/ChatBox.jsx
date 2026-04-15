@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur }) {
+function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur, onChatBubble }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -22,10 +22,12 @@ function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur }) 
 
   function handleFocus() {
     if (onInputFocus) onInputFocus();
+    if (onChatBubble) onChatBubble('typing', true);
   }
 
   function handleBlur() {
     if (onInputBlur) onInputBlur();
+    if (onChatBubble) onChatBubble('typing', false);
   }
 
   async function sendMessage(e) {
@@ -36,6 +38,12 @@ function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur }) 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
+
+    // 타이핑 말풍선 해제 + 맥시(방문자) 말풍선
+    if (onChatBubble) {
+      onChatBubble('typing', false);
+      onChatBubble('my', '💬');
+    }
 
     try {
       const response = await fetch('/api/chat', {
@@ -59,22 +67,40 @@ function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur }) 
 
       if (!response.ok) throw new Error('API 호출 실패');
       const data = await response.json();
-      const aiMessage = { role: 'assistant', content: data.reply };
+      const replyText = data.reply;
+      const hostEmoji = data.emoji || '😊';
+      const aiMessage = { role: 'assistant', content: replyText };
       setMessages(prev => [...prev, aiMessage]);
+      // 호스트 말풍선
+      if (onChatBubble) onChatBubble('host', hostEmoji);
     } catch (error) {
-      // 백엔드 미실행 시 로컬 폴백 응답
-      const name = hostName || '맥시';
-      const fallbackReplies = [
-        `반가워요. 천천히 둘러보세요.`,
-        `좋은 질문이네요. 저도 생각해 볼게요.`,
-        `책 한 권의 여운이 오래가는 날이에요.`,
-        `오늘은 조용히 책 읽기 좋은 날이네요.`,
-        `편하게 이야기 나눠요.`,
-        `그 이야기, 참 흥미롭네요.`,
-        `함께 이야기 나눌 수 있어서 기쁘네요.`,
-      ];
-      const reply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
+      // 네트워크 오류 시 로컬 폴백 응답 (캐릭터별)
+      const persona = aiConfig?.persona || 'sangsuri';
+      const fallbackMap = {
+        sangsuri: [
+          '찾아와 주셔서 반가워요. 천천히 둘러보세요.',
+          '좋은 질문이네요. 저도 생각해 볼게요.',
+          '책 한 권의 여운이 오래가는 날이에요.',
+          '함께 이야기 나눌 수 있어서 기쁘네요.',
+        ],
+        neosokbam: [
+          '어머, 찾아왔군요. 반가워요.',
+          '그래요? 흥미로운 이야기네요.',
+          '밤이 깊어질수록 이야기도 깊어지는 법이죠.',
+          '그 책, 저도 좋아하는데요. 취향이 비슷한 것 같아요.',
+        ],
+        betrayer: [
+          '왔군요.',
+          '그렇군요.',
+          '꽤 괜찮은 취향이시네요.',
+          '...흥미롭군요. 계속 말해보세요.',
+        ],
+      };
+      const replies = fallbackMap[persona] || fallbackMap.sangsuri;
+      const reply = replies[Math.floor(Math.random() * replies.length)];
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      const fallbackEmojis = { sangsuri: '📚', neosokbam: '🌙', betrayer: '🍷' };
+      if (onChatBubble) onChatBubble('host', fallbackEmojis[persona] || '😊');
     } finally {
       setLoading(false);
     }

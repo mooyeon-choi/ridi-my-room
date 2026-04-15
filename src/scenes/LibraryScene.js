@@ -67,8 +67,8 @@ const OBSTACLES = OBSTACLE_MAPS.sangsuri;
 const FORTUNES = [
   { quote: '"네가 원하는 건 네가 정하는 거야."', source: '상수리나무 아래', fortune: '오늘은 결단의 날! 망설이던 일을 시작하기 좋은 운세입니다.' },
   { quote: '"사랑이란 결국, 서로를 비추는 거울이다."', source: '상수리나무 아래', fortune: '소중한 사람과의 관계가 더 깊어지는 하루가 될 거예요.' },
-  { quote: '"품격이란 지키는 것이 아니라, 배반하는 것이다."', source: '품격을 배반한다', fortune: '틀을 깨는 용기가 행운을 가져다 줍니다.' },
-  { quote: '"진짜 나를 감추는 것에도 한계가 있다."', source: '품격을 배반한다', fortune: '숨겨왔던 재능을 드러낼 기회가 찾아옵니다.' },
+  { quote: '"품격이란 지키는 것이 아니라, 배반하는 것이다."', source: '배덕한 타인에게', fortune: '틀을 깨는 용기가 행운을 가져다 줍니다.' },
+  { quote: '"진짜 나를 감추는 것에도 한계가 있다."', source: '배덕한 타인에게', fortune: '숨겨왔던 재능을 드러낼 기회가 찾아옵니다.' },
   { quote: '"안개 속에서도 나비는 날개를 펴."', source: '안개를 삼킨 나비', fortune: '불확실한 상황에서도 당신의 빛이 길을 밝힐 거예요.' },
   { quote: '"삼킨 안개가 날개가 되었다."', source: '안개를 삼킨 나비', fortune: '힘들었던 경험이 오늘 당신의 강점이 됩니다.' },
   { quote: '"미친 듯이 사랑하거나, 미친 듯이 도망치거나."', source: '메리 사이코', fortune: '강렬한 감정이 밀려오는 날. 직감을 믿으세요!' },
@@ -381,13 +381,14 @@ class LibraryScene extends Phaser.Scene {
       padding: { x: 4, y: 2 }
     }).setOrigin(0.5).setDepth(avatarY + 0.1);
 
-    // 방문자 (맥시)
-    this.visitorAvatar = this.add.sprite(this.bgW * 0.65, avatarY, 'maxy_F1').setOrigin(0.5, 1);
-    this.visitorAvatar.setScale(0.15);
-    this.visitorAvatar.play('maxy_idle_down');
-    this.visitorAvatar.setDepth(avatarY);
+    // 방문자 (맥시) — 키보드로 이동 가능
+    this.myAvatar = this.add.sprite(this.bgW * 0.65, avatarY, 'maxy_F1').setOrigin(0.5, 1);
+    this.myAvatar.setScale(0.15);
+    this.myAvatar.play('maxy_idle_down');
+    this.myAvatar.setDepth(avatarY);
+    this.ownerCharKey = 'maxy';
 
-    this.visitorAvatarLabel = this.add.text(this.visitorAvatar.x, avatarY + 4, '맥시', {
+    this.myAvatarLabel = this.add.text(this.myAvatar.x, avatarY + 4, '맥시', {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
@@ -445,8 +446,105 @@ class LibraryScene extends Phaser.Scene {
     });
   }
 
+  showTypingBubble(show) {
+    const avatar = this.myAvatar;
+    if (!avatar || !avatar.active) return;
+
+    // 제거
+    if (!show) {
+      if (this.typingBubbleData) {
+        const { bubble, text, timer } = this.typingBubbleData;
+        if (timer) timer.remove();
+        if (bubble) bubble.destroy();
+        if (text) text.destroy();
+        this.typingBubbleData = null;
+      }
+      return;
+    }
+
+    // 이미 표시 중이면 무시
+    if (this.typingBubbleData) return;
+
+    const bw = 52;
+    const bh = 36;
+    const r  = 16;
+    const tailH = 8;
+    const offsetY = 95;
+
+    const bubble = this.add.graphics().setDepth(20);
+    bubble.fillStyle(0xffffff, 0.92);
+    bubble.fillRoundedRect(-bw / 2, -bh - tailH - 2, bw, bh, r);
+    bubble.fillTriangle(0, -2, -6, -tailH - 2, 6, -tailH - 2);
+    bubble.setPosition(avatar.x, avatar.y - offsetY);
+
+    const dots = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2, '.', {
+      fontSize: '18px', fontWeight: 'bold', color: '#5c3a1e',
+    }).setOrigin(0.5).setDepth(21);
+
+    let dotCount = 1;
+    const timer = this.time.addEvent({
+      delay: 400,
+      callback: () => {
+        dotCount = (dotCount % 3) + 1;
+        dots.setText('.'.repeat(dotCount));
+      },
+      loop: true,
+    });
+
+    this.typingBubbleData = { bubble, text: dots, avatar, offsetY, tailH, bh, timer };
+  }
+
+  showChatBubble(avatarType, emojiChar) {
+    // 채팅 말풍선 표시 시 타이핑 말풍선 해제
+    if (avatarType === 'my') this.showTypingBubble(false);
+
+    const avatar = avatarType === 'host' ? this.hostAvatar : this.myAvatar;
+    if (!avatar || !avatar.active) return;
+
+    const bw = 52;
+    const bh = 44;
+    const r  = 18;
+    const tailH = 10;
+    const offsetY = 95;
+    const followKey = `chatBubble_${avatarType}`;
+
+    // 기존 말풍선 제거
+    if (this[followKey]) {
+      const old = this[followKey];
+      if (old.bubble) old.bubble.destroy();
+      if (old.emoji) old.emoji.destroy();
+      this[followKey] = null;
+    }
+
+    const bubble = this.add.graphics().setDepth(20);
+    bubble.fillStyle(0xffffff, 0.96);
+    bubble.fillRoundedRect(-bw / 2, -bh - tailH - 2, bw, bh, r);
+    bubble.fillTriangle(0, -2, -8, -tailH - 2, 8, -tailH - 2);
+    bubble.setPosition(avatar.x, avatar.y - offsetY);
+
+    const emojiText = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2, emojiChar || '💬', {
+      fontSize: '22px'
+    }).setOrigin(0.5).setDepth(21);
+
+    this[followKey] = { bubble, emoji: emojiText, avatar, offsetY, tailH, bh };
+
+    // 3초 후 페이드 아웃
+    this.time.delayedCall(3000, () => {
+      this[followKey] = null;
+      this.tweens.add({
+        targets: [bubble, emojiText],
+        alpha: 0,
+        duration: 500,
+        onComplete: () => {
+          bubble.destroy();
+          emojiText.destroy();
+        }
+      });
+    });
+  }
+
   updateGreetingBubbles() {
-    ['greetingBubble_my', 'greetingBubble_host'].forEach(key => {
+    ['greetingBubble_my', 'greetingBubble_host', 'chatBubble_host', 'chatBubble_my'].forEach(key => {
       const data = this[key];
       if (!data) return;
       const { bubble, emoji, avatar, offsetY, tailH, bh } = data;
@@ -454,6 +552,15 @@ class LibraryScene extends Phaser.Scene {
       bubble.setPosition(avatar.x, avatar.y - offsetY);
       emoji.setPosition(avatar.x, avatar.y - offsetY - tailH - bh / 2);
     });
+
+    // 타이핑 말풍선 추적
+    if (this.typingBubbleData) {
+      const { bubble, text, avatar, offsetY, tailH, bh } = this.typingBubbleData;
+      if (avatar && avatar.active) {
+        bubble.setPosition(avatar.x, avatar.y - offsetY);
+        text.setPosition(avatar.x, avatar.y - offsetY - tailH - bh / 2);
+      }
+    }
   }
 
   startAutoMovement(avatar, charKey) {
@@ -735,7 +842,7 @@ class LibraryScene extends Phaser.Scene {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
 
-    const books = ['상수리나무 아래', '품격을 배반한다', '안개를 삼킨 나비', '메리 사이코', '너를 속이는 밤', '데페이즈망'];
+    const books = ['상수리나무 아래', '배덕한 타인에게', '안개를 삼킨 나비', '메리 사이코', '너를 속이는 밤', '데페이즈망'];
     const bookName = books[Math.floor(Math.random() * books.length)];
 
     this.showDialogue('거울', `맥시, 오늘은 <${bookName}>을 읽어 볼래요?`, () => {

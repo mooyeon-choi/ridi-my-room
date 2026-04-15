@@ -7,7 +7,7 @@ import { useRoomLayout } from '../hooks/useRoomLayout';
 const USER_ROOM_DATA = {
   default: {
     background: '/assets/backgrounds/maxy_room.webp',
-    greeting: '어서와, 상수리나무 아래 서재에 온 걸 환영해!',
+    greeting: '루스 : 찾아와 주셔서 반가워요. 편하게 둘러보세요.',
     theme: 'sangsuri',
     hostSprite: '/assets/characters/ruth_sprite.webp',
     hostName: '루스',
@@ -17,7 +17,7 @@ const USER_ROOM_DATA = {
   },
   sangsuri_user: {
     background: '/assets/backgrounds/maxy_room.webp',
-    greeting: '어서와, 상수리나무 아래 서재에 온 걸 환영해!',
+    greeting: '루스 : 찾아와 주셔서 반가워요. 오늘은 읽고 싶은 책이 있으신가요?',
     theme: 'sangsuri',
     hostSprite: '/assets/characters/ruth_sprite.webp',
     hostName: '루스',
@@ -27,7 +27,7 @@ const USER_ROOM_DATA = {
   },
   neosokbam_user: {
     background: '/assets/backgrounds/neosokbam.webp',
-    greeting: '어서와... 너를 속이는 밤의 서재야.',
+    greeting: '여주인공 : 어머... 이 밤에 찾아오다니. 용기가 있군요.',
     theme: 'neosokbam',
     hostSprite: '/assets/characters/neosokbam_heroine.webp',
     hostName: '여주인공',
@@ -37,7 +37,7 @@ const USER_ROOM_DATA = {
   },
   betrayer_user: {
     background: '/assets/backgrounds/betrayer.webp',
-    greeting: '품격을 배반하는 자의 서재에 온 걸 환영해.',
+    greeting: '남주인공 : ...왔군요. 앉으세요.',
     theme: 'betrayer',
     hostSprite: '/assets/characters/betrayer_hero.webp',
     hostName: '남주인공',
@@ -98,13 +98,13 @@ function VisitorRoom() {
           spriteHeight: userRoom.spriteHeight,
         },
         aiConfig: {
-          persona: 'sangsuri',
+          persona: userRoom.theme,
           customGreeting: userRoom.greeting,
-          readingData: {
-            recentBooks: ['전지적 독자 시점', '달빛조각사', '나 혼자만 레벨업'],
-            favoriteGenres: ['판타지', '로맨스'],
-            totalBooksRead: 15,
-          },
+          readingData: userRoom.theme === 'neosokbam'
+            ? { recentBooks: ['너를 속이는 밤', '안개를 삼킨 나비', '메리 사이코'], favoriteGenres: ['로맨스', '스릴러'], totalBooksRead: 12 }
+            : userRoom.theme === 'betrayer'
+            ? { recentBooks: ['배덕한 타인에게', '데페이즈망', '폐하의 밤'], favoriteGenres: ['로맨스', '드라마'], totalBooksRead: 20 }
+            : { recentBooks: ['상수리나무 아래', '전지적 독자 시점', '달빛조각사'], favoriteGenres: ['판타지', '로맨스'], totalBooksRead: 15 },
         },
       });
       setLoading(false);
@@ -142,7 +142,7 @@ function VisitorRoom() {
         const titleBarMaxW = `${(titleLabel.length + 2) * 1.5 + 8}em`; // +2 for ← button
         return (
           <div style={{ ...styles.titleBar, width: '100%', maxWidth: titleBarMaxW, margin: '0 auto', marginBottom: '4vh', fontSize: titleFontSize }}>
-            <button style={styles.backBtn} onClick={() => navigate(-1)}>←</button>
+            <button style={styles.backBtn} onClick={() => navigate('/web/my-room')}>←</button>
             <span style={{ ...styles.titleText, fontSize: titleFontSize }}>
               {titleLabel}
             </span>
@@ -186,7 +186,20 @@ function VisitorRoom() {
           </div>
         )}
         <div style={{ ...styles.chatArea, height: CHAT_H }}>
-          <ChatBox hostUserId={userId} aiConfig={roomData.aiConfig} hostName={roomData.roomConfig.hostName} />
+          <ChatBox
+            hostUserId={userId}
+            aiConfig={roomData.aiConfig}
+            hostName={roomData.roomConfig.hostName}
+            onChatBubble={(type, value) => {
+              const scene = gameRef.current?.getScene();
+              if (!scene) return;
+              if (type === 'typing') {
+                scene.showTypingBubble(value);
+              } else {
+                scene.showChatBubble(type, value);
+              }
+            }}
+          />
         </div>
       </div>
 
