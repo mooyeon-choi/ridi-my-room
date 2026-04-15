@@ -252,7 +252,7 @@ class LibraryScene extends Phaser.Scene {
     this.myAvatar = this.add.sprite(startX, startY, 'maxy_F1').setOrigin(0.5, 1);
     this.myAvatar.setScale(0.15);
     this.myAvatar.play('maxy_idle_down');
-    this.myAvatar.setDepth(5);
+    this.myAvatar.setDepth(startY);
     this.ownerCharKey = 'maxy';
 
     this.showGreetingBubble(this.myAvatar);
@@ -261,7 +261,7 @@ class LibraryScene extends Phaser.Scene {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
-    }).setOrigin(0.5).setDepth(10);
+    }).setOrigin(0.5).setDepth(startY + 0.1);
   }
 
   createVisitorMode() {
@@ -270,24 +270,24 @@ class LibraryScene extends Phaser.Scene {
     this.hostAvatar = this.add.sprite(this.bgW * 0.35, avatarY, 'character_08').setOrigin(0.5);
     this.hostAvatar.setScale(0.75);
     this.hostAvatar.play('character_08_idle_down');
-    this.hostAvatar.setDepth(5);
+    this.hostAvatar.setDepth(avatarY);
 
     this.hostAvatarLabel = this.add.text(this.hostAvatar.x, this.hostAvatar.y + 56, '맥시', {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
-    }).setOrigin(0.5).setDepth(10);
+    }).setOrigin(0.5).setDepth(avatarY + 0.1);
 
     this.visitorAvatar = this.add.sprite(this.bgW * 0.65, avatarY, 'character_12').setOrigin(0.5);
     this.visitorAvatar.setScale(0.75);
     this.visitorAvatar.play('character_12_idle_down');
-    this.visitorAvatar.setDepth(5);
+    this.visitorAvatar.setDepth(avatarY);
 
     this.visitorAvatarLabel = this.add.text(this.visitorAvatar.x, this.visitorAvatar.y + 56, '방문자', {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
-    }).setOrigin(0.5).setDepth(10);
+    }).setOrigin(0.5).setDepth(avatarY + 0.1);
 
     this.startAutoMovement(this.hostAvatar, 'character_08');
     this.showGreetingBubble(this.hostAvatar);
@@ -380,8 +380,11 @@ class LibraryScene extends Phaser.Scene {
         ease: 'Linear',
         onUpdate: () => {
           const label = avatar === this.hostAvatar ? this.hostAvatarLabel : this.visitorAvatarLabel;
-          if (label) label.setPosition(avatar.x, avatar.y + 22);
-          avatar.setDepth(5 + avatar.y * 0.01);
+          if (label) {
+            label.setPosition(avatar.x, avatar.y + 22);
+            label.setDepth(avatar.y + 0.1);
+          }
+          avatar.setDepth(avatar.y);
         },
         onComplete: () => {
           if (!avatar || !avatar.active) return;
@@ -405,6 +408,7 @@ class LibraryScene extends Phaser.Scene {
   addCats() {
     if (this.catsAdded) return;
     this.catsAdded = true;
+    this.catClicksRemaining = 2; // 2회 포인트 획득 가능
 
     const catKeys = ['cat_white', 'cat_black', 'cat_gray'];
 
@@ -413,8 +417,32 @@ class LibraryScene extends Phaser.Scene {
       const y = this.bgH * 0.75;
       const cat = this.add.sprite(x, y, key).setOrigin(0.5, 1);
       cat.setScale(0.4);
-      cat.setDepth(4 + y * 0.01);
+      cat.setDepth(y);
+      cat.setInteractive({ useHandCursor: true });
+      cat.on('pointerdown', () => this.onCatClick());
     });
+  }
+
+  onCatClick() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+
+    if (this.catClicksRemaining > 0) {
+      const points = Phaser.Math.Between(1, 10);
+      this.catClicksRemaining--;
+
+      this.showDialogue('로라', '그르릉..', () => {
+        this.showDialogue('맥시', `로라의 기분이 좋아요. ${points} 포인트를 물어왔어요!`, () => {
+          this.endDialogue();
+        });
+      });
+    } else {
+      this.showDialogue('로라', 'zZz..', () => {
+        this.showDialogue('맥시', '오늘은 로라가 졸린 것 같아요.', () => {
+          this.endDialogue();
+        });
+      });
+    }
   }
 
   addRaptan() {
@@ -445,14 +473,14 @@ class LibraryScene extends Phaser.Scene {
     const y = this.bgH * 0.65;
     this.raptan = this.add.sprite(x, y, 'raptan', 0).setOrigin(0.5, 1);
     this.raptan.setScale(0.27);
-    this.raptan.setDepth(4 + y * 0.01);
+    this.raptan.setDepth(y);
     this.raptan.play('raptan_idle_down');
 
     this.raptanLabel = this.add.text(x, y + 4, '라프탄', {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
-    }).setOrigin(0.5).setDepth(10);
+    }).setOrigin(0.5).setDepth(y + 0.1);
 
     this.startRaptanMovement();
   }
@@ -483,8 +511,11 @@ class LibraryScene extends Phaser.Scene {
         duration,
         ease: 'Linear',
         onUpdate: () => {
-          raptan.setDepth(4 + raptan.y * 0.01);
-          if (label) label.setPosition(raptan.x, raptan.y + 4);
+          raptan.setDepth(raptan.y);
+          if (label) {
+            label.setPosition(raptan.x, raptan.y + 4);
+            label.setDepth(raptan.y + 0.1);
+          }
         },
         onComplete: () => {
           if (!raptan || !raptan.active) return;
@@ -583,19 +614,19 @@ class LibraryScene extends Phaser.Scene {
 
   // ── 거울 클릭 → 대화 시스템 ──
   onMirrorClick() {
-    if (this.dialogueActive || !this.raptanAdded) return;
+    if (this.dialogueActive) return;
     this.dialogueActive = true;
 
     const books = ['상수리나무 아래', '품격을 배반한다', '안개를 삼킨 나비', '메리 사이코', '너를 속이는 밤', '데페이즈망'];
     const bookName = books[Math.floor(Math.random() * books.length)];
 
-    this.showDialogue('라프탄', `맥시, 오늘은 <${bookName}>을 읽어 볼래요?`, () => {
+    this.showDialogue('거울', `맥시, 오늘은 <${bookName}>을 읽어 볼래요?`, () => {
       this.showChoices([
         {
           text: '조, 좋아!',
           onSelect: () => {
             this.showDialogue('맥시', '조, 좋아!', () => {
-              this.showDialogue('라프탄', '좋아요! 3회차를 읽고 오면 특별한 존재가 당신을 찾아올거에요.', () => {
+              this.showDialogue('거울', '좋아요! 3회차를 읽고 오면 특별한 존재가 당신을 찾아올거에요.', () => {
                 this.endDialogue();
               });
             });
@@ -605,7 +636,7 @@ class LibraryScene extends Phaser.Scene {
           text: '오, 오늘은 조, 조금 피곤해서...',
           onSelect: () => {
             this.showDialogue('맥시', '오, 오늘은 조, 조금 피곤해서...', () => {
-              this.showDialogue('라프탄', '괜찮아요! 리프탄이 당신을 자꾸 귀찮게 한다고 들었어요.', () => {
+              this.showDialogue('거울', '괜찮아요! 리프탄이 당신을 자꾸 귀찮게 한다고 들었어요.', () => {
                 this.showDialogue('맥시', '그, 그런 건 아, 아니지만...', () => {
                   this.endDialogue();
                 });
@@ -637,7 +668,7 @@ class LibraryScene extends Phaser.Scene {
     this.dialogueContainer.add(bg);
 
     // 화자 이름
-    const nameColor = speaker === '라프탄' ? '#7ec8e3' : '#f0c060';
+    const nameColor = speaker === '라프탄' ? '#7ec8e3' : speaker === '거울' ? '#c0e0ff' : speaker === '로라' ? '#f0a0c0' : '#f0c060';
     const nameText = this.add.text(boxX + 16, boxY + 10, speaker, {
       fontSize: '13px', fontStyle: 'bold', color: nameColor,
     });
@@ -796,8 +827,11 @@ class LibraryScene extends Phaser.Scene {
         }
 
         avatar.play(`${charKey}_walk_${this.lastDir}`, true);
-        avatar.setDepth(5 + avatar.y * 0.01);
-        if (label) label.setPosition(avatar.x, avatar.y + 4);
+        avatar.setDepth(avatar.y);
+        if (label) {
+          label.setPosition(avatar.x, avatar.y + 4);
+          label.setDepth(avatar.y + 0.1);
+        }
         if (this.onAvatarMove) this.onAvatarMove({ x: avatar.x, y: avatar.y });
       }
     }
