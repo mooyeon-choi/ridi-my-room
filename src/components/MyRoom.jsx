@@ -32,6 +32,7 @@ function MyRoom() {
   const [showVisitInput, setShowVisitInput] = useState(false);
   const [visitUserId, setVisitUserId] = useState('');
   const [activeSlot, setActiveSlot] = useState(0);
+  const [slotApplied, setSlotApplied] = useState({});
   const [showGreeting, setShowGreeting] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
   const gameRef = useRef(null);
@@ -58,6 +59,26 @@ function MyRoom() {
     window.addEventListener('pageshow', handlePageShow);
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
+
+  function handleSlotClick(i) {
+    setActiveSlot(i);
+    const scene = gameRef.current?.getScene();
+    if (!scene) return;
+
+    if (i === 0 && !slotApplied[0]) {
+      // 1번 슬롯: 배경 변경
+      scene.changeBackground('bg_maxy_room');
+      setSlotApplied(prev => ({ ...prev, 0: true }));
+    } else if (i === 1 && !slotApplied[1]) {
+      // 2번 슬롯: 고양이 3마리 추가
+      scene.addCats();
+      setSlotApplied(prev => ({ ...prev, 1: true }));
+    } else if (i === 2 && !slotApplied[2]) {
+      // 3번 슬롯: 라프탄 캐릭터 추가
+      scene.addRaptan();
+      setSlotApplied(prev => ({ ...prev, 2: true }));
+    }
+  }
 
   const slotW = Math.max(36, Math.floor((L.gameW - 9 * 6 - 20) / 10));
   const slotBarMaxW = slotW * 10 + 6 * 9 + 10 * 2 + 2 * 2;
@@ -116,7 +137,7 @@ function MyRoom() {
             <button
               key={i}
               style={{ ...styles.slot, width: slotW, height: slotW, ...(activeSlot === i ? styles.slotActive : {}) }}
-              onClick={() => setActiveSlot(i)}
+              onClick={() => handleSlotClick(i)}
             >
               <span style={{ fontSize: Math.max(8, Math.round(slotW * 0.17)), color: '#5c3a1e', lineHeight: 1 }}>
                 {i === 9 ? 0 : i + 1}
@@ -136,10 +157,10 @@ function MyRoom() {
             <span style={styles.visitTitle}>다른 사람의 방 방문하기</span>
             <div style={styles.visitRoomList}>
               {[
-                { id: 'default',         label: '기본 서재',       theme: '기본' },
-                { id: 'modern_user',     label: '현대 서재',       theme: '현대' },
-                { id: 'wuxia_user',      label: '무협 서재',       theme: '무협' },
-                { id: 'apocalypse_user', label: '아포칼립스 서재', theme: '아포칼립스' },
+                { id: 'default',          label: '맥시의 서재',         theme: '맥시' },
+                { id: 'sangsuri_user',    label: '상수리나무 아래 서재', theme: '상수리' },
+                { id: 'neosokbam_user',   label: '너를 속이는 밤 서재', theme: '너속밤' },
+                { id: 'betrayer_user',    label: '배덕한 타인 서재',    theme: '배덕' },
               ].map(room => (
                 <button key={room.id} style={styles.visitRoomBtn} onClick={() => navigate(`/web/${room.id}/room`)}>
                   <span style={styles.visitRoomTheme}>{room.theme}</span>

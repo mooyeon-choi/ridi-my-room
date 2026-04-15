@@ -6,24 +6,24 @@ import { useRoomLayout } from '../hooks/useRoomLayout';
 
 const USER_ROOM_DATA = {
   default: {
-    background: '/assets/backgrounds/background_default.png',
-    greeting: '안녕하세요! 기본 서재에 오신 것을 환영합니다.',
-    theme: 'default',
+    background: '/assets/backgrounds/maxy_room_x.webp',
+    greeting: '안녕하세요! 맥시의 서재에 오신 것을 환영합니다.',
+    theme: 'maxy',
   },
-  modern_user: {
-    background: '/assets/backgrounds/background_modern.png',
-    greeting: '어서와, 내 현대식 서재야!',
-    theme: 'modern',
+  sangsuri_user: {
+    background: '/assets/backgrounds/maxy_room_x.webp',
+    greeting: '어서와, 상수리나무 아래 서재에 온 걸 환영해!',
+    theme: 'sangsuri',
   },
-  wuxia_user: {
-    background: '/assets/backgrounds/background_wuxia.png',
-    greeting: '어서 오거라, 강호의 벗이여!',
-    theme: 'wuxia',
+  neosokbam_user: {
+    background: '/assets/backgrounds/neosokbam_x.webp',
+    greeting: '어서와... 너를 속이는 밤의 서재야.',
+    theme: 'neosokbam',
   },
-  apocalypse_user: {
-    background: '/assets/backgrounds/background_apocalypse.png',
-    greeting: '살아남았군... 여긴 내 은신처야.',
-    theme: 'apocalypse',
+  betrayer_user: {
+    background: '/assets/backgrounds/betrayer_x.webp',
+    greeting: '품격을 배반하는 자의 서재에 온 걸 환영해.',
+    theme: 'betrayer',
   },
 };
 
@@ -169,10 +169,10 @@ function VisitorRoom() {
             <span style={styles.visitTitle}>다른 사람의 방 방문하기</span>
             <div style={styles.visitRoomList}>
               {[
-                { id: 'default',         label: '기본 서재',       theme: '기본' },
-                { id: 'modern_user',     label: '현대 서재',       theme: '현대' },
-                { id: 'wuxia_user',      label: '무협 서재',       theme: '무협' },
-                { id: 'apocalypse_user', label: '아포칼립스 서재', theme: '아포칼립스' },
+                { id: 'default',          label: '맥시의 서재',         theme: '맥시' },
+                { id: 'sangsuri_user',    label: '상수리나무 아래 서재', theme: '상수리' },
+                { id: 'neosokbam_user',   label: '너를 속이는 밤 서재', theme: '너속밤' },
+                { id: 'betrayer_user',    label: '배덕한 타인 서재',    theme: '배덕' },
               ].map(room => (
                 <button key={room.id} style={styles.visitRoomBtn} onClick={() => navigate(`/web/${room.id}/room`)}>
                   <span style={styles.visitRoomTheme}>{room.theme}</span>
