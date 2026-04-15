@@ -43,76 +43,76 @@ const styles = {
     background: '#c4a050',
     border: '4px solid #8b6914',
     borderRadius: '8px',
-    padding: '5px',
+    padding: 'clamp(3px, 0.5vw, 5px)',
     boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-    maxWidth: '380px',
+    maxWidth: 'clamp(280px, 50vw, 380px)',
     width: 'calc(100% - 40px)'
   },
   inner: {
     background: 'linear-gradient(180deg, #f5e6c8 0%, #e8d5a8 100%)',
     borderRadius: '4px',
     border: '2px solid #d4a843',
-    padding: '28px 24px',
+    padding: 'clamp(16px, 3vw, 28px) clamp(14px, 2.5vw, 24px)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '16px'
+    gap: 'clamp(10px, 2vh, 16px)'
   },
   title: {
     margin: 0,
-    fontSize: '22px',
+    fontSize: 'clamp(16px, 2.5vw, 22px)',
     fontWeight: 'bold',
     color: '#3d2210',
     textAlign: 'center'
   },
   description: {
     margin: 0,
-    fontSize: '14px',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
     color: '#5c3a1e',
     textAlign: 'center'
   },
   rewardImages: {
     display: 'flex',
     justifyContent: 'center',
-    gap: '12px',
-    padding: '8px 0'
+    gap: 'clamp(6px, 1.5vw, 12px)',
+    padding: 'clamp(4px, 1vh, 8px) 0'
   },
   rewardImg: {
-    width: '64px',
-    height: '64px',
+    width: 'clamp(40px, 7vw, 64px)',
+    height: 'clamp(40px, 7vw, 64px)',
     objectFit: 'contain',
     imageRendering: 'pixelated'
   },
   question: {
     margin: 0,
-    fontSize: '14px',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
     color: '#3d2210',
     textAlign: 'center'
   },
   buttons: {
     display: 'flex',
-    gap: '12px',
+    gap: 'clamp(6px, 1.5vw, 12px)',
     marginTop: '4px'
   },
   btnNo: {
-    width: '120px',
-    padding: '10px 0',
+    width: 'clamp(80px, 12vw, 120px)',
+    padding: 'clamp(6px, 1vh, 10px) 0',
     borderRadius: '6px',
     border: '2px solid #5c3322',
     background: '#fff',
     color: '#5c3322',
-    fontSize: '14px',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
     fontWeight: 'bold',
     cursor: 'pointer'
   },
   btnYes: {
-    width: '120px',
-    padding: '10px 0',
+    width: 'clamp(80px, 12vw, 120px)',
+    padding: 'clamp(6px, 1vh, 10px) 0',
     borderRadius: '6px',
     border: '2px solid #5c3322',
     background: '#5c3322',
     color: '#f5e6c8',
-    fontSize: '14px',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
     fontWeight: 'bold',
     cursor: 'pointer'
   }

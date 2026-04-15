@@ -142,17 +142,17 @@ const styles = {
   messages: {
     flex: 1,
     overflowY: 'auto',
-    padding: '10px 12px',
+    padding: 'clamp(6px, 1.2vh, 10px) clamp(8px, 1.5vw, 12px)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    gap: 'clamp(4px, 0.6vh, 6px)',
     WebkitOverflowScrolling: 'touch'
   },
   messageBubble: {
     maxWidth: '85%',
-    padding: '8px 12px',
-    borderRadius: '12px',
-    fontSize: '13px',
+    padding: 'clamp(5px, 1vh, 8px) clamp(8px, 1.5vw, 12px)',
+    borderRadius: 'clamp(8px, 1.5vw, 12px)',
+    fontSize: 'clamp(11px, 1.4vw, 13px)',
     lineHeight: '1.5',
     wordBreak: 'break-word'
   },
@@ -170,7 +170,7 @@ const styles = {
   },
   aiLabel: {
     display: 'inline-block',
-    fontSize: '10px',
+    fontSize: 'clamp(8px, 1.1vw, 10px)',
     fontWeight: 'bold',
     color: '#d4a843',
     marginBottom: '2px'
@@ -183,37 +183,37 @@ const styles = {
     gap: '2px'
   },
   dot: {
-    fontSize: '20px',
+    fontSize: 'clamp(14px, 2vw, 20px)',
     color: '#d4a843',
     animation: 'blink 1s infinite',
     lineHeight: '1'
   },
   inputArea: {
     display: 'flex',
-    gap: '6px',
-    padding: '8px 10px',
+    gap: 'clamp(4px, 0.6vw, 6px)',
+    padding: 'clamp(5px, 1vh, 8px) clamp(6px, 1.2vw, 10px)',
     borderTop: '2px solid #8b6914',
     background: '#c4a050',
     flexShrink: 0
   },
   input: {
     flex: 1,
-    padding: '8px 12px',
+    padding: 'clamp(5px, 1vh, 8px) clamp(8px, 1.5vw, 12px)',
     borderRadius: '6px',
     border: '2px solid #8b6914',
     background: '#e8cfa0',
     color: '#3d2210',
-    fontSize: '13px',
+    fontSize: 'clamp(11px, 1.4vw, 13px)',
     outline: 'none',
     WebkitAppearance: 'none'
   },
   sendBtn: {
-    padding: '8px 14px',
+    padding: 'clamp(5px, 1vh, 8px) clamp(8px, 1.5vw, 14px)',
     borderRadius: '6px',
     border: '2px solid #8b6914',
     background: '#5c3322',
     color: '#f5e6c8',
-    fontSize: '12px',
+    fontSize: 'clamp(10px, 1.3vw, 12px)',
     fontWeight: 'bold',
     cursor: 'pointer',
     flexShrink: 0
