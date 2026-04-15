@@ -15,6 +15,12 @@ const SIDE_BUTTONS = [
 ];
 
 const SLOT_COUNT = 10;
+const SLOT_ITEMS = [
+  { img: '/assets/items/crystal_ball.png', label: '수정구' },
+  { img: '/assets/items/cat_icon.png', label: '고양이' },
+  { img: '/assets/items/raptan_icon.png', label: '라프탄' },
+  null, null, null, null, null, null, null,
+];
 const GREETING_TEXT = '맥시 : 오늘도 독서 열심히 해보자!';
 const TYPING_SPEED = 50;
 const DISPLAY_DURATION = 3000;
@@ -100,7 +106,7 @@ function MyRoom() {
       <div style={{ ...styles.middleRow, gap: L.gap }}>
         <div style={styles.gameWrapper}>
           <div style={{ width: L.gameW, height: L.gameH, overflow: 'hidden', borderRadius: '4px' }}>
-            <PhaserGame ref={gameRef} mode="owner" userId={userId} onActionChange={() => {}} />
+            <PhaserGame ref={gameRef} mode="owner" userId={userId} onActionChange={() => {}} onBookshelfClick={() => setShowLibrary(true)} />
           </div>
         </div>
         <div style={styles.sideButtons}>
@@ -133,17 +139,44 @@ function MyRoom() {
           </div>
         )}
         <div style={styles.slotBar}>
-          {Array.from({ length: SLOT_COUNT }, (_, i) => (
-            <button
-              key={i}
-              style={{ ...styles.slot, width: slotW, height: slotW, ...(activeSlot === i ? styles.slotActive : {}) }}
-              onClick={() => handleSlotClick(i)}
-            >
-              <span style={{ fontSize: Math.max(8, Math.round(slotW * 0.17)), color: '#5c3a1e', lineHeight: 1 }}>
-                {i === 9 ? 0 : i + 1}
-              </span>
-            </button>
-          ))}
+          {Array.from({ length: SLOT_COUNT }, (_, i) => {
+            const item = SLOT_ITEMS[i];
+            const applied = slotApplied[i];
+            return (
+              <button
+                key={i}
+                style={{
+                  ...styles.slot, width: slotW, height: slotW,
+                  ...(activeSlot === i ? styles.slotActive : {}),
+                  ...(applied ? styles.slotApplied : {}),
+                  position: 'relative', overflow: 'hidden',
+                }}
+                onClick={() => handleSlotClick(i)}
+              >
+                {item ? (
+                  <img
+                    src={item.img}
+                    alt={item.label}
+                    style={{
+                      width: '100%', height: '100%',
+                      objectFit: 'cover',
+                      opacity: applied ? 0.5 : 1,
+                      display: 'block',
+                      imageRendering: 'pixelated',
+                      mixBlendMode: 'multiply',
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: Math.max(8, Math.round(slotW * 0.17)), color: '#5c3a1e', lineHeight: 1 }}>
+                    {i === 9 ? 0 : i + 1}
+                  </span>
+                )}
+                {applied && (
+                  <span style={styles.slotCheckmark}>✓</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -157,7 +190,6 @@ function MyRoom() {
             <span style={styles.visitTitle}>다른 사람의 방 방문하기</span>
             <div style={styles.visitRoomList}>
               {[
-                { id: 'default',          label: '맥시의 서재',         theme: '맥시' },
                 { id: 'sangsuri_user',    label: '상수리나무 아래 서재', theme: '상수리' },
                 { id: 'neosokbam_user',   label: '너를 속이는 밤 서재', theme: '너속밤' },
                 { id: 'betrayer_user',    label: '배덕한 타인 서재',    theme: '배덕' },
@@ -255,6 +287,15 @@ const styles = {
     padding: '3px', flexShrink: 0,
   },
   slotActive: { border: '2px solid #fff8c0', boxShadow: '0 0 6px rgba(255,240,150,0.6)' },
+  slotApplied: { border: '2px solid #4ade80' },
+  slotCheckmark: {
+    position: 'absolute', top: 2, right: 2,
+    background: '#22c55e', color: '#fff',
+    fontSize: '9px', fontWeight: 'bold',
+    width: 14, height: 14, borderRadius: '50%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    lineHeight: 1,
+  },
 
   visitOverlay: {
     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',

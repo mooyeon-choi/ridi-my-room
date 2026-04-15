@@ -1,28 +1,68 @@
 import * as Phaser from 'phaser';
 
 // 배경 이미지 원본 크기: 2048 x 1172
-// 장애물 영역 정의 (원본 픽셀 기준) — maxy_room.webp (가구 포함) 기준
-const OBSTACLES = [
-  // 벽
-  { x: 0,    y: 0,    w: 2048, h: 520 },  // 상단 벽
-  { x: 0,    y: 0,    w: 90,   h: 1172 }, // 좌측 벽
-  { x: 1958, y: 0,    w: 90,   h: 1172 }, // 우측 벽
-  { x: 0,    y: 1050, w: 1400, h: 122 },  // 하단 벽 (문 왼쪽)
-  { x: 1400, y: 950,  w: 648,  h: 222 },  // 하단 우측 계단
-  // 가구 — 상단
-  { x: 325,  y: 340,  w: 350,  h: 300 },  // 벽난로
-  { x: 700,  y: 280,  w: 170,  h: 320 },  // 거울
-  { x: 910,  y: 250,  w: 270,  h: 315 },  // 책장
-  { x: 1450, y: 360,  w: 300,  h: 320 },  // 침대
-  { x: 2250, y: 300,  w: 110,  h: 220 },  // 화분 (우상)
-  // 가구 — 중하단
-  { x: 90,   y: 710,  w: 110,  h: 340 },  // 촛대 (좌하)
-  { x: 650,  y: 650,  w: 400,  h: 170 },  // 책상
-  { x: 960,  y: 585,  w: 100,  h: 125 },  // 수정구
-  { x: 1170, y: 830,  w: 100,  h: 120 },  // 꽃병
-  { x: 1450, y: 800,  w: 300,  h: 160 },  // 상자
-  { x: 2050, y: 800,  w: 150,  h: 120 },  // 바구니
-];
+// 장애물 영역 정의 (원본 픽셀 기준)
+const OBSTACLE_MAPS = {
+  // 상수리나무 아래 / 맥시방
+  sangsuri: [
+    { x: 0,    y: 0,    w: 2048, h: 520 },
+    { x: 0,    y: 0,    w: 90,   h: 1172 },
+    { x: 1958, y: 0,    w: 90,   h: 1172 },
+    { x: 0,    y: 1050, w: 1400, h: 122 },
+    { x: 1400, y: 950,  w: 648,  h: 222 },
+    { x: 325,  y: 340,  w: 350,  h: 300 },  // 벽난로
+    { x: 700,  y: 280,  w: 170,  h: 320 },  // 거울
+    { x: 910,  y: 250,  w: 270,  h: 315 },  // 책장
+    { x: 1450, y: 360,  w: 300,  h: 320 },  // 침대
+    { x: 2250, y: 300,  w: 110,  h: 220 },  // 화분
+    { x: 90,   y: 710,  w: 110,  h: 340 },  // 촛대
+    { x: 650,  y: 650,  w: 400,  h: 170 },  // 책상
+    { x: 960,  y: 585,  w: 100,  h: 125 },  // 수정구
+    { x: 1170, y: 830,  w: 100,  h: 120 },  // 꽃병
+    { x: 1450, y: 800,  w: 300,  h: 160 },  // 상자
+    { x: 2050, y: 800,  w: 150,  h: 120 },  // 바구니
+  ],
+  // 너를 속이는 밤
+  neosokbam: [
+    { x: 0,    y: 0,    w: 2048, h: 380 },  // 상단 벽 + 지붕
+    { x: 0,    y: 0,    w: 120,  h: 1172 }, // 좌측 벽
+    { x: 1928, y: 0,    w: 120,  h: 1172 }, // 우측 벽
+    { x: 0,    y: 1050, w: 2048, h: 122 },  // 하단 벽
+    { x: 100,  y: 300,  w: 180,  h: 250 },  // 석등
+    { x: 350,  y: 280,  w: 250,  h: 280 },  // 병풍/족자
+    { x: 700,  y: 380,  w: 200,  h: 200 },  // 선반
+    { x: 1300, y: 250,  w: 600,  h: 400 },  // 나무 + 제단 영역
+    { x: 100,  y: 700,  w: 150,  h: 200 },  // 항아리 (좌하)
+    { x: 300,  y: 800,  w: 100,  h: 120 },  // 양동이
+    { x: 700,  y: 550,  w: 250,  h: 200 },  // 책상/의자
+    { x: 1000, y: 550,  w: 350,  h: 300 },  // 제단 + 촛대
+    { x: 1400, y: 700,  w: 400,  h: 250 },  // 다다미 + 병풍
+  ],
+  // 배덕한 타인
+  betrayer: [
+    { x: 0,    y: 0,    w: 2048, h: 350 },  // 상단 벽
+    { x: 0,    y: 0,    w: 80,   h: 1172 }, // 좌측 벽
+    { x: 1968, y: 0,    w: 80,   h: 1172 }, // 우측 벽
+    { x: 0,    y: 1050, w: 2048, h: 122 },  // 하단 벽
+    { x: 0,    y: 950,  w: 400,  h: 222 },  // 좌하 계단
+    { x: 80,   y: 300,  w: 250,  h: 250 },  // 축음기/선반
+    { x: 400,  y: 280,  w: 400,  h: 280 },  // TV + 스탠드
+    { x: 870,  y: 280,  w: 250,  h: 280 },  // 책장
+    { x: 1200, y: 280,  w: 200,  h: 200 },  // 그림 + 스탠드
+    { x: 1500, y: 280,  w: 250,  h: 200 },  // 와인바
+    { x: 1800, y: 250,  w: 170,  h: 170 },  // 시계
+    { x: 80,   y: 700,  w: 200,  h: 200 },  // 화분
+    { x: 350,  y: 550,  w: 350,  h: 300 },  // 의자 + 러그
+    { x: 800,  y: 550,  w: 400,  h: 200 },  // 소파
+    { x: 800,  y: 780,  w: 300,  h: 150 },  // 테이블
+    { x: 1250, y: 650,  w: 120,  h: 250 },  // 공기청정기
+    { x: 1400, y: 800,  w: 150,  h: 150 },  // 의자 (우하)
+    { x: 1800, y: 350,  w: 170,  h: 400 },  // 와인셀러
+  ],
+};
+
+// 기본 장애물 (owner 모드 / sangsuri)
+const OBSTACLES = OBSTACLE_MAPS.sangsuri;
 
 const FORTUNES = [
   { quote: '"네가 원하는 건 네가 정하는 거야."', source: '상수리나무 아래', fortune: '오늘은 결단의 날! 망설이던 일을 시작하기 좋은 운세입니다.' },
@@ -58,6 +98,7 @@ class LibraryScene extends Phaser.Scene {
     this.aiConfig = data.aiConfig;
     this.onActionChange = data.onActionChange;
     this.onAvatarMove = data.onAvatarMove;
+    this.onBookshelfClick = data.onBookshelfClick;
     this.currentAction = 'idle';
     this.lastDir = 'down';
   }
@@ -83,6 +124,14 @@ class LibraryScene extends Phaser.Scene {
       frameWidth: 343, frameHeight: 440
     });
 
+    // visitor모드: 방 주인 커스텀 스프라이트 로드
+    if (this.roomConfig?.hostSprite) {
+      this.load.spritesheet('host_custom', this.roomConfig.hostSprite, {
+        frameWidth: this.roomConfig.spriteWidth || 512,
+        frameHeight: this.roomConfig.spriteHeight || 571,
+      });
+    }
+
     this.load.spritesheet('character_08', '/assets/characters/Premade_Character_48x48_08.png', {
       frameWidth: 48, frameHeight: 96
     });
@@ -107,10 +156,14 @@ class LibraryScene extends Phaser.Scene {
     // 장애물 물리 그룹 생성
     this.obstacleGroup = this.physics.add.staticGroup();
 
+    // 테마에 맞는 장애물 맵 선택
+    const theme = this.roomConfig?.theme || 'sangsuri';
+    this.currentObstacles = OBSTACLE_MAPS[theme] || OBSTACLE_MAPS.sangsuri;
+
     // 장애물 영역 (디버그 표시 비활성화, 충돌 영역은 유지)
     // const debugGfx = this.add.graphics().setDepth(999);
 
-    OBSTACLES.forEach(({ x, y, w, h }) => {
+    this.currentObstacles.forEach(({ x, y, w, h }) => {
       const rx = x * this.scaleX;
       const ry = y * this.scaleY;
       const rw = w * this.scaleX;
@@ -137,8 +190,8 @@ class LibraryScene extends Phaser.Scene {
 
     this.createAnimations();
 
-    // 거울 클릭 영역
-    const mirrorObs = OBSTACLES[6]; // 거울
+    // 거울 클릭 영역 (owner/sangsuri만)
+    const mirrorObs = this.currentObstacles[6]; // 거울
     if (mirrorObs) {
       const mx = mirrorObs.x * this.scaleX;
       const my = mirrorObs.y * this.scaleY;
@@ -150,8 +203,23 @@ class LibraryScene extends Phaser.Scene {
       this.mirrorZone.on('pointerdown', () => this.onMirrorClick());
     }
 
-    // 수정구 클릭 영역
-    const crystalObs = OBSTACLES[12]; // 수정구
+    // 책장 클릭 영역 (owner/sangsuri만)
+    const bookshelfObs = this.currentObstacles[7]; // 책장
+    if (bookshelfObs) {
+      const bx = bookshelfObs.x * this.scaleX;
+      const by = bookshelfObs.y * this.scaleY;
+      const bw = bookshelfObs.w * this.scaleX;
+      const bh = bookshelfObs.h * this.scaleY;
+      this.bookshelfZone = this.add.zone(bx + bw / 2, by + bh / 2, bw, bh)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(50);
+      this.bookshelfZone.on('pointerdown', () => {
+        if (this.onBookshelfClick) this.onBookshelfClick();
+      });
+    }
+
+    // 수정구 클릭 영역 (owner/sangsuri만)
+    const crystalObs = this.currentObstacles[12]; // 수정구
     if (crystalObs) {
       const cx = crystalObs.x * this.scaleX;
       const cy = crystalObs.y * this.scaleY;
@@ -218,11 +286,35 @@ class LibraryScene extends Phaser.Scene {
         repeat: -1,
       });
     });
+
+    // 커스텀 호스트 스프라이트 애니메이션 (8프레임: 1,2=아래 3,4=위 5,6=오른쪽 7,8=왼쪽)
+    if (this.textures.exists('host_custom')) {
+      const hc = 'host_custom';
+      [
+        { key: `${hc}_walk_down`,  start: 0, end: 1 },
+        { key: `${hc}_walk_up`,    start: 2, end: 3 },
+        { key: `${hc}_walk_right`, start: 4, end: 5 },
+        { key: `${hc}_walk_left`,  start: 6, end: 7 },
+        { key: `${hc}_idle_down`,  start: 0, end: 0 },
+        { key: `${hc}_idle_up`,    start: 2, end: 2 },
+        { key: `${hc}_idle_right`, start: 4, end: 4 },
+        { key: `${hc}_idle_left`,  start: 6, end: 6 },
+        { key: `${hc}_idle`,       start: 0, end: 0 },
+      ].forEach(({ key, start, end }) => {
+        this.anims.create({
+          key,
+          frames: this.anims.generateFrameNumbers(hc, { start, end }),
+          frameRate: start !== end ? 6 : 1,
+          repeat: -1,
+        });
+      });
+    }
   }
 
   // 특정 위치가 장애물과 겹치는지 확인
   isBlocked(x, y, margin = 10) {
-    for (const { x: ox, y: oy, w, h } of OBSTACLES) {
+    const obstacles = this.currentObstacles || OBSTACLES;
+    for (const { x: ox, y: oy, w, h } of obstacles) {
       const rx = ox * this.scaleX;
       const ry = oy * this.scaleY;
       const rw = w * this.scaleX;
@@ -266,30 +358,43 @@ class LibraryScene extends Phaser.Scene {
 
   createVisitorMode() {
     const avatarY = this.bgH * 0.78;
+    const useCustomHost = this.textures.exists('host_custom');
+    const hostCharKey = useCustomHost ? 'host_custom' : 'character_08';
+    const hostName = this.roomConfig?.hostName || '맥시';
 
-    this.hostAvatar = this.add.sprite(this.bgW * 0.35, avatarY, 'character_08').setOrigin(0.5);
-    this.hostAvatar.setScale(0.75);
-    this.hostAvatar.play('character_08_idle_down');
+    if (useCustomHost) {
+      const spriteH = this.roomConfig.spriteHeight || 571;
+      const hostScale = (98 / spriteH);  // 맥시 표시높이(98px) 기준
+      this.hostAvatar = this.add.sprite(this.bgW * 0.35, avatarY, 'host_custom', 0).setOrigin(0.5, 1);
+      this.hostAvatar.setScale(hostScale);
+    } else {
+      this.hostAvatar = this.add.sprite(this.bgW * 0.35, avatarY, 'character_08').setOrigin(0.5);
+      this.hostAvatar.setScale(0.75);
+    }
+    this.hostAvatar.play(`${hostCharKey}_idle_down`);
     this.hostAvatar.setDepth(avatarY);
 
-    this.hostAvatarLabel = this.add.text(this.hostAvatar.x, this.hostAvatar.y + 56, '맥시', {
+    const labelY = useCustomHost ? avatarY + 4 : this.hostAvatar.y + 56;
+    this.hostAvatarLabel = this.add.text(this.hostAvatar.x, labelY, hostName, {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
     }).setOrigin(0.5).setDepth(avatarY + 0.1);
 
-    this.visitorAvatar = this.add.sprite(this.bgW * 0.65, avatarY, 'character_12').setOrigin(0.5);
-    this.visitorAvatar.setScale(0.75);
-    this.visitorAvatar.play('character_12_idle_down');
+    // 방문자 (맥시)
+    this.visitorAvatar = this.add.sprite(this.bgW * 0.65, avatarY, 'maxy_F1').setOrigin(0.5, 1);
+    this.visitorAvatar.setScale(0.15);
+    this.visitorAvatar.play('maxy_idle_down');
     this.visitorAvatar.setDepth(avatarY);
 
-    this.visitorAvatarLabel = this.add.text(this.visitorAvatar.x, this.visitorAvatar.y + 56, '방문자', {
+    this.visitorAvatarLabel = this.add.text(this.visitorAvatar.x, avatarY + 4, '맥시', {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
     }).setOrigin(0.5).setDepth(avatarY + 0.1);
 
-    this.startAutoMovement(this.hostAvatar, 'character_08');
+    this.hostCharKey = hostCharKey;
+    this.startAutoMovement(this.hostAvatar, hostCharKey);
     this.showGreetingBubble(this.hostAvatar);
   }
 
@@ -352,23 +457,36 @@ class LibraryScene extends Phaser.Scene {
   }
 
   startAutoMovement(avatar, charKey) {
-    const minX = this.bgW * 0.05;
-    const maxX = this.bgW * 0.95;
-    const minY = this.bgH * 0.55;
-    const maxY = this.bgH * 0.90;
+    const baseX = avatar.x;
+    const baseY = avatar.y;
+    const rangeX = this.bgW * 0.12;
+    const rangeY = this.bgH * 0.08;
+    const isCustom = (avatar === this.hostAvatar && this.textures.exists('host_custom'));
 
     const doMove = () => {
       if (!avatar || !avatar.active) return;
 
-      const { x: targetX, y: targetY } = this.getWalkablePoint(minX, maxX, minY, maxY);
-      const dx = targetX - avatar.x;
-      const dy = targetY - avatar.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const duration = (distance / SPEED) * 1000;
+      // 상하좌우 중 하나만 이동
+      const dirs = ['up', 'down', 'left', 'right'];
+      const dir = dirs[Math.floor(Math.random() * dirs.length)];
 
-      let dir = Math.abs(dx) > Math.abs(dy)
-        ? (dx > 0 ? 'right' : 'left')
-        : (dy > 0 ? 'down' : 'up');
+      let targetX = avatar.x;
+      let targetY = avatar.y;
+      const moveAmount = Phaser.Math.Between(20, 60);
+
+      if (dir === 'up') targetY = Math.max(baseY - rangeY, avatar.y - moveAmount);
+      else if (dir === 'down') targetY = Math.min(baseY + rangeY, avatar.y + moveAmount);
+      else if (dir === 'left') targetX = Math.max(baseX - rangeX, avatar.x - moveAmount);
+      else if (dir === 'right') targetX = Math.min(baseX + rangeX, avatar.x + moveAmount);
+
+      // 장애물 체크 — 막혀있으면 이동 취소하고 재시도
+      if (this.isBlocked(targetX, targetY - 15)) {
+        this.time.delayedCall(Phaser.Math.Between(1000, 3000), doMove);
+        return;
+      }
+
+      const distance = Math.abs(targetX - avatar.x) + Math.abs(targetY - avatar.y);
+      const duration = (distance / 20) * 1000;
 
       avatar.play(`${charKey}_walk_${dir}`, true);
 
@@ -381,20 +499,20 @@ class LibraryScene extends Phaser.Scene {
         onUpdate: () => {
           const label = avatar === this.hostAvatar ? this.hostAvatarLabel : this.visitorAvatarLabel;
           if (label) {
-            label.setPosition(avatar.x, avatar.y + 22);
+            label.setPosition(avatar.x, avatar.y + (isCustom ? 4 : 22));
             label.setDepth(avatar.y + 0.1);
           }
           avatar.setDepth(avatar.y);
         },
         onComplete: () => {
           if (!avatar || !avatar.active) return;
-          avatar.play(`${charKey}_idle_${dir}`, true);
-          this.time.delayedCall(Phaser.Math.Between(2000, 5000), doMove);
+          avatar.play(`${charKey}_idle_down`, true);
+          this.time.delayedCall(Phaser.Math.Between(3000, 7000), doMove);
         }
       });
     };
 
-    this.time.delayedCall(1000, doMove);
+    this.time.delayedCall(2000, doMove);
   }
 
   changeBackground(textureKey) {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function ChatBox({ hostUserId, aiConfig, onInputFocus, onInputBlur }) {
+function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -62,11 +62,19 @@ function ChatBox({ hostUserId, aiConfig, onInputFocus, onInputBlur }) {
       const aiMessage = { role: 'assistant', content: data.reply };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      const errorMessage = {
-        role: 'assistant',
-        content: '죄송합니다. 응답 중 오류가 발생했습니다.'
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      // 백엔드 미실행 시 로컬 폴백 응답
+      const name = hostName || '맥시';
+      const fallbackReplies = [
+        `반가워요. 천천히 둘러보세요.`,
+        `좋은 질문이네요. 저도 생각해 볼게요.`,
+        `책 한 권의 여운이 오래가는 날이에요.`,
+        `오늘은 조용히 책 읽기 좋은 날이네요.`,
+        `편하게 이야기 나눠요.`,
+        `그 이야기, 참 흥미롭네요.`,
+        `함께 이야기 나눌 수 있어서 기쁘네요.`,
+      ];
+      const reply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
+      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     } finally {
       setLoading(false);
     }
@@ -85,14 +93,14 @@ function ChatBox({ hostUserId, aiConfig, onInputFocus, onInputBlur }) {
             }}
           >
             {msg.role === 'assistant' && (
-              <span style={styles.aiLabel}>맥시</span>
+              <span style={styles.aiLabel}>{hostName || '맥시'}</span>
             )}
             <div style={styles.messageText}>{msg.content}</div>
           </div>
         ))}
         {loading && (
           <div style={{ ...styles.messageBubble, ...styles.aiBubble }}>
-            <span style={styles.aiLabel}>맥시</span>
+            <span style={styles.aiLabel}>{hostName || '맥시'}</span>
             <div style={styles.loadingDots}>
               <span style={styles.dot}>.</span>
               <span style={{ ...styles.dot, animationDelay: '0.2s' }}>.</span>

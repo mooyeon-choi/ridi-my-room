@@ -6,24 +6,44 @@ import { useRoomLayout } from '../hooks/useRoomLayout';
 
 const USER_ROOM_DATA = {
   default: {
-    background: '/assets/backgrounds/maxy_room_x.webp',
-    greeting: '안녕하세요! 맥시의 서재에 오신 것을 환영합니다.',
-    theme: 'maxy',
-  },
-  sangsuri_user: {
-    background: '/assets/backgrounds/maxy_room_x.webp',
+    background: '/assets/backgrounds/maxy_room.webp',
     greeting: '어서와, 상수리나무 아래 서재에 온 걸 환영해!',
     theme: 'sangsuri',
+    hostSprite: '/assets/characters/ruth_sprite.webp',
+    hostName: '루스',
+    hostPortrait: '/assets/characters/portraits/ruth.png',
+    spriteWidth: 344,
+    spriteHeight: 384,
+  },
+  sangsuri_user: {
+    background: '/assets/backgrounds/maxy_room.webp',
+    greeting: '어서와, 상수리나무 아래 서재에 온 걸 환영해!',
+    theme: 'sangsuri',
+    hostSprite: '/assets/characters/ruth_sprite.webp',
+    hostName: '루스',
+    hostPortrait: '/assets/characters/portraits/ruth.png',
+    spriteWidth: 344,
+    spriteHeight: 384,
   },
   neosokbam_user: {
-    background: '/assets/backgrounds/neosokbam_x.webp',
+    background: '/assets/backgrounds/neosokbam.webp',
     greeting: '어서와... 너를 속이는 밤의 서재야.',
     theme: 'neosokbam',
+    hostSprite: '/assets/characters/neosokbam_heroine.webp',
+    hostName: '여주인공',
+    hostPortrait: '/assets/characters/portraits/neosokbam_heroine.png',
+    spriteWidth: 512,
+    spriteHeight: 571,
   },
   betrayer_user: {
-    background: '/assets/backgrounds/betrayer_x.webp',
+    background: '/assets/backgrounds/betrayer.webp',
     greeting: '품격을 배반하는 자의 서재에 온 걸 환영해.',
     theme: 'betrayer',
+    hostSprite: '/assets/characters/betrayer_hero.webp',
+    hostName: '남주인공',
+    hostPortrait: '/assets/characters/portraits/betrayer_hero.png',
+    spriteWidth: 512,
+    spriteHeight: 571,
   },
 };
 
@@ -68,7 +88,15 @@ function VisitorRoom() {
       const userRoom = USER_ROOM_DATA[userId] || USER_ROOM_DATA['default'];
       setRoomData({
         userId,
-        roomConfig: { theme: userRoom.theme, background: userRoom.background },
+        roomConfig: {
+          theme: userRoom.theme,
+          background: userRoom.background,
+          hostSprite: userRoom.hostSprite,
+          hostName: userRoom.hostName,
+          hostPortrait: userRoom.hostPortrait,
+          spriteWidth: userRoom.spriteWidth,
+          spriteHeight: userRoom.spriteHeight,
+        },
         aiConfig: {
           persona: 'sangsuri',
           customGreeting: userRoom.greeting,
@@ -150,7 +178,7 @@ function VisitorRoom() {
         {showGreeting && (
           <div style={styles.dialogueOverlay}>
             <div style={{ ...styles.portraitWrapper, width: L.portraitW, left: L.portraitLeft, bottom: L.portraitBottom }}>
-              <img src="/assets/characters/portraits/maxy.png" alt="맥시" style={styles.portraitImg} />
+              <img src={roomData.roomConfig.hostPortrait || '/assets/characters/portraits/maxy.png'} alt={roomData.roomConfig.hostName || '맥시'} style={styles.portraitImg} />
             </div>
             <div style={{ ...styles.dialogueBox, padding: `12px 20px 12px ${L.dialoguePaddingLeft}px` }}>
               <span style={styles.dialogueText}>{displayedText}</span>
@@ -158,7 +186,7 @@ function VisitorRoom() {
           </div>
         )}
         <div style={{ ...styles.chatArea, height: CHAT_H }}>
-          <ChatBox hostUserId={userId} aiConfig={roomData.aiConfig} />
+          <ChatBox hostUserId={userId} aiConfig={roomData.aiConfig} hostName={roomData.roomConfig.hostName} />
         </div>
       </div>
 
@@ -169,7 +197,6 @@ function VisitorRoom() {
             <span style={styles.visitTitle}>다른 사람의 방 방문하기</span>
             <div style={styles.visitRoomList}>
               {[
-                { id: 'default',          label: '맥시의 서재',         theme: '맥시' },
                 { id: 'sangsuri_user',    label: '상수리나무 아래 서재', theme: '상수리' },
                 { id: 'neosokbam_user',   label: '너를 속이는 밤 서재', theme: '너속밤' },
                 { id: 'betrayer_user',    label: '배덕한 타인 서재',    theme: '배덕' },
