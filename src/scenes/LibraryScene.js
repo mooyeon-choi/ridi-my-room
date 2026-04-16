@@ -119,22 +119,22 @@ const VISITOR_OBSTACLE_MAPS = {
 const OBSTACLES = OBSTACLE_MAPS.sangsuri;
 
 const FORTUNES = [
-  { quote: '"네가 원하는 건 네가 정하는 거야."', source: '상수리나무 아래', fortune: '오늘은 결단의 날! 망설이던 일을 시작하기 좋은 운세입니다.' },
-  { quote: '"사랑이란 결국, 서로를 비추는 거울이다."', source: '상수리나무 아래', fortune: '소중한 사람과의 관계가 더 깊어지는 하루가 될 거예요.' },
-  { quote: '"품격이란 지키는 것이 아니라, 배반하는 것이다."', source: '배덕한 타인에게', fortune: '틀을 깨는 용기가 행운을 가져다 줍니다.' },
-  { quote: '"진짜 나를 감추는 것에도 한계가 있다."', source: '배덕한 타인에게', fortune: '숨겨왔던 재능을 드러낼 기회가 찾아옵니다.' },
-  { quote: '"안개 속에서도 나비는 날개를 펴."', source: '안개를 삼킨 나비', fortune: '불확실한 상황에서도 당신의 빛이 길을 밝힐 거예요.' },
-  { quote: '"삼킨 안개가 날개가 되었다."', source: '안개를 삼킨 나비', fortune: '힘들었던 경험이 오늘 당신의 강점이 됩니다.' },
-  { quote: '"미친 듯이 사랑하거나, 미친 듯이 도망치거나."', source: '메리 사이코', fortune: '강렬한 감정이 밀려오는 날. 직감을 믿으세요!' },
-  { quote: '"정상인 척하는 게 제일 피곤해."', source: '메리 사이코', fortune: '오늘은 솔직해져도 괜찮은 날입니다.' },
-  { quote: '"밤은 모든 것을 속이지만, 진심만은 숨기지 못해."', source: '너를 속이는 밤', fortune: '감춰진 진실이 드러나는 날. 좋은 소식이 있을 수 있어요.' },
-  { quote: '"속이는 건 밤이지, 내가 아니야."', source: '너를 속이는 밤', fortune: '오해가 풀리고 관계가 회복되는 운세입니다.' },
-  { quote: '"현실이 초현실이 되는 순간."', source: '데페이즈망', fortune: '예상치 못한 곳에서 영감을 얻게 될 거예요.' },
-  { quote: '"익숙한 것을 낯설게 볼 때, 비로소 보이는 것이 있다."', source: '데페이즈망', fortune: '새로운 시각으로 문제를 바라보면 해답이 보입니다.' },
-  { quote: '"도망치는 것도 용기다."', source: '남편에게 쫓기고 있습니다', fortune: '지금은 물러서는 것이 현명한 선택일 수 있어요.' },
-  { quote: '"쫓기면서도 웃을 수 있다면, 이미 이긴 거야."', source: '남편에게 쫓기고 있습니다', fortune: '어려운 상황에서도 유머를 잃지 마세요. 행운이 따릅니다.' },
-  { quote: '"오월의 정원에는 비밀이 피어난다."', source: '오월의 정원에서', fortune: '새로운 시작과 성장의 기운이 가득한 날입니다.' },
-  { quote: '"폐하의 밤은 영원히 끝나지 않는다."', source: '폐하의 밤', fortune: '인내가 곧 보상으로 돌아옵니다. 조금만 더 버텨보세요.' },
+  { quote: '"온기를 나눈다는게 이런 거구나."', source: '상수리나무 아래', fortune: '소중한 사람과의 관계가 더 깊어지는 하루가 될 거예요.' },
+  { quote: '"너를 바라면 바랄수록, 허무해지고, 비참해지기만 하는데도… 그만둘 수가 없었어."', source: '상수리나무 아래', fortune: '오늘은 결단의 날! 미루던 일을 시작하기 좋은 운세입니다.' },
+  { quote: '"…뭐. 아프고 좋네. 더 아프게 해줘봐."', source: '배덕한 타인에게', fortune: '틀을 깨는 용기가 행운을 가져다 줍니다.' },
+  { quote: '"그냥, 오늘부터 1일인걸로 할까? 그간의 앙금은 다 잊고."', source: '배덕한 타인에게', fortune: '과거의 기억에서 벗어나세요. 새로운 미래가 당신을 기다리고 있습니다.' },
+  { quote: '"정말 고맙지만, 세실리아. 네 제안은 내가 성적이 떨어지면 생각해 볼게."', source: '안개를 삼킨 나비', fortune: '불확실한 상황에서도 당신의 빛이 길을 밝힐 거예요.' },
+  { quote: '"…후회하지마. 이건, 네가 먼저 시작한거야."', source: '안개를 삼킨 나비', fortune: '힘들었던 경험이 오늘 당신의 강점이 됩니다.' },
+  { quote: '"서령아. 사랑한다고 해 줘. 거짓말이라도, 상관, 없어."', source: '메리 사이코', fortune: '강렬한 감정이 밀려오는 날. 직감을 믿으세요!' },
+  { quote: '"절대 내 곁을 떠나지 못하게 할래요. 만약 떠난다면, 다시 잡아오고, 도망치면 또 잡아 와서 내 곁에만 있게 할 거에요."', source: '메리 사이코', fortune: '오늘은 솔직해져도 괜찮은 날입니다.' },
+  { quote: '"변태는 고유주씨 아닌가? 언니인척하고 나랑 자니까 좋았어?"', source: '너를 속이는 밤', fortune: '감춰진 진실이 드러나는 날. 좋은 소식이 있을 수 있어요.' },
+  { quote: '"이 남자는 나를 욕망한다."', source: '너를 속이는 밤', fortune: '오해가 풀리고 관계가 회복되는 운세입니다.' },
+  { quote: '"저도 그림을 그리다보면 저만의 천사를 만날 수 있을까요?"', source: '데페이즈망', fortune: '예상치 못한 곳에서 영감을 얻게 될 거예요.' },
+  { quote: '"그 그림 말인데, 그쪽 눈엔 내가 그렇게 보입니까?"', source: '데페이즈망', fortune: '새로운 시각으로 문제를 바라보면 해답이 보입니다.' },
+  { quote: '"공작을 하루빨리 제국민과 결혼시켜야 내 마음이 편해질텐데. 그놈의 \'하자\' 때문에 도망치지 않는 영애가 없어!"', source: '남편에게 쫓기고 있습니다', fortune: '지금은 물러서는 것이 현명한 선택일 수 있어요.' },
+  { quote: '"후회 안할 자신 있나?"\n"물론이죠! 운명의 상대를 드디어 만났는데!"\n"내 이름은 알고?"\n"음… 마요네즈 공작님?"\n"요하네스."', source: '남편에게 쫓기고 있습니다', fortune: '어려운 상황에서도 유머를 잃지 마세요. 행운이 따릅니다.' },
+  { quote: '"그러니까 내가… 당신을 사고 싶어, 리버 로스."', source: '오월의 정원에서', fortune: '새로운 시작과 성장의 기운이 가득한 날입니다.' },
+  { quote: '"안됩,니다… 거긴…"\n"괜찮아. 내가… 기분 좋게 해줄게-"', source: '폐하의 밤', fortune: '인내가 곧 보상으로 돌아옵니다. 조금만 더 버텨보세요.' },
 ];
 
 const SPEED = 80; // px/s
@@ -589,25 +589,25 @@ class LibraryScene extends Phaser.Scene {
     const persona = this.roomConfig?.theme || 'sangsuri';
     const hostInteractLines = {
       sangsuri: [
-        '찾아와 주셔서 반가워요. 책 한 잔... 아, 차 한 잔 할래요?',
-        '이 서재에서 가장 좋아하는 자리는 창가예요.',
+        '마나를 흘리는 방식이 엉망입니다. 그 상태로는 유지도 못 합니다.',
+        '대마법사 루스가 왔노라고 고래고래 소리라도 질러야 하나...',
         '요즘 읽고 있는 책이 정말 좋아요. 추천해드릴까요?',
-        '조용한 오후... 이런 시간이 참 좋네요.',
-        '혹시 좋아하는 작가가 있으신가요?',
+        '미끈하게 잘 빠진 몸매와 수려한 미모와 명석한 두뇌가 남는데요!',
+        '원정을 나가기 전에 저도 꼭 데려가야 한다고 일러주세요.',
       ],
       neosokbam: [
         '왜 그렇게 쳐다보는 거예요...?',
-        '이 방의 비밀을 알고 싶으신 건가요?',
-        '밤이 깊어지면... 더 재미있는 이야기를 해줄게요.',
-        '그 눈빛... 뭔가 숨기고 있는 것 같은데요.',
-        '후... 호기심이 많군요. 싫지 않아요.',
+        '... 거짓말을 하고 있네요.',
+        '책이라... 요즘 \'자유의 기술\'이라는 책을 읽고 있어요. 다른 책도 추천 해드릴까요?',
+        '취향이 나쁘진 않네요. 도승한씨는... 아니에요.',
+        '신어머니가 그러셨어요. 뭐든지 읽고 배워두라고.',
       ],
       betrayer: [
         '...뭐요.',
         '할 말이 있으면 빨리 하세요.',
-        '그 책장에 꽤 괜찮은 와인이 있죠.',
+        '꽤 괜찮은 와인이군요. 땅콩 냄새가 좀 나지만....',
         '...당신, 취향이 나쁘지 않군요.',
-        '조용히 있어주면 감사하겠는데... 농담이에요.',
+        '조용히 있어주면 감사하겠는데... 농담이에요^^.',
       ],
     };
     this.hostInteractLines = hostInteractLines[persona] || hostInteractLines.sangsuri;
@@ -753,8 +753,8 @@ class LibraryScene extends Phaser.Scene {
     bubble.setPosition(avatar.x, avatar.y - offsetY);
 
     const emojiText = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2, emojiChar || '💬', {
-      fontSize: '16px',
-      padding: { top: 2, bottom: 2 },
+      fontSize: '14px',
+      padding: { top: 4, bottom: 4 },
     }).setOrigin(0.5).setDepth(21);
 
     this[followKey] = { bubble, emoji: emojiText, avatar, offsetY, tailH, bh };
@@ -951,8 +951,8 @@ class LibraryScene extends Phaser.Scene {
 
     const catPositions = [
       { key: 'cat_white', name: '로라',  x: this.bgW * 0.3,           y: this.bgH * 0.75 },  // 바닥
-      { key: 'cat_black', name: '리프',  x: 850 * this.scaleX + 22,   y: 650 * this.scaleY + 26 }, // 책상 위
-      { key: 'cat_gray',  name: '탄이',  x: 1600 * this.scaleX - 8,   y: 400 * this.scaleY + 90 }, // 침대 위
+      { key: 'cat_black', name: '로라',  x: 850 * this.scaleX + 22,   y: 650 * this.scaleY + 26 }, // 책상 위
+      { key: 'cat_gray',  name: '론',  x: 1600 * this.scaleX - 8,   y: 400 * this.scaleY + 90 }, // 침대 위
     ];
 
     this.catSprites = [];
@@ -995,8 +995,8 @@ class LibraryScene extends Phaser.Scene {
 
     const catMap = {
       white: { key: 'cat_white', name: '로라', x: this.bgW * 0.3, y: this.bgH * 0.75 },
-      black: { key: 'cat_black', name: '리프', x: 850 * this.scaleX + 22, y: 650 * this.scaleY + 26 },
-      gray:  { key: 'cat_gray',  name: '탄이', x: 1600 * this.scaleX - 8, y: 400 * this.scaleY + 90 },
+      black: { key: 'cat_black', name: '로라', x: 850 * this.scaleX + 22, y: 650 * this.scaleY + 26 },
+      gray:  { key: 'cat_gray',  name: '론', x: 1600 * this.scaleX - 8, y: 400 * this.scaleY + 90 },
     };
     const info = catMap[catType];
     if (!info) return;
@@ -1024,7 +1024,7 @@ class LibraryScene extends Phaser.Scene {
 
   // 개별 고양이 제거
   removeSingleCat(catType) {
-    const nameMap = { white: '로라', black: '리프', gray: '탄이' };
+    const nameMap = { white: '로라', black: '로라', gray: '론' };
     const name = nameMap[catType];
     if (!name || !this.catSprites) return;
 
@@ -1042,18 +1042,18 @@ class LibraryScene extends Phaser.Scene {
     const name = catName || '로라';
 
     if (this.catClicksRemaining > 0) {
-      const points = Phaser.Math.Between(1, 10);
+      const points = Phaser.Math.Between(1, 5);
       this.catClicksRemaining--;
 
       this.showDialogue(name, '그르릉..', () => {
-        this.showDialogue('맥시', `${name}의 기분이 좋아요. ${points} 포인트를 물어왔어요!`, () => {
+        this.showDialogue('맥시', `${name}의 기, 기분이 좋은가봐요. ${points} 포인트를 물어왔어요!`, () => {
           if (this.onPointsEarned) this.onPointsEarned(points);
           this.endDialogue();
         });
       });
     } else {
       this.showDialogue(name, 'zZz..', () => {
-        this.showDialogue('맥시', `오늘은 ${name}가 졸린 것 같아요.`, () => {
+        this.showDialogue('맥시', `오, 오늘은 ${name}가 졸린 것 같네요...`, () => {
           this.endDialogue();
         });
       });
@@ -1124,11 +1124,11 @@ class LibraryScene extends Phaser.Scene {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
     const lines = [
-      '라, 리프탄이에요... 반가워요.',
-      '오, 오늘 읽은 책은 어떠셨어요?',
-      '저, 저기... 같이 책 읽을래요?',
-      '리, 리프탄이 또 뭐라 했나요...?',
-      '맥, 맥시는... 참 좋은 사람이에요.',
+      '맥시, 오늘은 어떤 하루를 보냈지?',
+      '오늘 읽은 책은 어떤 내용이었는지 궁금하군.',
+      '나랑 책 같이 읽기는 싫으려나...',
+      '맥시, 너는 참 좋은 사람이야.',
+      '나는 다시 태어나면 맥시 네 머리카락이 되고 싶어.',
     ];
     const line = lines[Math.floor(Math.random() * lines.length)];
     this.showDialogue('리프탄', line, () => this.endDialogue());
@@ -1374,7 +1374,7 @@ class LibraryScene extends Phaser.Scene {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
 
-    const books = ['상수리나무 아래', '배덕한 타인에게', '안개를 삼킨 나비', '메리 사이코', '너를 속이는 밤', '데페이즈망'];
+    const books = ['상수리나무 아래', '배덕한 타인에게', '안개를 삼킨 나비', '메리 사이코', '너를 속이는 밤', '데페이즈망', '은행원도 용꿈을 꾸나요?', '폐하의 밤'];
     const bookName = books[Math.floor(Math.random() * books.length)];
 
     this.showDialogue('거울', `맥시, 오늘은 <${bookName}>을 읽어 볼래요?`, () => {
@@ -1382,10 +1382,8 @@ class LibraryScene extends Phaser.Scene {
         {
           text: '조, 좋아!',
           onSelect: () => {
-            this.showDialogue('맥시', '조, 좋아!', () => {
-              this.showDialogue('거울', '좋아요! 3회차를 읽고 오면 특별한 존재가 당신을 찾아올거에요.', () => {
-                this.endDialogue();
-              });
+            this.showDialogue('거울', '좋아요! 3회차를 읽고 오면 특별한 존재가 당신을 찾아올거에요.', () => {
+              this.endDialogue();
             });
           }
         },
@@ -1426,7 +1424,7 @@ class LibraryScene extends Phaser.Scene {
 
     // 화자 이름
     const hostName = this.roomConfig?.hostName;
-    const catNames = ['로라', '리프', '탄이'];
+    const catNames = ['로라', '로라', '론'];
     const nameColor = speaker === '리프탄' ? '#7ec8e3'
       : speaker === '거울' ? '#c0e0ff'
       : catNames.includes(speaker) ? '#f0a0c0'
