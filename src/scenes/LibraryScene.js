@@ -230,7 +230,7 @@ class LibraryScene extends Phaser.Scene {
     // 장애물 영역 (디버그 표시)
     const debugGfx = this.add.graphics().setDepth(999);
 
-    const showDebug = true;
+    const showDebug = false;
 
     this.currentObstacles.forEach(({ x, y, w, h, name }, idx) => {
       const rx = x * this.scaleX;
