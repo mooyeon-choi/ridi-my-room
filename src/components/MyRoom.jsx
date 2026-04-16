@@ -183,7 +183,7 @@ function MyRoom() {
       <div style={{ ...styles.middleRow, gap: L.gap }}>
         <div style={styles.gameWrapper}>
           <div style={{ width: L.gameW, height: L.gameH, overflow: 'hidden', borderRadius: '4px' }}>
-            <PhaserGame ref={gameRef} mode="owner" userId={userId} onActionChange={() => {}} onBookshelfClick={() => setShowLibrary(true)} />
+            <PhaserGame ref={gameRef} mode="owner" userId={userId} onActionChange={() => {}} onBookshelfClick={() => setShowLibrary(true)} onDoorClick={() => setShowVisitInput(true)} />
           </div>
         </div>
         <div style={styles.sideButtons}>

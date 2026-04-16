@@ -8,7 +8,9 @@ const OBSTACLE_MAPS = {
     { x: 0,    y: 0,    w: 2048, h: 520 },
     { x: 0,    y: 0,    w: 90,   h: 1172 },
     { x: 1958, y: 0,    w: 90,   h: 1172 },
-    { x: 0,    y: 1050, w: 1400, h: 122 },
+    { x: 0,    y: 1050, w: 420,  h: 122 },  // 하단벽 (문 왼쪽)
+    { x: 420,  y: 1100, w: 160,  h: 72 },   // 하단벽 (문 바닥)
+    { x: 580,  y: 1050, w: 820,  h: 122 },  // 하단벽 (문 오른쪽)
     { x: 1400, y: 950,  w: 648,  h: 222 },
     { x: 325,  y: 340,  w: 350,  h: 300 },  // 벽난로
     { x: 700,  y: 280,  w: 170,  h: 320 },  // 거울
@@ -99,6 +101,7 @@ class LibraryScene extends Phaser.Scene {
     this.onActionChange = data.onActionChange;
     this.onAvatarMove = data.onAvatarMove;
     this.onBookshelfClick = data.onBookshelfClick;
+    this.onDoorClick = data.onDoorClick;
     this.currentAction = 'idle';
     this.lastDir = 'down';
   }
@@ -191,7 +194,7 @@ class LibraryScene extends Phaser.Scene {
     this.createAnimations();
 
     // 거울 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
-    const mirrorObs = this.currentObstacles[6]; // 거울
+    const mirrorObs = this.currentObstacles[8]; // 거울
     if (mirrorObs) {
       const mx = mirrorObs.x * this.scaleX;
       const my = mirrorObs.y * this.scaleY;
@@ -206,7 +209,7 @@ class LibraryScene extends Phaser.Scene {
     }
 
     // 책장 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
-    const bookshelfObs = this.currentObstacles[7]; // 책장
+    const bookshelfObs = this.currentObstacles[9]; // 책장
     if (bookshelfObs) {
       const bx = bookshelfObs.x * this.scaleX;
       const by = bookshelfObs.y * this.scaleY;
@@ -221,7 +224,7 @@ class LibraryScene extends Phaser.Scene {
     }
 
     // 수정구 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
-    const crystalObs = this.currentObstacles[12]; // 수정구
+    const crystalObs = this.currentObstacles[14]; // 수정구
     if (crystalObs) {
       const cx = crystalObs.x * this.scaleX;
       const cy = crystalObs.y * this.scaleY;
@@ -269,26 +272,48 @@ class LibraryScene extends Phaser.Scene {
 
     // 상호작용 오브젝트 등록 (sangsuri 테마)
     if (theme === 'sangsuri') {
-      const mirrorOb = this.currentObstacles[6];
+      const mirrorOb = this.currentObstacles[8];
       if (mirrorOb) this.interactables.push({
         name: 'mirror', emoji: '🪞',
         cx: mirrorOb.x * this.scaleX,
         cy: (mirrorOb.y + mirrorOb.h + 20) * this.scaleY,
         range: 50, action: () => this.onMirrorClick(),
       });
-      const bookOb = this.currentObstacles[7];
+      const bookOb = this.currentObstacles[9];
       if (bookOb) this.interactables.push({
         name: 'bookshelf', emoji: '📚',
         cx: (bookOb.x + bookOb.w / 2) * this.scaleX,
         cy: (bookOb.y + bookOb.h) * this.scaleY,
         range: 40, action: () => { if (this.onBookshelfClick) this.onBookshelfClick(); },
       });
-      const crystalOb = this.currentObstacles[12];
+      const crystalOb = this.currentObstacles[14];
       if (crystalOb) this.interactables.push({
         name: 'crystal', emoji: '🔮',
         cx: (crystalOb.x + crystalOb.w / 2) * this.scaleX,
         cy: (crystalOb.y + crystalOb.h) * this.scaleY,
         range: 40, action: () => this.onCrystalClick(),
+      });
+    }
+
+    // 문 인터랙션 (하단 벽 움푹 파인 부분, 항상 활성화)
+    if (this.mode === 'owner') {
+      const doorX = 502;
+      const doorY = 1070;
+      const doorRange = 50;
+
+      // [디버그] 주석 해제하면 문 영역 시각화
+      // const doorDebug = this.add.graphics().setDepth(999);
+      // doorDebug.lineStyle(2, 0x00ff00, 0.8);
+      // doorDebug.strokeCircle(doorX * this.scaleX, doorY * this.scaleY, doorRange);
+      // doorDebug.fillStyle(0x00ff00, 0.2);
+      // doorDebug.fillCircle(doorX * this.scaleX, doorY * this.scaleY, doorRange);
+
+      this.interactables.push({
+        name: 'door', emoji: '🚪',
+        cx: doorX * this.scaleX,
+        cy: doorY * this.scaleY,
+        range: doorRange,
+        action: () => { if (this.onDoorClick) this.onDoorClick(); },
       });
     }
   }
@@ -366,7 +391,7 @@ class LibraryScene extends Phaser.Scene {
   // 벽 인덱스: 0~4, 책장 인덱스: 7
   isBlocked(x, y, margin = 10) {
     const obstacles = this.currentObstacles || OBSTACLES;
-    const wallAndBookshelf = [0, 1, 2, 3, 4, 7];
+    const wallAndBookshelf = [0, 1, 2, 3, 4, 5, 6, 9];
     for (let i = 0; i < obstacles.length; i++) {
       // 테마 미적용 시 벽+책장만 충돌 체크
       if (!this.themeApplied && !wallAndBookshelf.includes(i)) continue;
@@ -505,11 +530,11 @@ class LibraryScene extends Phaser.Scene {
   }
 
   showGreetingBubble(avatar) {
-    const bw = 64;
-    const bh = 52;
-    const r  = 22;   // 더 둥글게
-    const tailH = 12; // 꼬리 높이
-    const offsetY = 95; // 아바타 머리 위 거리
+    const bw = 52;
+    const bh = 42;
+    const r  = 18;
+    const tailH = 10;
+    const offsetY = 95;
 
     const drawBubble = (g) => {
       g.clear();
@@ -529,7 +554,8 @@ class LibraryScene extends Phaser.Scene {
     bubble.setPosition(avatar.x, avatar.y - offsetY);
 
     const emoji = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2, '👋', {
-      fontSize: '26px'
+      fontSize: '20px',
+      padding: { top: 2, bottom: 2 },
     }).setOrigin(0.5).setDepth(21);
 
     // 매 프레임 아바타 위치 추적
@@ -607,7 +633,7 @@ class LibraryScene extends Phaser.Scene {
     if (!avatar || !avatar.active) return;
 
     const bw = 52;
-    const bh = 44;
+    const bh = 42;
     const r  = 18;
     const tailH = 10;
     const offsetY = 95;
@@ -628,7 +654,8 @@ class LibraryScene extends Phaser.Scene {
     bubble.setPosition(avatar.x, avatar.y - offsetY);
 
     const emojiText = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2, emojiChar || '💬', {
-      fontSize: '22px'
+      fontSize: '16px',
+      padding: { top: 2, bottom: 2 },
     }).setOrigin(0.5).setDepth(21);
 
     this[followKey] = { bubble, emoji: emojiText, avatar, offsetY, tailH, bh };
@@ -744,8 +771,8 @@ class LibraryScene extends Phaser.Scene {
   // 벽 인덱스: 0(상단), 1(좌측), 2(우측), 3(하단좌), 4(하단우)
   // 책장 인덱스: 7
   setObstaclesForTheme(enabled) {
-    const wallIndices = [0, 1, 2, 3, 4];
-    const bookshelfIndex = 7;
+    const wallIndices = [0, 1, 2, 3, 4, 5, 6];
+    const bookshelfIndex = 9;
     if (this.obstacleGroup) {
       this.obstacleGroup.getChildren().forEach((zone, i) => {
         if (wallIndices.includes(i) || i === bookshelfIndex) {
@@ -1418,8 +1445,8 @@ class LibraryScene extends Phaser.Scene {
     let closestDist = Infinity;
 
     for (const obj of this.interactables) {
-      // 테마 미적용 시 책장만 상호작용 가능
-      if (!this.themeApplied && obj.name !== 'bookshelf') continue;
+      // 테마 미적용 시 책장과 문만 상호작용 가능
+      if (!this.themeApplied && obj.name !== 'bookshelf' && obj.name !== 'door') continue;
 
       let cx, cy;
       if (obj.getPos) {
@@ -1460,7 +1487,7 @@ class LibraryScene extends Phaser.Scene {
     this.hideInteractHint();
 
     const bw = 52;
-    const bh = 44;
+    const bh = 42;
     const r = 18;
     const tailH = 10;
     const offsetY = 95;
@@ -1471,8 +1498,9 @@ class LibraryScene extends Phaser.Scene {
     bubble.fillTriangle(0, -2, -8, -tailH - 2, 8, -tailH - 2);
     bubble.setPosition(avatar.x, avatar.y - offsetY);
 
-    const emojiText = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2, emoji, {
-      fontSize: '22px',
+    const emojiText = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2 - 1, emoji, {
+      fontSize: '16px',
+      padding: { top: 2, bottom: 2 },
     }).setOrigin(0.5).setDepth(21);
 
     // SPACE 안내 텍스트
