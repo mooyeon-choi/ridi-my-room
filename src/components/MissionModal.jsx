@@ -16,7 +16,7 @@ const MISSIONS = [
 
 function MissionModal({ onClose }) {
   return (
-    <div style={styles.overlay} onClick={onClose}>
+    <div style={styles.overlay} onClick={onClose} onKeyDown={e => e.stopPropagation()}>
       {/* 모달 본체 */}
       <div style={styles.modal} onClick={e => e.stopPropagation()}>
         <div style={styles.missionList}>

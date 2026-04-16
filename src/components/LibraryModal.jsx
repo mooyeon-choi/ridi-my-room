@@ -101,7 +101,7 @@ function LibraryModal({ onClose, onMissionComplete }) {
   }
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
+    <div style={styles.overlay} onClick={onClose} onKeyDown={e => e.stopPropagation()}>
       <div style={styles.wrapper} onClick={e => e.stopPropagation()}>
 
         {/* 상단 상세보기 패널 — 책 선택 시만 표시 */}

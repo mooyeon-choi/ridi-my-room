@@ -237,6 +237,7 @@ class LibraryScene extends Phaser.Scene {
 
     // 대화 시스템 초기화
     this.dialogueActive = false;
+    this.modalActive = false;
     this.dialogueContainer = null;
 
     // 상호작용 시스템 초기화
@@ -1245,8 +1246,8 @@ class LibraryScene extends Phaser.Scene {
     this.updateGreetingBubbles();
     if (!this.myAvatar) return;
 
-    // 대화 중이면 이동 차단
-    if (this.dialogueActive) return;
+    // 대화 중이거나 모달이 열려있으면 이동 차단
+    if (this.dialogueActive || this.modalActive) return;
 
     const avatar = this.myAvatar;
     const label = this.myAvatarLabel;
@@ -1318,7 +1319,7 @@ class LibraryScene extends Phaser.Scene {
   }
 
   checkInteraction(avatar) {
-    if (this.dialogueActive || this.interactCooldown) {
+    if (this.dialogueActive || this.modalActive || this.interactCooldown) {
       this.hideInteractHint();
       return;
     }

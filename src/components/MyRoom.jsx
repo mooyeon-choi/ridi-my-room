@@ -47,6 +47,16 @@ function MyRoom() {
   const [displayedText, setDisplayedText] = useState('');
   const gameRef = useRef(null);
 
+  // 모달이 열리거나 닫힐 때 Phaser 입력 비활성화/활성화
+  const anyModalOpen = showMission || showLibrary || showItem || showVisitInput || showQR || showReward;
+  useEffect(() => {
+    if (anyModalOpen) {
+      gameRef.current?.disableInput();
+    } else {
+      gameRef.current?.enableInput();
+    }
+  }, [anyModalOpen]);
+
   useEffect(() => {
     if (!showGreeting) return;
     let i = 0;

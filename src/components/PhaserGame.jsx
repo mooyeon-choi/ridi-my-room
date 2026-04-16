@@ -13,6 +13,22 @@ const PhaserGame = forwardRef(function PhaserGame(
     getScene() {
       if (!phaserGameRef.current) return null;
       return phaserGameRef.current.scene.getScene('LibraryScene');
+    },
+    disableInput() {
+      const scene = phaserGameRef.current?.scene.getScene('LibraryScene');
+      if (scene) {
+        scene.input.enabled = false;
+        if (scene.input.keyboard) scene.input.keyboard.enabled = false;
+        scene.modalActive = true;
+      }
+    },
+    enableInput() {
+      const scene = phaserGameRef.current?.scene.getScene('LibraryScene');
+      if (scene) {
+        scene.input.enabled = true;
+        if (scene.input.keyboard) scene.input.keyboard.enabled = true;
+        scene.modalActive = false;
+      }
     }
   }));
 

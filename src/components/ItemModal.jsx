@@ -24,7 +24,7 @@ function ItemModal({ onClose }) {
   const slots = Array.from({ length: SLOT_COUNT }, (_, i) => ITEMS[i] || null);
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
+    <div style={styles.overlay} onClick={onClose} onKeyDown={e => e.stopPropagation()}>
       <div style={styles.wrapper} onClick={e => e.stopPropagation()}>
 
         {/* 상단 상세보기 */}

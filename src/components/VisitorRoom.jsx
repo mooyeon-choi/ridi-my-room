@@ -64,6 +64,15 @@ function VisitorRoom() {
   const [showVisitInput, setShowVisitInput] = useState(false);
   const gameRef = useRef(null);
 
+  // 모달이 열리거나 닫힐 때 Phaser 입력 비활성화/활성화
+  useEffect(() => {
+    if (showVisitInput) {
+      gameRef.current?.disableInput();
+    } else {
+      gameRef.current?.enableInput();
+    }
+  }, [showVisitInput]);
+
   useEffect(() => { loadRoomData(); }, [userId]);
 
   useEffect(() => {

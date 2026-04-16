@@ -2,7 +2,7 @@ import React from 'react';
 
 function RewardModal({ onConfirm, onCancel }) {
   return (
-    <div style={styles.overlay}>
+    <div style={styles.overlay} onKeyDown={e => e.stopPropagation()}>
       <div style={styles.frame}>
         <div style={styles.inner}>
           <h2 style={styles.title}>미션 완료!</h2>
