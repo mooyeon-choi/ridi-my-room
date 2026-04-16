@@ -37,10 +37,10 @@ const USER_ROOM_DATA = {
   },
   betrayer_user: {
     background: '/assets/backgrounds/betrayer.webp',
-    greeting: '남주인공 : ...왔군요. 앉으세요.',
+    greeting: '...왔군요. 앉으세요.',
     theme: 'betrayer',
     hostSprite: '/assets/characters/betrayer_hero.webp',
-    hostName: '남주인공',
+    hostName: '박치경',
     hostPortrait: '/assets/characters/portraits/betrayer_hero.png',
     spriteWidth: 512,
     spriteHeight: 571,

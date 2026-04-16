@@ -101,21 +101,14 @@ const VISITOR_OBSTACLE_MAPS = {
   ],
   // 배덕한 타인 방문 - 2048x1194
   betrayer: [
-    { x: 0,    y: 0,    w: 2048, h: 300,  name: '상단 벽' },
-    { x: 0,    y: 0,    w: 60,   h: 1194, name: '좌측 벽' },
-    { x: 1988, y: 0,    w: 60,   h: 1194, name: '우측 벽' },
-    { x: 0,    y: 1050, w: 2048, h: 144,  name: '하단 벽' },
-    { x: 60,   y: 280,  w: 200,  h: 200,  name: '축음기' },
-    { x: 350,  y: 260,  w: 400,  h: 280,  name: 'TV+벽면' },
-    { x: 820,  y: 260,  w: 260,  h: 280,  name: '책장' },
-    { x: 1150, y: 260,  w: 250,  h: 220,  name: '그림+와인' },
-    { x: 1500, y: 260,  w: 200,  h: 200,  name: '시계' },
-    { x: 1700, y: 300,  w: 250,  h: 400,  name: '와인셀러' },
-    { x: 60,   y: 650,  w: 200,  h: 250,  name: '화분' },
-    { x: 300,  y: 500,  w: 350,  h: 300,  name: '의자+러그' },
-    { x: 750,  y: 500,  w: 450,  h: 220,  name: '소파' },
-    { x: 750,  y: 750,  w: 350,  h: 170,  name: '테이블' },
-    { x: 1250, y: 600,  w: 120,  h: 280,  name: '공기청정기' },
+    { x: 0,    y: 0,    w: 2048, h: 380,  name: '상단 벽' },
+    { x: 0,    y: 0,    w: 80,   h: 1194, name: '좌측 벽' },
+    { x: 1968, y: 0,    w: 80,   h: 1194, name: '우측 벽' },
+    { x: 0,    y: 1050, w: 340,  h: 144,  name: '하단벽(문좌)' },
+    { x: 540,  y: 1050, w: 1508, h: 144,  name: '하단벽(문우)' },
+    { x: 340,  y: 1164, w: 200,  h: 30,   name: '하단벽(문바닥)' },
+    { x: 280,  y: 260,  w: 480,  h: 120,  name: 'TV' },
+    { x: 800,  y: 200,  w: 300,  h: 340,  name: '책장' },
   ],
 };
 
@@ -237,6 +230,8 @@ class LibraryScene extends Phaser.Scene {
     // 장애물 영역 (디버그 표시)
     const debugGfx = this.add.graphics().setDepth(999);
 
+    const showDebug = true;
+
     this.currentObstacles.forEach(({ x, y, w, h, name }, idx) => {
       const rx = x * this.scaleX;
       const ry = y * this.scaleY;
@@ -246,16 +241,18 @@ class LibraryScene extends Phaser.Scene {
       this.physics.add.existing(zone, true);
       this.obstacleGroup.add(zone);
 
-      // [디버그] 장애물 시각화 + 명칭 (비활성화)
-      // debugGfx.lineStyle(1, 0xff0000, 0.8);
-      // debugGfx.fillStyle(0xff0000, 0.25);
-      // debugGfx.fillRect(rx, ry, rw, rh);
-      // debugGfx.strokeRect(rx, ry, rw, rh);
-      // const label = name || `#${idx}`;
-      // this.add.text(rx + 2, ry + 2, label, {
-      //   fontSize: '8px', color: '#ffff00', backgroundColor: 'rgba(0,0,0,0.6)',
-      //   padding: { x: 2, y: 1 },
-      // }).setDepth(1000);
+      // [디버그] 장애물 시각화 + 명칭
+      if (showDebug) {
+        debugGfx.lineStyle(1, 0xff0000, 0.8);
+        debugGfx.fillStyle(0xff0000, 0.25);
+        debugGfx.fillRect(rx, ry, rw, rh);
+        debugGfx.strokeRect(rx, ry, rw, rh);
+        const label = name || `#${idx}`;
+        this.add.text(rx + 2, ry + 2, label, {
+          fontSize: '8px', color: '#ffff00', backgroundColor: 'rgba(0,0,0,0.6)',
+          padding: { x: 2, y: 1 },
+        }).setDepth(1000);
+      }
     });
 
     // 키보드 입력
@@ -371,6 +368,28 @@ class LibraryScene extends Phaser.Scene {
       });
     }
 
+    // 상호작용 오브젝트 등록 (betrayer 테마)
+    if (theme === 'betrayer') {
+      // 책장 → 서재 (방문 모드: 인덱스 6, 오너 모드: 인덱스 7)
+      const bookIdx = this.mode === 'visitor' ? 6 : 7;
+      const bookOb = this.currentObstacles[bookIdx];
+      if (bookOb) this.interactables.push({
+        name: 'bookshelf', emoji: '📚',
+        cx: (bookOb.x + bookOb.w / 2) * this.scaleX,
+        cy: (bookOb.y + bookOb.h) * this.scaleY,
+        range: 50, action: () => { if (this.onBookshelfClick) this.onBookshelfClick(); },
+      });
+      // TV → 운세 (방문 모드: 인덱스 5, 오너 모드: 인덱스 6)
+      const tvIdx = this.mode === 'visitor' ? 5 : 6;
+      const tvOb = this.currentObstacles[tvIdx];
+      if (tvOb) this.interactables.push({
+        name: 'tv', emoji: '📺',
+        cx: (tvOb.x + tvOb.w / 2) * this.scaleX,
+        cy: (tvOb.y + tvOb.h + 20) * this.scaleY,
+        range: 50, action: () => this.onTvFortuneClick(),
+      });
+    }
+
     // 상호작용 오브젝트 등록 (neosokbam 테마)
     if (theme === 'neosokbam') {
       // 제단+촛대 → 운세 (인덱스 13)
@@ -482,24 +501,51 @@ class LibraryScene extends Phaser.Scene {
     // 커스텀 호스트 스프라이트 애니메이션 (8프레임: 1,2=아래 3,4=위 5,6=오른쪽 7,8=왼쪽)
     if (this.textures.exists('host_custom')) {
       const hc = 'host_custom';
-      [
-        { key: `${hc}_walk_down`,  start: 0, end: 1 },
-        { key: `${hc}_walk_up`,    start: 2, end: 3 },
-        { key: `${hc}_walk_right`, start: 4, end: 5 },
-        { key: `${hc}_walk_left`,  start: 6, end: 7 },
-        { key: `${hc}_idle_down`,  start: 0, end: 0 },
-        { key: `${hc}_idle_up`,    start: 2, end: 2 },
-        { key: `${hc}_idle_right`, start: 4, end: 4 },
-        { key: `${hc}_idle_left`,  start: 6, end: 6 },
-        { key: `${hc}_idle`,       start: 0, end: 0 },
-      ].forEach(({ key, start, end }) => {
+      const hostTheme = this.roomConfig?.theme;
+
+      let animDefs;
+      if (hostTheme === 'betrayer') {
+        // 배덕한 주인공: 프레임 5,6이 바뀌어 있고 위/아래는 1프레임만 존재
+        animDefs = [
+          { key: `${hc}_walk_down`,  frames: [0] },
+          { key: `${hc}_walk_up`,    frames: [1] },
+          { key: `${hc}_walk_right`, frames: [5, 7] },
+          { key: `${hc}_walk_left`,  frames: [4, 6] },
+          { key: `${hc}_idle_down`,  frames: [0] },
+          { key: `${hc}_idle_up`,    frames: [1] },
+          { key: `${hc}_idle_right`, frames: [5] },
+          { key: `${hc}_idle_left`,  frames: [4] },
+          { key: `${hc}_idle`,       frames: [0] },
+        ];
+      } else {
+        // 루스, 너속밤 등 기본 구조
+        // 왼쪽 걷기: 오른쪽 프레임을 flipX로 재활용 (프레임 7이 방향 오류)
+        animDefs = [
+          { key: `${hc}_walk_down`,  frames: [0, 1] },
+          { key: `${hc}_walk_up`,    frames: [2, 3] },
+          { key: `${hc}_walk_right`, frames: [4, 5] },
+          { key: `${hc}_walk_left`,  frames: [4, 5] },
+          { key: `${hc}_idle_down`,  frames: [0] },
+          { key: `${hc}_idle_up`,    frames: [2] },
+          { key: `${hc}_idle_right`, frames: [4] },
+          { key: `${hc}_idle_left`,  frames: [4] },
+          { key: `${hc}_idle`,       frames: [0] },
+        ];
+      }
+
+      animDefs.forEach(({ key, frames }) => {
         this.anims.create({
           key,
-          frames: this.anims.generateFrameNumbers(hc, { start, end }),
-          frameRate: start !== end ? 6 : 1,
+          frames: frames.map(f => ({ key: hc, frame: f })),
+          frameRate: frames.length > 1 ? 6 : 1,
           repeat: -1,
         });
       });
+
+      // 왼쪽 걷기에서 flipX가 필요한 캐릭터 기록
+      this._hostNeedsFlipOnLeft = (hostTheme === 'sangsuri' || hostTheme === 'neosokbam');
+      // 배덕한 주인공: 위/아래 이동 시 실제 이동 없이 자세만 변경
+      this._hostNoVerticalMove = (hostTheme === 'betrayer');
     }
   }
 
@@ -830,6 +876,13 @@ class LibraryScene extends Phaser.Scene {
     const rangeX = this.bgW * 0.08;
     const rangeY = this.bgH * 0.04;
     const isCustom = (avatar === this.hostAvatar && this.textures.exists('host_custom'));
+    const needsFlipOnLeft = this._hostNeedsFlipOnLeft && avatar === this.hostAvatar;
+    const noVerticalMove = this._hostNoVerticalMove && avatar === this.hostAvatar;
+
+    const applyFlip = (dir) => {
+      if (!needsFlipOnLeft) return;
+      avatar.setFlipX(dir === 'left');
+    };
 
     const doMove = () => {
       if (!avatar || !avatar.active) return;
@@ -839,12 +892,13 @@ class LibraryScene extends Phaser.Scene {
         const idleDirs = ['down', 'left', 'right'];
         const idleDir = idleDirs[Math.floor(Math.random() * idleDirs.length)];
         avatar.play(`${charKey}_idle_${idleDir}`, true);
+        applyFlip(idleDir);
         this.time.delayedCall(Phaser.Math.Between(4000, 8000), doMove);
         return;
       }
 
-      // 상하좌우 중 하나만 이동
-      const dirs = ['up', 'down', 'left', 'right'];
+      // 이동 방향 선택 (배덕한 주인공은 좌우만)
+      const dirs = noVerticalMove ? ['left', 'right'] : ['up', 'down', 'left', 'right'];
       const dir = dirs[Math.floor(Math.random() * dirs.length)];
 
       let targetX = avatar.x;
@@ -866,6 +920,7 @@ class LibraryScene extends Phaser.Scene {
       const duration = (distance / 15) * 1000;
 
       avatar.play(`${charKey}_walk_${dir}`, true);
+      applyFlip(dir);
 
       this.tweens.add({
         targets: avatar,
@@ -888,6 +943,7 @@ class LibraryScene extends Phaser.Scene {
         onComplete: () => {
           if (!avatar || !avatar.active) return;
           avatar.play(`${charKey}_idle_${dir}`, true);
+          applyFlip(dir);
           this.time.delayedCall(Phaser.Math.Between(5000, 10000), doMove);
         }
       });
@@ -1325,6 +1381,26 @@ class LibraryScene extends Phaser.Scene {
     const picked = lines[Math.floor(Math.random() * lines.length)];
 
     this.showDialogue('제사상', picked, () => {
+      this.endDialogue();
+      this.time.delayedCall(200, () => {
+        this.onCrystalClick();
+      });
+    });
+  }
+
+  // ── TV 운세 (배덕한 타인) ──
+  onTvFortuneClick() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+
+    const lines = [
+      'TV 화면에 무언가 떠오르고 있어… 오늘의 운세일까?',
+      '화면이 갑자기 바뀌더니 의미심장한 문구가 나타났어.',
+      '누군가 TV에 메시지를 남겨둔 것 같아…',
+    ];
+    const picked = lines[Math.floor(Math.random() * lines.length)];
+
+    this.showDialogue('TV', picked, () => {
       this.endDialogue();
       this.time.delayedCall(200, () => {
         this.onCrystalClick();

@@ -43,7 +43,7 @@ const rooms = {
   betrayer_user: {
     aiConfig: {
       persona: 'betrayer',
-      hostName: '남주인공',
+      hostName: '박치경',
       readingData: {
         recentBooks: ['배덕한 타인에게', '데페이즈망', '폐하의 밤'],
         favoriteGenres: ['로맨스', '드라마'],
@@ -309,7 +309,7 @@ const PERSONA_PROFILES = {
     monologue: `혼잣말 예시: "나는 고유주인데...", "나는 현서나가 아니야."`,
   },
   betrayer: {
-    personality: `당신은 "배덕한 타인에게"의 남주인공입니다.
+    personality: `당신은 "배덕한 타인에게"의 남주인공 "박치경"입니다.
 성격:
 - 세련되고 도시적이며, 완벽주의적 성향
 - 겉으로는 냉철하고 카리스마 있지만 내면에 고독함을 품고 있음
