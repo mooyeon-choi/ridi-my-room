@@ -1369,6 +1369,131 @@ class LibraryScene extends Phaser.Scene {
     });
   }
 
+  // ── 문 밖 이탈 → 마법진 소환 (상수리 방문 모드) ──
+  onDoorEscapeSummon() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+
+    const avatar = this.myAvatar;
+    const label = this.myAvatarLabel;
+    if (!avatar) return;
+
+    // 마법진 중심 좌표
+    const mcCenterX = (920 + 187 / 2) * this.scaleX;
+    const mcCenterY = (740 + 180 / 2) * this.scaleY;
+
+    // 화면 암전
+    const blackout = this.add.graphics().setDepth(1500);
+    blackout.fillStyle(0x000000, 1);
+    blackout.fillRect(0, 0, this.bgW, this.bgH);
+    blackout.setAlpha(0);
+
+    this.tweens.add({
+      targets: blackout,
+      alpha: 1,
+      duration: 300,
+      onComplete: () => {
+        // 아바타를 마법진 위치로 이동
+        avatar.x = mcCenterX;
+        avatar.y = mcCenterY;
+        avatar.setDepth(mcCenterY);
+        if (label) {
+          label.setPosition(avatar.x, avatar.y + 4);
+          label.setDepth(mcCenterY + 0.1);
+        }
+        if (this.myAvatarShadow) {
+          this.myAvatarShadow.setPosition(avatar.x, avatar.y + 2);
+          this.myAvatarShadow.setDepth(mcCenterY - 0.1);
+        }
+
+        // 암전 해제
+        this.tweens.add({
+          targets: blackout,
+          alpha: 0,
+          duration: 400,
+          delay: 200,
+          onComplete: () => {
+            blackout.destroy();
+
+            // 마법진 소환 이펙트 (빛 + 파티클)
+            const cx = avatar.x;
+            const cy = avatar.y - 30;
+
+            const glow = this.add.graphics().setDepth(900);
+            glow.fillStyle(0xc4b5fd, 0.8);
+            glow.fillCircle(cx, cy, 8);
+
+            for (let i = 0; i < 4; i++) {
+              const ring = this.add.graphics().setDepth(899);
+              ring.lineStyle(3, 0xc4b5fd, 0.9);
+              ring.strokeCircle(0, 0, 10);
+              ring.setPosition(cx, cy);
+              ring.setAlpha(0);
+
+              this.time.delayedCall(i * 180, () => {
+                ring.setAlpha(1);
+                this.tweens.add({
+                  targets: ring,
+                  scaleX: 10 + i * 3,
+                  scaleY: 10 + i * 3,
+                  alpha: 0,
+                  duration: 1000,
+                  ease: 'Cubic.easeOut',
+                  onComplete: () => ring.destroy(),
+                });
+              });
+            }
+
+            for (let i = 0; i < 16; i++) {
+              const angle = (Math.PI * 2 * i) / 16;
+              const particle = this.add.graphics().setDepth(900);
+              const colors = [0xc4b5fd, 0xe9d5ff, 0xfde68a, 0xffffff];
+              particle.fillStyle(colors[i % colors.length], 1);
+              particle.fillCircle(0, 0, 2.5);
+              particle.setPosition(cx, cy);
+
+              this.tweens.add({
+                targets: particle,
+                x: cx + Math.cos(angle) * 100,
+                y: cy + Math.sin(angle) * 100,
+                alpha: 0,
+                duration: 900,
+                delay: 50,
+                ease: 'Cubic.easeOut',
+                onComplete: () => particle.destroy(),
+              });
+            }
+
+            this.tweens.add({
+              targets: glow,
+              alpha: 0,
+              scaleX: 4,
+              scaleY: 4,
+              duration: 700,
+              delay: 200,
+              onComplete: () => glow.destroy(),
+            });
+
+            // 루스 대사 (성격 반영)
+            const hostName = this.roomConfig?.hostName || '루스';
+            const lines = [
+              '...문 밖은 위험합니다. 제가 보호 마법진으로 소환한 겁니다.',
+              '어딜 가시려고요? 이 방의 결계 밖은 아직 안전하지 않아요.',
+              '허락 없이 나가시면 곤란합니다. 마법진이 작동해서 다행이군요.',
+              '밖에 나가면 큰일 납니다. 소환 마법진을 설치해둔 보람이 있군요.',
+              '위험한 곳에 가려 하셨군요. 다행히 마법진이 제때 반응했습니다.',
+            ];
+            const picked = lines[Math.floor(Math.random() * lines.length)];
+
+            this.time.delayedCall(600, () => {
+              this.showDialogue(hostName, picked, () => this.endDialogue());
+            });
+          },
+        });
+      },
+    });
+  }
+
   // ── 거울 클릭 → 대화 시스템 ──
   onMirrorClick() {
     if (this.dialogueActive) return;
@@ -1677,6 +1802,15 @@ class LibraryScene extends Phaser.Scene {
           avatar.x = nextX;
           avatar.y = nextY;
           moved = true;
+
+          // 방문 모드 상수리방: 문 밖으로 나가면 마법진으로 소환
+          if (this.mode === 'visitor' && this._theme === 'sangsuri') {
+            const rawY = nextY / this.scaleY;
+            if (rawY > 1300) {
+              this.onDoorEscapeSummon();
+              return;
+            }
+          }
         }
 
         avatar.play(`${charKey}_walk_${this.lastDir}`, true);
