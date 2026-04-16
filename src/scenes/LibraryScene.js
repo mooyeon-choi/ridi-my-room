@@ -201,7 +201,7 @@ class LibraryScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
         .setDepth(50);
       this.mirrorZone.on('pointerdown', () => {
-        if (!this.dialogueActive) this.onMirrorClick();
+        if (this.themeApplied && !this.dialogueActive) this.onMirrorClick();
       });
     }
 
@@ -231,9 +231,13 @@ class LibraryScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
         .setDepth(50);
       this.crystalZone.on('pointerdown', () => {
-        if (!this.dialogueActive) this.onCrystalClick();
+        if (this.themeApplied && !this.dialogueActive) this.onCrystalClick();
       });
     }
+
+    // 테마 적용 여부 (적용 전에는 가구 장애물·인터랙션 비활성화, 벽+책장만 유지)
+    this.themeApplied = false;
+    this.setObstaclesForTheme(false);
 
     // 대화 시스템 초기화
     this.dialogueActive = false;
@@ -351,9 +355,15 @@ class LibraryScene extends Phaser.Scene {
   }
 
   // 특정 위치가 장애물과 겹치는지 확인
+  // 벽 인덱스: 0~4, 책장 인덱스: 7
   isBlocked(x, y, margin = 10) {
     const obstacles = this.currentObstacles || OBSTACLES;
-    for (const { x: ox, y: oy, w, h } of obstacles) {
+    const wallAndBookshelf = [0, 1, 2, 3, 4, 7];
+    for (let i = 0; i < obstacles.length; i++) {
+      // 테마 미적용 시 벽+책장만 충돌 체크
+      if (!this.themeApplied && !wallAndBookshelf.includes(i)) continue;
+
+      const { x: ox, y: oy, w, h } = obstacles[i];
       const rx = ox * this.scaleX;
       const ry = oy * this.scaleY;
       const rw = w * this.scaleX;
@@ -723,18 +733,51 @@ class LibraryScene extends Phaser.Scene {
     this.time.delayedCall(2000, doMove);
   }
 
+  // 벽 인덱스: 0(상단), 1(좌측), 2(우측), 3(하단좌), 4(하단우)
+  // 책장 인덱스: 7
+  setObstaclesForTheme(enabled) {
+    const wallIndices = [0, 1, 2, 3, 4];
+    const bookshelfIndex = 7;
+    if (this.obstacleGroup) {
+      this.obstacleGroup.getChildren().forEach((zone, i) => {
+        if (wallIndices.includes(i) || i === bookshelfIndex) {
+          zone.body.enable = true;
+        } else {
+          zone.body.enable = enabled;
+        }
+      });
+    }
+    // 거울·수정구: 테마 적용 시에만 활성화
+    if (this.mirrorZone) {
+      if (enabled) this.mirrorZone.setInteractive({ useHandCursor: true });
+      else this.mirrorZone.disableInteractive();
+    }
+    if (this.crystalZone) {
+      if (enabled) this.crystalZone.setInteractive({ useHandCursor: true });
+      else this.crystalZone.disableInteractive();
+    }
+    // 책장: 항상 활성화
+    if (this.bookshelfZone) {
+      this.bookshelfZone.setInteractive({ useHandCursor: true });
+    }
+  }
+
   changeBackground(textureKey) {
     if (!this.bg) return;
     if (this.textures.exists(textureKey)) {
       this.bg.setTexture(textureKey);
       this.bg.setDisplaySize(this.bgW, this.bgH);
     }
+    this.themeApplied = true;
+    this.setObstaclesForTheme(true);
   }
 
   restoreBackground() {
     if (!this.bg) return;
     this.bg.setTexture('background');
     this.bg.setDisplaySize(this.bgW, this.bgH);
+    this.themeApplied = false;
+    this.setObstaclesForTheme(false);
   }
 
   addCats() {
@@ -1364,6 +1407,9 @@ class LibraryScene extends Phaser.Scene {
     let closestDist = Infinity;
 
     for (const obj of this.interactables) {
+      // 테마 미적용 시 책장만 상호작용 가능
+      if (!this.themeApplied && obj.name !== 'bookshelf') continue;
+
       let cx, cy;
       if (obj.getPos) {
         const pos = obj.getPos();

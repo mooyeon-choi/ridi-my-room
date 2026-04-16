@@ -88,6 +88,7 @@ function MyRoom() {
         setSlotApplied(prev => ({ ...prev, 0: false }));
       }
     } else if (i === 1) {
+      if (!scene.themeApplied) return;
       if (!slotApplied[1]) {
         scene.addCats();
         setSlotApplied(prev => ({ ...prev, 1: true }));
@@ -96,6 +97,7 @@ function MyRoom() {
         setSlotApplied(prev => ({ ...prev, 1: false }));
       }
     } else if (i === 2) {
+      if (!scene.themeApplied) return;
       if (!slotApplied[2]) {
         scene.addRaptan();
         setSlotApplied(prev => ({ ...prev, 2: true }));
@@ -106,6 +108,7 @@ function MyRoom() {
         setShowChat(false);
       }
     } else if (i === 3) {
+      if (!scene.themeApplied) return;
       scene.onCrystalClick();
     }
   }
