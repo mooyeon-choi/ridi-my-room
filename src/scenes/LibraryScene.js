@@ -27,15 +27,17 @@ const OBSTACLE_MAPS = {
     { x: 0,    y: 0,    w: 2048, h: 380 },  // 상단 벽 + 지붕
     { x: 0,    y: 0,    w: 120,  h: 1244 }, // 좌측 벽
     { x: 1928, y: 0,    w: 120,  h: 1244 }, // 우측 벽
-    { x: 0,    y: 1120, w: 2048, h: 124 },  // 하단 벽
-    { x: 100,  y: 300,  w: 180,  h: 250 },  // 석등
-    { x: 350,  y: 280,  w: 250,  h: 280 },  // 병풍/족자
-    { x: 700,  y: 380,  w: 200,  h: 200 },  // 선반
-    { x: 1300, y: 250,  w: 600,  h: 400 },  // 나무 + 제단 영역
-    { x: 100,  y: 700,  w: 150,  h: 200 },  // 항아리 (좌하)
-    { x: 300,  y: 800,  w: 100,  h: 120 },  // 양동이
-    { x: 700,  y: 550,  w: 250,  h: 200 },  // 책상/의자
-    { x: 1000, y: 550,  w: 350,  h: 300 },  // 제단 + 촛대
+    { x: 0,    y: 1020, w: 380,  h: 224 },  // 하단벽(문좌)
+    { x: 540,  y: 1020, w: 1508, h: 224 },  // 하단벽(문우)
+    { x: 380,  y: 1208, w: 160,  h: 36 },   // 하단벽(문바닥)
+    { x: 190,  y: 300,  w: 180,  h: 250 },  // 석등
+    { x: 400,  y: 140,  w: 250,  h: 280 },  // 병풍/족자
+    { x: 930,  y: 250,  w: 250,  h: 200 },  // 선반
+    { x: 1575, y: 150,  w: 600,  h: 400 },  // 나무 + 제단 영역
+    { x: 175,  y: 600,  w: 150,  h: 200 },  // 항아리 (좌하)
+    { x: 300,  y: 860,  w: 100,  h: 60 },   // 양동이
+    { x: 874,  y: 520,  w: 250,  h: 200 },  // 책상/의자
+    { x: 1250, y: 500,  w: 350,  h: 300 },  // 제단 + 촛대
     { x: 1400, y: 700,  w: 400,  h: 250 },  // 다다미 + 병풍
   ],
   // 배덕한 타인
@@ -85,15 +87,17 @@ const VISITOR_OBSTACLE_MAPS = {
     { x: 0,    y: 0,    w: 2048, h: 380,  name: '상단 벽' },
     { x: 0,    y: 0,    w: 100,  h: 1244, name: '좌측 벽' },
     { x: 1948, y: 0,    w: 100,  h: 1244, name: '우측 벽' },
-    { x: 0,    y: 1100, w: 2048, h: 144,  name: '하단 벽' },
-    { x: 100,  y: 300,  w: 150,  h: 250,  name: '석등' },
-    { x: 350,  y: 280,  w: 250,  h: 280,  name: '병풍/족자' },
-    { x: 680,  y: 350,  w: 200,  h: 200,  name: '선반' },
-    { x: 1300, y: 250,  w: 550,  h: 450,  name: '나무+바위' },
-    { x: 100,  y: 700,  w: 150,  h: 200,  name: '항아리' },
-    { x: 280,  y: 800,  w: 100,  h: 120,  name: '양동이' },
-    { x: 650,  y: 520,  w: 280,  h: 220,  name: '궤짝' },
-    { x: 950,  y: 500,  w: 300,  h: 320,  name: '제단+촛대' },
+    { x: 0,    y: 985,  w: 380,  h: 259,  name: '하단벽(문좌)' },
+    { x: 540,  y: 985,  w: 1508, h: 259,  name: '하단벽(문우)' },
+    { x: 380,  y: 1208, w: 160,  h: 36,   name: '하단벽(문바닥)' },
+    { x: 190,  y: 300,  w: 150,  h: 250,  name: '석등' },
+    { x: 400,  y: 140,  w: 250,  h: 280,  name: '병풍/족자' },
+    { x: 930,  y: 250,  w: 250,  h: 200,  name: '선반' },
+    { x: 1575, y: 150,  w: 550,  h: 450,  name: '나무+바위' },
+    { x: 175,  y: 600,  w: 150,  h: 200,  name: '항아리' },
+    { x: 280,  y: 860,  w: 100,  h: 60,   name: '양동이' },
+    { x: 934,  y: 593,  w: 190,  h: 147,  name: '궤짝' },
+    { x: 1250, y: 500,  w: 300,  h: 320,  name: '제단+촛대' },
   ],
   // 배덕한 타인 방문 - 2048x1194
   betrayer: [
@@ -367,6 +371,26 @@ class LibraryScene extends Phaser.Scene {
       });
     }
 
+    // 상호작용 오브젝트 등록 (neosokbam 테마)
+    if (theme === 'neosokbam') {
+      // 제단+촛대 → 운세 (인덱스 13)
+      const altarOb = this.currentObstacles[13];
+      if (altarOb) this.interactables.push({
+        name: 'altar', emoji: '🔮',
+        cx: (altarOb.x + altarOb.w / 2) * this.scaleX,
+        cy: (altarOb.y + altarOb.h) * this.scaleY,
+        range: 50, action: () => this.onAltarFortuneClick(),
+      });
+      // 나무+바위 → 추천작품 (인덱스 9)
+      const treeOb = this.currentObstacles[9];
+      if (treeOb) this.interactables.push({
+        name: 'tree', emoji: '📚',
+        cx: (treeOb.x + treeOb.w / 2) * this.scaleX,
+        cy: (treeOb.y + treeOb.h) * this.scaleY,
+        range: 50, action: () => this.onTreeRecommendClick(),
+      });
+    }
+
     // 방문 모드 전용 상호작용
     if (this.mode === 'visitor' && theme === 'sangsuri') {
       // 마법진 상호작용 영역
@@ -391,23 +415,19 @@ class LibraryScene extends Phaser.Scene {
       }).setDepth(1000);
     }
 
-    // 문 인터랙션 (하단 벽 움푹 파인 부분, 항상 활성화)
+    // 문 인터랙션 (하단 벽 움푹 파인 부분)
     if (this.mode === 'owner') {
-      const doorX = 462;
-      const doorY = 1111;
+      const doorPositions = {
+        sangsuri:  { x: 462, y: 1111 },
+        neosokbam: { x: 460, y: 1050 },
+      };
+      const doorPos = doorPositions[theme] || doorPositions.sangsuri;
       const doorRange = 50;
-
-      // [디버그] 주석 해제하면 문 영역 시각화
-      // const doorDebug = this.add.graphics().setDepth(999);
-      // doorDebug.lineStyle(2, 0x00ff00, 0.8);
-      // doorDebug.strokeCircle(doorX * this.scaleX, doorY * this.scaleY, doorRange);
-      // doorDebug.fillStyle(0x00ff00, 0.2);
-      // doorDebug.fillCircle(doorX * this.scaleX, doorY * this.scaleY, doorRange);
 
       this.interactables.push({
         name: 'door', emoji: '🚪',
-        cx: doorX * this.scaleX,
-        cy: doorY * this.scaleY,
+        cx: doorPos.x * this.scaleX,
+        cy: doorPos.y * this.scaleY,
         range: doorRange,
         action: () => { if (this.onDoorClick) this.onDoorClick(); },
       });
@@ -1280,6 +1300,46 @@ class LibraryScene extends Phaser.Scene {
     this.dialogueContainer.add(clickZone);
     clickZone.once('pointerdown', () => {
       this.endDialogue();
+    });
+  }
+
+  // ── 제사상 운세 (너를 속이는 밤) ──
+  onAltarFortuneClick() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+
+    const lines = [
+      '…향이 피어오르고 있어. 무언가 알려주려는 걸까.',
+      '제사상 위의 촛불이 흔들리고 있어… 점괘를 봐도 될까?',
+      '오래된 기운이 느껴져. 오늘의 운세를 알려줄지도 몰라.',
+    ];
+    const picked = lines[Math.floor(Math.random() * lines.length)];
+
+    this.showDialogue('제사상', picked, () => {
+      this.endDialogue();
+      this.time.delayedCall(200, () => {
+        this.onCrystalClick();
+      });
+    });
+  }
+
+  // ── 나무 추천작품 (너를 속이는 밤) ──
+  onTreeRecommendClick() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+
+    const lines = [
+      '오래된 나무에 누군가 좋아하는 책 제목을 새겨놓았어…',
+      '나무 아래 바위에 책 목록이 적혀 있어. 누가 남긴 걸까?',
+      '바람에 실려 책 이야기가 들려오는 것 같아…',
+    ];
+    const picked = lines[Math.floor(Math.random() * lines.length)];
+
+    this.showDialogue('나무', picked, () => {
+      this.endDialogue();
+      this.time.delayedCall(200, () => {
+        if (this.onBookshelfClick) this.onBookshelfClick();
+      });
     });
   }
 

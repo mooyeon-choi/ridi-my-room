@@ -27,10 +27,10 @@ const USER_ROOM_DATA = {
   },
   neosokbam_user: {
     background: '/assets/backgrounds/neosokbam.webp',
-    greeting: '여주인공 : 어머... 이 밤에 찾아오다니. 용기가 있군요.',
+    greeting: '어머... 이 밤에 찾아오다니. 용기가 있군요.',
     theme: 'neosokbam',
     hostSprite: '/assets/characters/neosokbam_heroine.webp',
-    hostName: '여주인공',
+    hostName: '고유주',
     hostPortrait: '/assets/characters/portraits/neosokbam_heroine.png',
     spriteWidth: 512,
     spriteHeight: 571,
