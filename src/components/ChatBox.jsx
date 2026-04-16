@@ -95,11 +95,17 @@ function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur, on
           '꽤 괜찮은 와인이군요. 땅콩 냄새가 좀 나지만....',
           '...흥미롭군요. 계속 말해보세요.',
         ],
+        riftan: [
+          '…조용하네.',
+          '이런 시간도 나쁘지 않군.',
+          '이대로 있어.',
+          '가지 마.',
+        ],
       };
       const replies = fallbackMap[persona] || fallbackMap.sangsuri;
       const reply = replies[Math.floor(Math.random() * replies.length)];
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-      const fallbackEmojis = { sangsuri: '📚', neosokbam: '🌙', betrayer: '🍷' };
+      const fallbackEmojis = { sangsuri: '📚', neosokbam: '🌙', betrayer: '🍷', riftan: '⚔️' };
       if (onChatBubble) onChatBubble('host', fallbackEmojis[persona] || '😊');
     } finally {
       setLoading(false);

@@ -281,7 +281,7 @@ function MyRoom() {
           <div style={{ ...styles.chatArea, height: 120, minHeight: 60, maxHeight: 300, marginBottom: 'clamp(4px, 0.8vh, 8px)', resize: 'vertical', overflow: 'auto' }}>
             <ChatBox
               hostUserId={userId}
-              aiConfig={{ persona: 'sangsuri', customGreeting: '리프탄 : 마, 맥시... 무슨 이야기를 할까요?', readingData: { recentBooks: ['상수리나무 아래'], favoriteGenres: ['판타지', '로맨스'], totalBooksRead: 15 } }}
+              aiConfig={{ persona: 'riftan', customGreeting: '마, 맥시... 무슨 이야기를 할까요?', readingData: { recentBooks: ['상수리나무 아래'], favoriteGenres: ['판타지', '로맨스'], totalBooksRead: 15 } }}
               hostName="리프탄"
               onChatBubble={(type, value) => {
                 const scene = gameRef.current?.getScene();
