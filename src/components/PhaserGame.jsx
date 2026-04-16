@@ -3,7 +3,7 @@ import * as Phaser from 'phaser';
 import LibraryScene from '../scenes/LibraryScene';
 
 const PhaserGame = forwardRef(function PhaserGame(
-  { mode, userId, hostUserId, roomConfig, aiConfig, onActionChange, onAvatarMove, onBookshelfClick, onDoorClick, width, height, parentWidth, parentHeight },
+  { mode, userId, hostUserId, roomConfig, aiConfig, onActionChange, onAvatarMove, onBookshelfClick, onDoorClick, onPointsEarned, width, height, parentWidth, parentHeight },
   ref
 ) {
   const gameRef = useRef(null);
@@ -71,7 +71,8 @@ const PhaserGame = forwardRef(function PhaserGame(
       onActionChange,
       onAvatarMove,
       onBookshelfClick,
-      onDoorClick
+      onDoorClick,
+      onPointsEarned
     });
 
     // canvas를 부모 컨테이너에 꽉 채움 (CSS만 조정, 게임 해상도 유지)

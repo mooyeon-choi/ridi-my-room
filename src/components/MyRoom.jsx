@@ -7,23 +7,26 @@ import RewardModal from './RewardModal';
 import MissionModal from './MissionModal';
 import LibraryModal from './LibraryModal';
 import ItemModal from './ItemModal';
+import AchievementModal from './AchievementModal';
 import { useRoomLayout } from '../hooks/useRoomLayout';
 
 const SIDE_BUTTONS = [
-  { key: 'mission',  label: '미션' },
-  { key: 'library',  label: '나의 서재' },
-  { key: 'item',     label: '아이템' },
-  { key: 'share',    label: '자랑하기' },
+  { key: 'mission',      label: '미션' },
+  { key: 'library',      label: '나의 서재' },
+  { key: 'item',         label: '아이템' },
+  { key: 'achievement',  label: '업적' },
+  { key: 'share',        label: '구경가기' },
 ];
 
 const SLOT_COUNT = 10;
-const SLOT_ITEMS = [
+const SLOT_ITEMS_BASE = [
   { img: '/assets/items/inv_item3.png', label: '테마 적용' },
-  { img: '/assets/items/inv_item4.png', label: '고양이' },
+  { img: '/assets/items/inv_item5.webp', label: '로라' },
+  { img: '/assets/items/inv_item6.webp', label: '리프' },
+  { img: '/assets/items/inv_item7.webp', label: '탄이' },
   { img: '/assets/items/inv_item2.png', label: '리프탄' },
-  { img: '/assets/items/inv_item1.png', label: '수정구' },
-  null, null, null, null, null, null,
 ];
+const SLOT_ITEM_CRYSTAL = { img: '/assets/items/inv_item1.png', label: '수정구' };
 const GREETING_TEXT = '맥시 : 오늘도 독서 열심히 해보자!';
 const TYPING_SPEED = 50;
 const DISPLAY_DURATION = 3000;
@@ -37,6 +40,7 @@ function MyRoom() {
   const [showQR, setShowQR] = useState(false);
   const [showReward, setShowReward] = useState(false);
   const [showItem, setShowItem] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
   const [showMission, setShowMission] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showVisitInput, setShowVisitInput] = useState(false);
@@ -54,6 +58,10 @@ function MyRoom() {
   });
   const [showGreeting, setShowGreeting] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
+  const [totalPoints, setTotalPoints] = useState(() => {
+    try { return parseInt(localStorage.getItem('myroom_points') || '0', 10); }
+    catch (e) { return 0; }
+  });
   const gameRef = useRef(null);
   const restoredRef = useRef(false);
 
@@ -64,6 +72,9 @@ function MyRoom() {
   useEffect(() => {
     localStorage.setItem('myroom_showChat', String(showChat));
   }, [showChat]);
+  useEffect(() => {
+    localStorage.setItem('myroom_points', String(totalPoints));
+  }, [totalPoints]);
 
   // Phaser 씬 로드 후 저장된 상태 복원
   useEffect(() => {
@@ -74,14 +85,17 @@ function MyRoom() {
       clearInterval(interval);
       restoredRef.current = true;
       if (slotApplied[0]) scene.changeBackground('bg_maxy_room');
-      if (slotApplied[1]) scene.addCats();
-      if (slotApplied[2]) scene.addRaptan();
+      if (slotApplied[5]) scene.addCrystal();
+      if (slotApplied[1]) scene.addSingleCat('white');
+      if (slotApplied[2]) scene.addSingleCat('black');
+      if (slotApplied[3]) scene.addSingleCat('gray');
+      if (slotApplied[4]) scene.addRaptan();
     }, 200);
     return () => clearInterval(interval);
   }, []);
 
   // 모달이 열리거나 닫힐 때 Phaser 입력 비활성화/활성화
-  const anyModalOpen = showMission || showLibrary || showItem || showVisitInput || showQR || showReward;
+  const anyModalOpen = showMission || showLibrary || showItem || showAchievement || showVisitInput || showQR || showReward;
   useEffect(() => {
     if (anyModalOpen) {
       gameRef.current?.disableInput();
@@ -99,6 +113,7 @@ function MyRoom() {
         if (showMission) setShowMission(false);
         else if (showLibrary) setShowLibrary(false);
         else if (showItem) setShowItem(false);
+        else if (showAchievement) setShowAchievement(false);
         else if (showVisitInput) { setShowVisitInput(false); setVisitUserId(''); }
         else if (showQR) setShowQR(false);
         else if (showReward) setShowReward(false);
@@ -106,7 +121,7 @@ function MyRoom() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [anyModalOpen, showMission, showLibrary, showItem, showVisitInput, showQR, showReward]);
+  }, [anyModalOpen, showMission, showLibrary, showItem, showAchievement, showVisitInput, showQR, showReward]);
 
   useEffect(() => {
     if (!showGreeting) return;
@@ -130,38 +145,77 @@ function MyRoom() {
     if (!scene) return;
 
     if (i === 0) {
+      // 테마 적용/해제
       if (!slotApplied[0]) {
         scene.changeBackground('bg_maxy_room');
         setSlotApplied(prev => ({ ...prev, 0: true }));
       } else {
+        // 테마 해제 시 수정구도 함께 해제
+        if (slotApplied[5]) {
+          scene.removeCrystal();
+        }
         scene.restoreBackground();
-        setSlotApplied(prev => ({ ...prev, 0: false }));
+        setSlotApplied(prev => ({ ...prev, 0: false, 5: false }));
       }
     } else if (i === 1) {
+      // 흰 고양이 (로라)
       if (!scene.themeApplied) return;
       if (!slotApplied[1]) {
-        scene.addCats();
+        scene.addSingleCat('white');
         setSlotApplied(prev => ({ ...prev, 1: true }));
       } else {
-        scene.removeCats();
+        scene.removeSingleCat('white');
         setSlotApplied(prev => ({ ...prev, 1: false }));
       }
     } else if (i === 2) {
+      // 검정 고양이 (리프)
       if (!scene.themeApplied) return;
       if (!slotApplied[2]) {
-        scene.addRaptan();
+        scene.addSingleCat('black');
         setSlotApplied(prev => ({ ...prev, 2: true }));
+      } else {
+        scene.removeSingleCat('black');
+        setSlotApplied(prev => ({ ...prev, 2: false }));
+      }
+    } else if (i === 3) {
+      // 회색 고양이 (탄이)
+      if (!scene.themeApplied) return;
+      if (!slotApplied[3]) {
+        scene.addSingleCat('gray');
+        setSlotApplied(prev => ({ ...prev, 3: true }));
+      } else {
+        scene.removeSingleCat('gray');
+        setSlotApplied(prev => ({ ...prev, 3: false }));
+      }
+    } else if (i === 4) {
+      // 리프탄
+      if (!scene.themeApplied) return;
+      if (!slotApplied[4]) {
+        scene.addRaptan();
+        setSlotApplied(prev => ({ ...prev, 4: true }));
         setShowChat(true);
       } else {
         scene.removeRaptan();
-        setSlotApplied(prev => ({ ...prev, 2: false }));
+        setSlotApplied(prev => ({ ...prev, 4: false }));
         setShowChat(false);
       }
-    } else if (i === 3) {
+    } else if (i === 5) {
+      // 수정구 추가/제거
       if (!scene.themeApplied) return;
-      scene.onCrystalClick();
+      if (!slotApplied[5]) {
+        scene.addCrystal();
+        setSlotApplied(prev => ({ ...prev, 5: true }));
+      } else {
+        scene.removeCrystal();
+        setSlotApplied(prev => ({ ...prev, 5: false }));
+      }
     }
   }
+
+  // 테마 적용 시 수정구 슬롯 동적 추가
+  const SLOT_ITEMS = slotApplied[0]
+    ? [...SLOT_ITEMS_BASE, SLOT_ITEM_CRYSTAL, null, null, null, null]
+    : [...SLOT_ITEMS_BASE, null, null, null, null, null];
 
   const slotW = Math.max(36, Math.floor((L.gameW - 9 * 6 - 20) / 10));
   const slotBarMaxW = slotW * 10 + 6 * 9 + 10 * 2 + 2 * 2;
@@ -172,18 +226,24 @@ function MyRoom() {
   return (
     <div style={styles.container}>
 
-      {/* 타이틀 */}
-      <div style={{ ...styles.titleBar, width: '100%', maxWidth: titleBarMaxW, margin: '0 auto', marginBottom: '4vh', fontSize: titleFontSize }}>
-        <span style={{ ...styles.titleText, fontSize: titleFontSize }}>
-          {titleText}
-        </span>
+      {/* 타이틀 + 포인트 */}
+      <div style={styles.titleRow}>
+        <div style={{ ...styles.titleBar, width: '100%', maxWidth: titleBarMaxW, fontSize: titleFontSize }}>
+          <span style={{ ...styles.titleText, fontSize: titleFontSize }}>
+            {titleText}
+          </span>
+        </div>
+        <div style={styles.pointsBadge}>
+          <span style={styles.pointsIcon}>🅿</span>
+          <span style={styles.pointsValue}>{totalPoints}</span>
+        </div>
       </div>
 
       {/* 게임 + 사이드 버튼 */}
       <div style={{ ...styles.middleRow, gap: L.gap }}>
         <div style={styles.gameWrapper}>
           <div style={{ width: L.gameW, height: L.gameH, overflow: 'hidden', borderRadius: '4px' }}>
-            <PhaserGame ref={gameRef} mode="owner" userId={userId} onActionChange={() => {}} onBookshelfClick={() => setShowLibrary(true)} onDoorClick={() => setShowVisitInput(true)} />
+            <PhaserGame ref={gameRef} mode="owner" userId={userId} onActionChange={() => {}} onBookshelfClick={() => setShowLibrary(true)} onDoorClick={() => setShowVisitInput(true)} onPointsEarned={(pts) => setTotalPoints(prev => prev + pts)} />
           </div>
         </div>
         <div style={styles.sideButtons}>
@@ -195,6 +255,7 @@ function MyRoom() {
                 if (btn.key === 'mission') setShowMission(true);
                 if (btn.key === 'library') setShowLibrary(true);
                 if (btn.key === 'item') setShowItem(true);
+                if (btn.key === 'achievement') setShowAchievement(true);
                 if (btn.key === 'share') setShowVisitInput(true);
               }}
             >
@@ -277,6 +338,7 @@ function MyRoom() {
       {showMission  && <MissionModal onClose={() => setShowMission(false)} />}
       {showLibrary  && <LibraryModal onClose={() => setShowLibrary(false)} onMissionComplete={() => setShowReward(true)} />}
       {showItem     && <ItemModal onClose={() => setShowItem(false)} />}
+      {showAchievement && <AchievementModal onClose={() => setShowAchievement(false)} />}
 
       {showVisitInput && (
         <div style={styles.visitOverlay} onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}>
@@ -331,6 +393,14 @@ const styles = {
     paddingRight: '8vw',
     boxSizing: 'border-box',
   },
+  titleRow: {
+    position: 'relative',
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: '4vh',
+  },
   titleBar: {
     background: '#3a1010',
     border: '1px solid #6b2a2a',
@@ -342,6 +412,28 @@ const styles = {
     justifyContent: 'center',
   },
   titleText: { color: '#ffffff', letterSpacing: '1px' },
+  pointsBadge: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    background: '#3a1010',
+    border: '1px solid #6b2a2a',
+    borderRadius: '4px',
+    padding: '0 clamp(10px, 2vw, 16px)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  pointsIcon: {
+    color: '#f0c060',
+    fontSize: 'clamp(12px, 1.8vw, 16px)',
+  },
+  pointsValue: {
+    color: '#f0c060',
+    fontSize: 'clamp(12px, 1.8vw, 16px)',
+    fontWeight: 'bold',
+  },
   middleRow: { position: 'relative', display: 'flex', alignItems: 'center' },
   gameWrapper: {
     position: 'relative',

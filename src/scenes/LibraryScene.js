@@ -1,35 +1,33 @@
 import * as Phaser from 'phaser';
 
-// 배경 이미지 원본 크기: 2048 x 1172
+// 배경 이미지 원본 크기: 2048 x 1193
 // 장애물 영역 정의 (원본 픽셀 기준)
 const OBSTACLE_MAPS = {
   // 상수리나무 아래 / 맥시방
   sangsuri: [
-    { x: 0,    y: 0,    w: 2048, h: 520 },
-    { x: 0,    y: 0,    w: 90,   h: 1172 },
-    { x: 1958, y: 0,    w: 90,   h: 1172 },
-    { x: 0,    y: 1050, w: 420,  h: 122 },  // 하단벽 (문 왼쪽)
-    { x: 420,  y: 1100, w: 160,  h: 72 },   // 하단벽 (문 바닥)
-    { x: 580,  y: 1050, w: 820,  h: 122 },  // 하단벽 (문 오른쪽)
-    { x: 1400, y: 950,  w: 648,  h: 222 },
-    { x: 325,  y: 340,  w: 350,  h: 300 },  // 벽난로
-    { x: 700,  y: 280,  w: 170,  h: 320 },  // 거울
-    { x: 910,  y: 250,  w: 270,  h: 315 },  // 책장
-    { x: 1450, y: 360,  w: 300,  h: 320 },  // 침대
-    { x: 2250, y: 300,  w: 110,  h: 220 },  // 화분
-    { x: 90,   y: 710,  w: 110,  h: 340 },  // 촛대
-    { x: 650,  y: 650,  w: 400,  h: 170 },  // 책상
-    { x: 960,  y: 585,  w: 100,  h: 125 },  // 수정구
-    { x: 1170, y: 830,  w: 100,  h: 120 },  // 꽃병
-    { x: 1450, y: 800,  w: 300,  h: 160 },  // 상자
-    { x: 2050, y: 800,  w: 150,  h: 120 },  // 바구니
+    { x: 0,    y: 0,    w: 2048, h: 500 },   // 상단벽 (-20)
+    { x: 0,    y: 0,    w: 70,   h: 1193 },   // 좌벽 (-20)
+    { x: 1978, y: 0,    w: 70,   h: 1193 },   // 우벽 (+20, -20)
+    { x: 0,    y: 1051, w: 390,  h: 142 },    // 하단벽 (문 왼쪽)
+    { x: 390,  y: 1101, w: 160,  h: 92 },     // 하단벽 (문 바닥)
+    { x: 550,  y: 1051, w: 1498, h: 142 },    // 하단벽 (문 오른쪽~끝)
+    { x: 265,  y: 270,  w: 350,  h: 300 },    // 벽난로
+    { x: 680,  y: 260,  w: 170,  h: 320 },    // 거울
+    { x: 920,  y: 230,  w: 270,  h: 315 },    // 책장
+    { x: 1450, y: 340,  w: 380,  h: 380 },    // 침대 (+10w, +30h)
+    { x: 2230, y: 280,  w: 110,  h: 220 },    // 화분
+    { x: 70,   y: 720,  w: 140,  h: 340 },    // 촛대 (+30y, +30w)
+    { x: 630,  y: 630,  w: 400,  h: 170 },    // 책상
+    { x: 940,  y: 565,  w: 100,  h: 125 },    // 수정구
+    { x: 1150, y: 850,  w: 140,  h: 120 },    // 꽃병(탁자) (+30y, +30w)
+    { x: 1500, y: 860,  w: 290,  h: 160 },    // 상자 (+10x, +20y, -10w left cut)
   ],
   // 너를 속이는 밤
   neosokbam: [
     { x: 0,    y: 0,    w: 2048, h: 380 },  // 상단 벽 + 지붕
-    { x: 0,    y: 0,    w: 120,  h: 1172 }, // 좌측 벽
-    { x: 1928, y: 0,    w: 120,  h: 1172 }, // 우측 벽
-    { x: 0,    y: 1050, w: 2048, h: 122 },  // 하단 벽
+    { x: 0,    y: 0,    w: 120,  h: 1244 }, // 좌측 벽
+    { x: 1928, y: 0,    w: 120,  h: 1244 }, // 우측 벽
+    { x: 0,    y: 1120, w: 2048, h: 124 },  // 하단 벽
     { x: 100,  y: 300,  w: 180,  h: 250 },  // 석등
     { x: 350,  y: 280,  w: 250,  h: 280 },  // 병풍/족자
     { x: 700,  y: 380,  w: 200,  h: 200 },  // 선반
@@ -43,10 +41,10 @@ const OBSTACLE_MAPS = {
   // 배덕한 타인
   betrayer: [
     { x: 0,    y: 0,    w: 2048, h: 350 },  // 상단 벽
-    { x: 0,    y: 0,    w: 80,   h: 1172 }, // 좌측 벽
-    { x: 1968, y: 0,    w: 80,   h: 1172 }, // 우측 벽
-    { x: 0,    y: 1050, w: 2048, h: 122 },  // 하단 벽
-    { x: 0,    y: 950,  w: 400,  h: 222 },  // 좌하 계단
+    { x: 0,    y: 0,    w: 80,   h: 1194 }, // 좌측 벽
+    { x: 1968, y: 0,    w: 80,   h: 1194 }, // 우측 벽
+    { x: 0,    y: 1072, w: 2048, h: 122 },  // 하단 벽
+    { x: 0,    y: 972,  w: 400,  h: 222 },  // 좌하 계단
     { x: 80,   y: 300,  w: 250,  h: 250 },  // 축음기/선반
     { x: 400,  y: 280,  w: 400,  h: 280 },  // TV + 스탠드
     { x: 870,  y: 280,  w: 250,  h: 280 },  // 책장
@@ -102,6 +100,7 @@ class LibraryScene extends Phaser.Scene {
     this.onAvatarMove = data.onAvatarMove;
     this.onBookshelfClick = data.onBookshelfClick;
     this.onDoorClick = data.onDoorClick;
+    this.onPointsEarned = data.onPointsEarned;
     this.currentAction = 'idle';
     this.lastDir = 'down';
   }
@@ -110,6 +109,7 @@ class LibraryScene extends Phaser.Scene {
     const bg = this.roomConfig?.background || '/assets/backgrounds/maxy_room_x.webp';
     this.load.image('background', bg);
     this.load.image('bg_maxy_room', '/assets/backgrounds/maxy_room.webp');
+    this.load.image('bg_maxy_room_crystal', '/assets/backgrounds/maxy_room_crystal.webp');
 
     // 맥시 모션 개별 이미지 (owner 아바타)
     const maxyDir = '/assets/maxy_motion';
@@ -121,6 +121,11 @@ class LibraryScene extends Phaser.Scene {
     this.load.image('cat_white', '/assets/pets/cat_white.png');
     this.load.image('cat_black', '/assets/pets/cat_black.png');
     this.load.image('cat_gray',  '/assets/pets/cat_gray.png');
+
+    // 운세 배경 (테마별)
+    this.load.image('fortune_bg_sangsuri', '/assets/backgrounds/fortune/sangsuri.webp');
+    this.load.image('fortune_bg_neosokbam', '/assets/backgrounds/fortune/neosokbam.webp');
+    this.load.image('fortune_bg_betrayer', '/assets/backgrounds/fortune/betrayer.webp');
 
     // 리프탄
     this.load.spritesheet('raptan', '/assets/characters/raptan_sprite.webp', {
@@ -149,7 +154,11 @@ class LibraryScene extends Phaser.Scene {
     this.bgW = width;
     this.bgH = height;
     this.scaleX = width / 2048;
-    this.scaleY = height / 1172;
+
+    // 테마별 원본 높이
+    const themeHeights = { sangsuri: 1193, neosokbam: 1244, betrayer: 1194 };
+    this._theme = this.roomConfig?.theme || 'sangsuri';
+    this.scaleY = height / (themeHeights[this._theme] || 1193);
 
     // 배경
     this.bg = this.add.image(0, 0, 'background').setOrigin(0, 0);
@@ -163,7 +172,7 @@ class LibraryScene extends Phaser.Scene {
     const theme = this.roomConfig?.theme || 'sangsuri';
     this.currentObstacles = OBSTACLE_MAPS[theme] || OBSTACLE_MAPS.sangsuri;
 
-    // 장애물 영역 (디버그 표시 비활성화, 충돌 영역은 유지)
+    // 장애물 영역 (디버그 표시 비활성화)
     // const debugGfx = this.add.graphics().setDepth(999);
 
     this.currentObstacles.forEach(({ x, y, w, h }) => {
@@ -194,7 +203,7 @@ class LibraryScene extends Phaser.Scene {
     this.createAnimations();
 
     // 거울 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
-    const mirrorObs = this.currentObstacles[8]; // 거울
+    const mirrorObs = this.currentObstacles[7]; // 거울
     if (mirrorObs) {
       const mx = mirrorObs.x * this.scaleX;
       const my = mirrorObs.y * this.scaleY;
@@ -209,7 +218,7 @@ class LibraryScene extends Phaser.Scene {
     }
 
     // 책장 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
-    const bookshelfObs = this.currentObstacles[9]; // 책장
+    const bookshelfObs = this.currentObstacles[8]; // 책장
     if (bookshelfObs) {
       const bx = bookshelfObs.x * this.scaleX;
       const by = bookshelfObs.y * this.scaleY;
@@ -224,7 +233,7 @@ class LibraryScene extends Phaser.Scene {
     }
 
     // 수정구 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
-    const crystalObs = this.currentObstacles[14]; // 수정구
+    const crystalObs = this.currentObstacles[13]; // 수정구
     if (crystalObs) {
       const cx = crystalObs.x * this.scaleX;
       const cy = crystalObs.y * this.scaleY;
@@ -234,7 +243,7 @@ class LibraryScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
         .setDepth(50);
       this.crystalZone.on('pointerdown', () => {
-        if (this.themeApplied && !this.dialogueActive) this.onCrystalClick();
+        if (this.crystalAdded && !this.dialogueActive) this.onCrystalClick();
       });
     }
 
@@ -272,21 +281,21 @@ class LibraryScene extends Phaser.Scene {
 
     // 상호작용 오브젝트 등록 (sangsuri 테마)
     if (theme === 'sangsuri') {
-      const mirrorOb = this.currentObstacles[8];
+      const mirrorOb = this.currentObstacles[7];
       if (mirrorOb) this.interactables.push({
         name: 'mirror', emoji: '🪞',
         cx: mirrorOb.x * this.scaleX,
         cy: (mirrorOb.y + mirrorOb.h + 20) * this.scaleY,
         range: 50, action: () => this.onMirrorClick(),
       });
-      const bookOb = this.currentObstacles[9];
+      const bookOb = this.currentObstacles[8];
       if (bookOb) this.interactables.push({
         name: 'bookshelf', emoji: '📚',
         cx: (bookOb.x + bookOb.w / 2) * this.scaleX,
         cy: (bookOb.y + bookOb.h) * this.scaleY,
         range: 40, action: () => { if (this.onBookshelfClick) this.onBookshelfClick(); },
       });
-      const crystalOb = this.currentObstacles[14];
+      const crystalOb = this.currentObstacles[13];
       if (crystalOb) this.interactables.push({
         name: 'crystal', emoji: '🔮',
         cx: (crystalOb.x + crystalOb.w / 2) * this.scaleX,
@@ -297,8 +306,8 @@ class LibraryScene extends Phaser.Scene {
 
     // 문 인터랙션 (하단 벽 움푹 파인 부분, 항상 활성화)
     if (this.mode === 'owner') {
-      const doorX = 502;
-      const doorY = 1070;
+      const doorX = 462;
+      const doorY = 1111;
       const doorRange = 50;
 
       // [디버그] 주석 해제하면 문 영역 시각화
@@ -388,13 +397,16 @@ class LibraryScene extends Phaser.Scene {
   }
 
   // 특정 위치가 장애물과 겹치는지 확인
-  // 벽 인덱스: 0~4, 책장 인덱스: 7
+  // 벽 인덱스: 0~6, 책장 인덱스: 9, 수정구 인덱스: 14
   isBlocked(x, y, margin = 10) {
     const obstacles = this.currentObstacles || OBSTACLES;
-    const wallAndBookshelf = [0, 1, 2, 3, 4, 5, 6, 9];
+    const wallAndBookshelf = [0, 1, 2, 3, 4, 5, 8];
+    const crystalIndex = 13;
     for (let i = 0; i < obstacles.length; i++) {
       // 테마 미적용 시 벽+책장만 충돌 체크
       if (!this.themeApplied && !wallAndBookshelf.includes(i)) continue;
+      // 수정구는 활성화 시에만 충돌 체크
+      if (i === crystalIndex && !this.crystalAdded) continue;
 
       const { x: ox, y: oy, w, h } = obstacles[i];
       const rx = ox * this.scaleX;
@@ -768,15 +780,18 @@ class LibraryScene extends Phaser.Scene {
     this.time.delayedCall(2000, doMove);
   }
 
-  // 벽 인덱스: 0(상단), 1(좌측), 2(우측), 3(하단좌), 4(하단우)
-  // 책장 인덱스: 7
+  // 벽 인덱스: 0(상단), 1(좌측), 2(우측), 3~6(하단)
+  // 책장 인덱스: 9, 수정구 인덱스: 14
   setObstaclesForTheme(enabled) {
-    const wallIndices = [0, 1, 2, 3, 4, 5, 6];
-    const bookshelfIndex = 9;
+    const wallIndices = [0, 1, 2, 3, 4, 5];
+    const bookshelfIndex = 8;
+    const crystalIndex = 13;
     if (this.obstacleGroup) {
       this.obstacleGroup.getChildren().forEach((zone, i) => {
         if (wallIndices.includes(i) || i === bookshelfIndex) {
           zone.body.enable = true;
+        } else if (i === crystalIndex) {
+          zone.body.enable = !!this.crystalAdded;
         } else {
           zone.body.enable = enabled;
         }
@@ -788,7 +803,7 @@ class LibraryScene extends Phaser.Scene {
       else this.mirrorZone.disableInteractive();
     }
     if (this.crystalZone) {
-      if (enabled) this.crystalZone.setInteractive({ useHandCursor: true });
+      if (this.crystalAdded) this.crystalZone.setInteractive({ useHandCursor: true });
       else this.crystalZone.disableInteractive();
     }
     // 책장: 항상 활성화
@@ -807,8 +822,35 @@ class LibraryScene extends Phaser.Scene {
     this.setObstaclesForTheme(true);
   }
 
+  addCrystal() {
+    if (!this.bg || !this.themeApplied) return;
+    this.crystalAdded = true;
+    this.bg.setTexture('bg_maxy_room_crystal');
+    this.bg.setDisplaySize(this.bgW, this.bgH);
+    // 수정구 장애물 활성화
+    const zone = this.obstacleGroup?.getChildren()[13];
+    if (zone?.body) zone.body.enable = true;
+    // 수정구 클릭 영역 활성화
+    if (this.crystalZone) this.crystalZone.setInteractive({ useHandCursor: true });
+  }
+
+  removeCrystal() {
+    if (!this.bg) return;
+    this.crystalAdded = false;
+    if (this.themeApplied) {
+      this.bg.setTexture('bg_maxy_room');
+      this.bg.setDisplaySize(this.bgW, this.bgH);
+    }
+    // 수정구 장애물 비활성화
+    const zone = this.obstacleGroup?.getChildren()[13];
+    if (zone?.body) zone.body.enable = false;
+    // 수정구 클릭 영역 비활성화
+    if (this.crystalZone) this.crystalZone.disableInteractive();
+  }
+
   restoreBackground() {
     if (!this.bg) return;
+    this.crystalAdded = false;
     this.bg.setTexture('background');
     this.bg.setDisplaySize(this.bgW, this.bgH);
     this.themeApplied = false;
@@ -859,6 +901,54 @@ class LibraryScene extends Phaser.Scene {
     this.catsAdded = false;
   }
 
+  // 개별 고양이 추가
+  addSingleCat(catType) {
+    if (!this.catSprites) this.catSprites = [];
+    if (!this.catClicksRemaining) this.catClicksRemaining = 0;
+
+    const catMap = {
+      white: { key: 'cat_white', name: '로라', x: this.bgW * 0.3, y: this.bgH * 0.75 },
+      black: { key: 'cat_black', name: '리프', x: 850 * this.scaleX + 22, y: 650 * this.scaleY + 26 },
+      gray:  { key: 'cat_gray',  name: '탄이', x: 1600 * this.scaleX - 8, y: 400 * this.scaleY + 90 },
+    };
+    const info = catMap[catType];
+    if (!info) return;
+
+    // 이미 추가된 경우 무시
+    if (this.catSprites.some(c => c.catName === info.name)) return;
+
+    this.catClicksRemaining++;
+    this.drawPixelShadow(info.x, info.y + 2, info.y - 0.1, 8);
+    const cat = this.add.sprite(info.x, info.y, info.key).setOrigin(0.5, 1);
+    cat.setScale(0.4);
+    cat.setDepth(info.y);
+    cat.setInteractive({ useHandCursor: true });
+    cat.catName = info.name;
+    cat.on('pointerdown', () => this.onCatClick(info.name));
+    this.catSprites.push(cat);
+
+    this.interactables.push({
+      name: `cat_${info.name}`, emoji: '🐱',
+      getPos: () => ({ cx: cat.x, cy: cat.y }),
+      range: 40,
+      action: () => this.onCatClick(info.name),
+    });
+  }
+
+  // 개별 고양이 제거
+  removeSingleCat(catType) {
+    const nameMap = { white: '로라', black: '리프', gray: '탄이' };
+    const name = nameMap[catType];
+    if (!name || !this.catSprites) return;
+
+    const idx = this.catSprites.findIndex(c => c.catName === name);
+    if (idx !== -1) {
+      this.catSprites[idx].destroy();
+      this.catSprites.splice(idx, 1);
+    }
+    this.interactables = this.interactables.filter(i => i.name !== `cat_${name}`);
+  }
+
   onCatClick(catName) {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
@@ -870,6 +960,7 @@ class LibraryScene extends Phaser.Scene {
 
       this.showDialogue(name, '그르릉..', () => {
         this.showDialogue('맥시', `${name}의 기분이 좋아요. ${points} 포인트를 물어왔어요!`, () => {
+          if (this.onPointsEarned) this.onPointsEarned(points);
           this.endDialogue();
         });
       });
@@ -1021,20 +1112,37 @@ class LibraryScene extends Phaser.Scene {
     this.dialogueContainer.add(overlay);
 
     // 운세 카드
-    const cardW = width * 0.75;
-    const cardH = height * 0.55;
+    // 배경 이미지 비율 (2048:1075) 유지
+    const imgRatio = 2048 / 1075;
+    let cardW = width * 0.85;
+    let cardH = cardW / imgRatio;
+    if (cardH > height * 0.75) {
+      cardH = height * 0.75;
+      cardW = cardH * imgRatio;
+    }
     const cardX = (width - cardW) / 2;
     const cardY = (height - cardH) / 2;
 
-    const cardBg = this.add.graphics();
-    cardBg.fillStyle(0x1a0a2e, 0.95);
-    cardBg.fillRoundedRect(cardX, cardY, cardW, cardH, 14);
-    cardBg.lineStyle(3, 0x8b5cf6, 1);
-    cardBg.strokeRoundedRect(cardX, cardY, cardW, cardH, 14);
-    this.dialogueContainer.add(cardBg);
+    // 테마별 운세 배경 이미지
+    const theme = this.roomConfig?.theme || 'sangsuri';
+    const fortuneBgKey = `fortune_bg_${theme}`;
+    if (this.textures.exists(fortuneBgKey)) {
+      const bgImg = this.add.image(width / 2, height / 2, fortuneBgKey);
+      bgImg.setDisplaySize(cardW, cardH);
+      bgImg.setDepth(0);
+      this.dialogueContainer.add(bgImg);
+    } else {
+      const cardBg = this.add.graphics();
+      cardBg.fillStyle(0x1a0a2e, 0.95);
+      cardBg.fillRoundedRect(cardX, cardY, cardW, cardH, 14);
+      cardBg.lineStyle(3, 0x8b5cf6, 1);
+      cardBg.strokeRoundedRect(cardX, cardY, cardW, cardH, 14);
+      this.dialogueContainer.add(cardBg);
+    }
 
     // 제목
-    const titleText = this.add.text(width / 2, cardY + 22, '🔮 오늘의 운세', {
+    const topPad = cardH * 0.15;
+    const titleText = this.add.text(width / 2, cardY + topPad, '🔮 오늘의 운세', {
       fontSize: '16px', fontStyle: 'bold', color: '#c4b5fd',
     }).setOrigin(0.5, 0);
     this.dialogueContainer.add(titleText);
@@ -1042,24 +1150,25 @@ class LibraryScene extends Phaser.Scene {
     // 구분선
     const line = this.add.graphics();
     line.lineStyle(1, 0x8b5cf6, 0.4);
-    line.lineBetween(cardX + 20, cardY + 52, cardX + cardW - 20, cardY + 52);
+    line.lineBetween(cardX + 20, cardY + topPad + 30, cardX + cardW - 20, cardY + topPad + 30);
     this.dialogueContainer.add(line);
 
     // 명대사
-    const quoteText = this.add.text(width / 2, cardY + 68, fortune.quote, {
+    const quoteY = cardY + topPad + 46;
+    const quoteText = this.add.text(width / 2, quoteY, fortune.quote, {
       fontSize: '14px', fontStyle: 'italic', color: '#e9d5ff',
       wordWrap: { width: cardW - 48 }, lineSpacing: 6, align: 'center',
     }).setOrigin(0.5, 0);
     this.dialogueContainer.add(quoteText);
 
     // 출처
-    const sourceText = this.add.text(width / 2, cardY + 68 + quoteText.height + 10, `— ${fortune.source}`, {
+    const sourceText = this.add.text(width / 2, quoteY + quoteText.height + 10, `— ${fortune.source}`, {
       fontSize: '11px', color: '#a78bfa',
     }).setOrigin(0.5, 0);
     this.dialogueContainer.add(sourceText);
 
     // 구분선 2
-    const line2Y = cardY + 68 + quoteText.height + 10 + sourceText.height + 14;
+    const line2Y = quoteY + quoteText.height + 10 + sourceText.height + 14;
     const line2 = this.add.graphics();
     line2.lineStyle(1, 0x8b5cf6, 0.3);
     line2.lineBetween(cardX + 40, line2Y, cardX + cardW - 40, line2Y);
@@ -1447,6 +1556,8 @@ class LibraryScene extends Phaser.Scene {
     for (const obj of this.interactables) {
       // 테마 미적용 시 책장과 문만 상호작용 가능
       if (!this.themeApplied && obj.name !== 'bookshelf' && obj.name !== 'door') continue;
+      // 수정구는 추가되었을 때만 상호작용 가능
+      if (obj.name === 'crystal' && !this.crystalAdded) continue;
 
       let cx, cy;
       if (obj.getPos) {

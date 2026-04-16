@@ -191,7 +191,7 @@ function VisitorRoom() {
             style={{ ...styles.sideBtn, width: L.sideBtnW, padding: `${L.sideBtnPadding}px 0`, fontSize: L.sideBtnFontSize }}
             onClick={() => setShowVisitInput(true)}
           >
-            자랑하기
+            구경가기
           </button>
         </div>
       </div>
@@ -226,7 +226,7 @@ function VisitorRoom() {
         </div>
       </div>
 
-      {/* 자랑하기 모달 */}
+      {/* 구경가기 모달 */}
       {showVisitInput && (
         <div style={styles.visitOverlay} onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}>
           <div style={styles.visitModal} onClick={e => e.stopPropagation()}>
