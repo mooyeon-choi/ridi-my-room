@@ -7,17 +7,19 @@ function Home() {
 
   function handleStart() {
     setTransitioning(true);
-    // 애니메이션(1.4s) 후 화면 전환
     setTimeout(() => navigate('/web/my-room'), 1800);
   }
 
   return (
     <div style={styles.container}>
-      {/* 배경 이미지 — 전환 시 문 위치로 확대 */}
+      {/* 배경 이미지 */}
       <div
         className={transitioning ? 'bg zoom-in' : 'bg'}
         style={styles.bg}
       />
+
+      {/* 비네트 오버레이 */}
+      <div style={styles.vignette} />
 
       {/* 조명 글로우 레이어 */}
       <div
@@ -28,6 +30,7 @@ function Home() {
       {/* 화이트아웃 레이어 */}
       {transitioning && <div className="whiteout" style={styles.whiteout} />}
 
+      {/* 버튼 */}
       <button
         onClick={handleStart}
         style={{ ...styles.button, ...(transitioning ? styles.buttonHidden : {}) }}
@@ -48,7 +51,6 @@ function Home() {
           animation: flicker 4s ease-in-out infinite;
         }
 
-        /* 버튼 클릭 시 — 문 중앙 아래쪽(50% 75%)으로 확대 */
         @keyframes zoomInDoor {
           0%   { transform: scale(1);   transform-origin: 50% 85%; }
           100% { transform: scale(1.5); transform-origin: 50% 85%; }
@@ -57,7 +59,6 @@ function Home() {
           animation: zoomInDoor 1.8s cubic-bezier(0.8, 0, 0.3, 1) forwards;
         }
 
-        /* 조명 폭발적으로 밝아지기 */
         @keyframes glowBurst {
           0%   { opacity: 0.15; }
           60%  { opacity: 0.35; }
@@ -67,7 +68,6 @@ function Home() {
           animation: glowBurst 1.8s ease-in forwards;
         }
 
-        /* 화이트아웃 */
         @keyframes whiteout {
           0%   { opacity: 0; }
           60%  { opacity: 0; }
@@ -76,6 +76,7 @@ function Home() {
         .whiteout {
           animation: whiteout 1.8s ease-in forwards;
         }
+
       `}</style>
     </div>
   );
@@ -84,13 +85,16 @@ function Home() {
 const styles = {
   container: {
     width: '100%',
-    height: '100vh',
-    position: 'relative',
+    height: '100dvh',
+    position: 'fixed',
+    top: 0, left: 0,
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    paddingBottom: '13vh',
-    overflow: 'hidden'
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 'clamp(8vh, 12vh, 16vh)',
+    overflow: 'hidden',
+    gap: 'clamp(12px, 2vh, 24px)',
   },
   bg: {
     position: 'absolute',
@@ -98,7 +102,14 @@ const styles = {
     backgroundImage: 'url(/assets/backgrounds/main.png)',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    zIndex: 0
+    zIndex: 0,
+  },
+  vignette: {
+    position: 'absolute',
+    inset: 0,
+    background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%)',
+    pointerEvents: 'none',
+    zIndex: 1,
   },
   glowLayer: {
     position: 'absolute',
@@ -109,33 +120,35 @@ const styles = {
       radial-gradient(ellipse 15% 20% at 50% 62%, rgba(255, 180, 60, 1) 0%, transparent 100%)
     `,
     pointerEvents: 'none',
-    zIndex: 1
+    zIndex: 1,
   },
   whiteout: {
     position: 'absolute',
     inset: 0,
     background: 'rgba(255, 230, 150, 0.95)',
     pointerEvents: 'none',
-    zIndex: 2
+    zIndex: 2,
   },
   button: {
     position: 'relative',
     zIndex: 3,
     background: '#4F0C0C',
     color: '#f5e6c8',
-    border: '1px solid #8B3232',
+    border: '3px solid #8B3232',
     borderRadius: '2px',
-    padding: '2vh 12vw',
-    fontSize: 'clamp(14px, 1.8vw, 28px)',
+    padding: 'clamp(10px, 1.8vh, 16px) clamp(32px, 7vw, 64px)',
+    fontSize: 'clamp(13px, 1.8vw, 20px)',
     fontWeight: 'bold',
     cursor: 'pointer',
-    letterSpacing: '2px',
-    transition: 'opacity 0.2s'
+    letterSpacing: 'clamp(2px, 0.5vw, 5px)',
+    transition: 'opacity 0.3s',
+    boxShadow: '4px 4px 0px #2a0606, inset 0 1px 0 rgba(255,255,255,0.1)',
+    imageRendering: 'pixelated',
   },
   buttonHidden: {
     opacity: 0,
-    pointerEvents: 'none'
-  }
+    pointerEvents: 'none',
+  },
 };
 
 export default Home;
