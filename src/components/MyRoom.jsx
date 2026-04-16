@@ -42,11 +42,43 @@ function MyRoom() {
   const [showVisitInput, setShowVisitInput] = useState(false);
   const [visitUserId, setVisitUserId] = useState('');
   const [activeSlot, setActiveSlot] = useState(0);
-  const [slotApplied, setSlotApplied] = useState({});
-  const [showChat, setShowChat] = useState(false);
+  const [slotApplied, setSlotApplied] = useState(() => {
+    try {
+      const saved = localStorage.getItem('myroom_slotApplied');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) { return {}; }
+  });
+  const [showChat, setShowChat] = useState(() => {
+    try { return localStorage.getItem('myroom_showChat') === 'true'; }
+    catch (e) { return false; }
+  });
   const [showGreeting, setShowGreeting] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
   const gameRef = useRef(null);
+  const restoredRef = useRef(false);
+
+  // slotApplied / showChat 변경 시 로컬스토리지 저장
+  useEffect(() => {
+    localStorage.setItem('myroom_slotApplied', JSON.stringify(slotApplied));
+  }, [slotApplied]);
+  useEffect(() => {
+    localStorage.setItem('myroom_showChat', String(showChat));
+  }, [showChat]);
+
+  // Phaser 씬 로드 후 저장된 상태 복원
+  useEffect(() => {
+    if (restoredRef.current) return;
+    const interval = setInterval(() => {
+      const scene = gameRef.current?.getScene();
+      if (!scene || !scene.myAvatar) return;
+      clearInterval(interval);
+      restoredRef.current = true;
+      if (slotApplied[0]) scene.changeBackground('bg_maxy_room');
+      if (slotApplied[1]) scene.addCats();
+      if (slotApplied[2]) scene.addRaptan();
+    }, 200);
+    return () => clearInterval(interval);
+  }, []);
 
   // 모달이 열리거나 닫힐 때 Phaser 입력 비활성화/활성화
   const anyModalOpen = showMission || showLibrary || showItem || showVisitInput || showQR || showReward;

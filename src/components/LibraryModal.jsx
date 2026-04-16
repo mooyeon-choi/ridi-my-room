@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SLOT_COUNT = 14; // 2행 7열
 
@@ -20,12 +21,54 @@ const INITIAL_BOOKS = [
   AVAILABLE_BOOKS.find(b => b.id === 'asha'), // 국경의 아샤
 ].filter(Boolean);
 
+function getInitialBooks() {
+  try {
+    const saved = localStorage.getItem('library_books');
+    if (saved) {
+      const ids = JSON.parse(saved);
+      const books = ids.map(id => AVAILABLE_BOOKS.find(b => b.id === id)).filter(Boolean);
+      if (books.length > 0) return books;
+    }
+  } catch (e) {}
+  return INITIAL_BOOKS;
+}
+
 function LibraryModal({ onClose, onMissionComplete }) {
-  const [books, setBooks] = useState(INITIAL_BOOKS);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [books, setBooks] = useState(getInitialBooks);
   const [selectedBook, setSelectedBook] = useState(null);
+
+  // 책 목록 변경 시 로컬스토리지 저장
+  useEffect(() => {
+    localStorage.setItem('library_books', JSON.stringify(books.map(b => b.id)));
+  }, [books]);
+
+  // 모달 열릴 때 모든 이미지 미리 로드
+  useEffect(() => {
+    AVAILABLE_BOOKS.forEach(book => {
+      new Image().src = book.img;
+      new Image().src = book.screenshot;
+    });
+  }, []);
   const [screenshotData, setScreenshotData] = useState(null); // { screenshot, pendingBook }
   const [added, setAdded] = useState(false);
   const [missionTriggered, setMissionTriggered] = useState(false);
+
+  // 브라우저 뒤로가기로 스크린샷 닫기
+  const closeScreenshotInternal = useCallback(() => {
+    setScreenshotData(null);
+    setAdded(false);
+  }, []);
+
+  useEffect(() => {
+    if (!screenshotData) return;
+    function handlePopState() {
+      closeScreenshotInternal();
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [screenshotData, closeScreenshotInternal]);
 
   const slots = Array.from({ length: SLOT_COUNT }, (_, i) => books[i] || null);
 
@@ -44,6 +87,8 @@ function LibraryModal({ onClose, onMissionComplete }) {
 
     const pendingBook = available[Math.floor(Math.random() * available.length)];
 
+    // 히스토리에 스크린샷 상태 push
+    window.history.pushState({ screenshot: true }, '', `${location.pathname}?view=book-preview`);
     setScreenshotData({ screenshot: pendingBook.screenshot, pendingBook });
     setAdded(false);
   }
@@ -61,11 +106,13 @@ function LibraryModal({ onClose, onMissionComplete }) {
     });
     setScreenshotData(null);
     setAdded(false);
+    window.history.back();
   }
 
   function closeScreenshot() {
     setScreenshotData(null);
     setAdded(false);
+    window.history.back();
   }
 
   // 전체화면 스크린샷 페이지
@@ -114,17 +161,18 @@ function LibraryModal({ onClose, onMissionComplete }) {
                 </div>
               </div>
               <div style={styles.detailRight}>
-                <div style={styles.detailInfo}>
-                  <div style={styles.detailTop}>
-                    <span style={styles.detailTitle}>{selectedBook.title}</span>
-                    <span style={styles.detailGenre}>{selectedBook.genre}</span>
-                  </div>
-                  <span style={styles.detailDesc}>{selectedBook.description}</span>
+                <div style={styles.detailTopRow}>
+                  <span style={styles.detailTitle}>{selectedBook.title}</span>
+                  <span style={styles.detailGenre}>{selectedBook.genre}</span>
                 </div>
-                <button style={styles.goBtn} onClick={() => {
-                  setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null });
-                  setAdded(true);
-                }}>보러가기</button>
+                <div style={styles.detailMiddle}>
+                  <span style={styles.detailDesc}>{selectedBook.description}</span>
+                  <button style={styles.goBtn} onClick={() => {
+                    window.history.pushState({ screenshot: true }, '', `${location.pathname}?view=book-preview`);
+                    setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null });
+                    setAdded(true);
+                  }}>보러가기</button>
+                </div>
               </div>
             </div>
           </div>
@@ -259,22 +307,21 @@ const styles = {
   // 상단 상세보기 — 디자인 매칭
   detailPanel: {
     background: '#b07840',
-    border: '3px solid #5c3018',
-    borderBottom: '2px solid #5c3018',
+    border: 'none',
     borderRadius: '8px 8px 0 0',
     padding: 'clamp(10px, 2vw, 16px)',
   },
   detailInner: {
-    background: '#d4b080',
-    border: '2px solid #8b6030',
+    background: '#5c3018',
+    border: '2px solid #3d1e10',
     borderRadius: '6px',
     padding: 'clamp(10px, 2vw, 16px)',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'stretch',
     gap: 'clamp(12px, 2.5vw, 20px)',
   },
   bookCover: {
-    flexShrink: 0,
+    flex: 1,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -287,43 +334,50 @@ const styles = {
     boxShadow: '3px 4px 8px rgba(0,0,0,0.3)',
   },
   detailImg: {
-    width: 'clamp(60px, 9vw, 90px)',
-    height: 'clamp(80px, 12vw, 120px)',
+    width: 'clamp(80px, 12vw, 130px)',
+    height: 'clamp(104px, 15.6vw, 169px)',
     objectFit: 'cover',
     display: 'block',
   },
   detailRight: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'clamp(10px, 2vw, 16px)',
-  },
-  detailInfo: {
-    flex: 1,
+    width: '65%',
+    flexShrink: 0,
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(4px, 0.8vw, 8px)',
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
+    background: '#d4b080',
+    border: '2px solid #8b6030',
+    borderRadius: '6px',
+    padding: 'clamp(10px, 2vw, 16px)',
   },
-  detailTop: {
+  detailTopRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: '8px',
+  },
+  detailMiddle: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: 'clamp(10px, 2vw, 16px)',
   },
   detailTitle: {
-    fontSize: 'clamp(15px, 2.2vw, 20px)',
+    fontSize: 'clamp(16px, 2.5vw, 22px)',
     fontWeight: 'bold',
-    color: '#3d2210',
+    color: '#431010',
   },
   detailGenre: {
-    fontSize: 'clamp(10px, 1.3vw, 13px)',
-    color: '#5c3a1e',
+    fontSize: 'clamp(16px, 2.5vw, 22px)',
+    fontWeight: 'bold',
+    color: '#431010',
     flexShrink: 0,
     whiteSpace: 'nowrap',
   },
   detailDesc: {
-    fontSize: 'clamp(11px, 1.5vw, 14px)',
-    color: '#5c3a1e',
+    flex: 1,
+    fontSize: 'clamp(14px, 2vw, 18px)',
+    color: '#87452E',
     lineHeight: '1.6',
     whiteSpace: 'pre-line',
   },
@@ -360,7 +414,7 @@ const styles = {
     gap: 'clamp(4px, 0.8vw, 8px)',
   },
   slot: {
-    aspectRatio: '98 / 116',
+    aspectRatio: '623 / 810',
     background: '#a07040',
     border: '2px solid #7a5028',
     borderRadius: '3px',
