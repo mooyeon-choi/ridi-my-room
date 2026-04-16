@@ -4,15 +4,15 @@ const SLOT_COUNT = 14; // 2행 7열
 
 const AVAILABLE_BOOKS = [
   { id: 'sangsuri',  title: '상수리나무 아래',          genre: '웹툰>로판',      description: '그림서말, 나무 글\n김수지 원작\n리디 출판 총 146화', img: '/assets/books/sangsuri.png',              screenshot: '/assets/screenshots/page_sangsuri.png' },
-  { id: 'pumgyeok',  title: '품격을 배반한다',          genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n리디 연재중',                    img: '/assets/books/betraying_dignity.webp',   screenshot: '/assets/screenshots/page_pumgyeok.png' },
-  { id: 'angae',     title: '안개를 삼킨 나비',         genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n매주 화 연재',                   img: '/assets/books/fog_butterfly.webp',       screenshot: '/assets/screenshots/page_angae.png' },
-  { id: 'nampyeon',  title: '남편에게 쫓기고 있습니다', genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n매주 일요일 연재',               img: '/assets/books/chased_by_husband.webp',   screenshot: '/assets/screenshots/page_nampyeon.png' },
-  { id: 'merry',     title: '메리 사이코',              genre: '로맨스>웹소설',  description: '진예서 글\n매주 금 연재',                            img: '/assets/books/merry_psycho.webp',        screenshot: '/assets/screenshots/page_merry.png' },
-  { id: 'neoreul',   title: '너를 속이는 밤',           genre: '로맨스>웹소설',  description: '소통팬엔터/소.그림\n매주 화요일 연재',               img: '/assets/books/night_deceiving_you.webp', screenshot: '/assets/screenshots/page_neoreul.png' },
-  { id: 'dephase',   title: '데페이즈망',               genre: '로맨스>웹소설',  description: '소통팬엔터/소.그림\n매주 목요일 연재',               img: '/assets/books/dephase.webp',             screenshot: '/assets/screenshots/page_dephase.png' },
-  { id: 'owol',      title: '오월의 정원에서',          genre: '로판>웹소설',    description: '봄봄 글\n매주 화 연재',                              img: '/assets/books/may_garden.webp',          screenshot: '/assets/screenshots/page_owol.png' },
-  { id: 'pyeha',     title: '폐하의 밤',                genre: '로판>웹소설',    description: '리디 출판\n완결',                                    img: '/assets/books/night_of_majesty.webp',    screenshot: '/assets/screenshots/page_pyeha.png' },
-  { id: 'asha',      title: '국경의 아샤',              genre: '로판>웹소설',    description: '리디 연재중',                                        img: '/assets/books/border_asha.webp',         screenshot: '/assets/screenshots/page_sangsuri.png' },
+  { id: 'pumgyeok',  title: '품격을 배반한다',          genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n리디 연재중',                    img: '/assets/books/betraying_dignity.png',   screenshot: '/assets/screenshots/page_pumgyeok.png' },
+  { id: 'angae',     title: '안개를 삼킨 나비',         genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n매주 화 연재',                   img: '/assets/books/fog_butterfly.png',       screenshot: '/assets/screenshots/page_angae.png' },
+  { id: 'nampyeon',  title: '남편에게 쫓기고 있습니다', genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n매주 일요일 연재',               img: '/assets/books/chased_by_husband.png',   screenshot: '/assets/screenshots/page_nampyeon.png' },
+  { id: 'merry',     title: '메리 사이코',              genre: '로맨스>웹소설',  description: '진예서 글\n매주 금 연재',                            img: '/assets/books/merry_psycho.png',        screenshot: '/assets/screenshots/page_merry.png' },
+  { id: 'neoreul',   title: '너를 속이는 밤',           genre: '로맨스>웹소설',  description: '소통팬엔터/소.그림\n매주 화요일 연재',               img: '/assets/books/night_deceiving_you.png', screenshot: '/assets/screenshots/page_neoreul.png' },
+  { id: 'dephase',   title: '데페이즈망',               genre: '로맨스>웹소설',  description: '소통팬엔터/소.그림\n매주 목요일 연재',               img: '/assets/books/dephase.png',             screenshot: '/assets/screenshots/page_dephase.png' },
+  { id: 'owol',      title: '오월의 정원에서',          genre: '로판>웹소설',    description: '봄봄 글\n매주 화 연재',                              img: '/assets/books/may_garden.png',          screenshot: '/assets/screenshots/page_owol.png' },
+  { id: 'pyeha',     title: '폐하의 밤',                genre: '로판>웹소설',    description: '리디 출판\n완결',                                    img: '/assets/books/night_of_majesty.png',    screenshot: '/assets/screenshots/page_pyeha.png' },
+  { id: 'asha',      title: '국경의 아샤',              genre: '로판>웹소설',    description: '리디 연재중',                                        img: '/assets/books/border_asha.png',         screenshot: '/assets/screenshots/page_sangsuri.png' },
 ];
 
 const INITIAL_BOOKS = [
