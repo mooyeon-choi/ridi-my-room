@@ -827,12 +827,21 @@ class LibraryScene extends Phaser.Scene {
   startAutoMovement(avatar, charKey) {
     const baseX = avatar.x;
     const baseY = avatar.y;
-    const rangeX = this.bgW * 0.12;
-    const rangeY = this.bgH * 0.08;
+    const rangeX = this.bgW * 0.08;
+    const rangeY = this.bgH * 0.04;
     const isCustom = (avatar === this.hostAvatar && this.textures.exists('host_custom'));
 
     const doMove = () => {
       if (!avatar || !avatar.active) return;
+
+      // 일정 확률로 제자리에서 방향만 바꾸고 대기
+      if (Math.random() < 0.4) {
+        const idleDirs = ['down', 'left', 'right'];
+        const idleDir = idleDirs[Math.floor(Math.random() * idleDirs.length)];
+        avatar.play(`${charKey}_idle_${idleDir}`, true);
+        this.time.delayedCall(Phaser.Math.Between(4000, 8000), doMove);
+        return;
+      }
 
       // 상하좌우 중 하나만 이동
       const dirs = ['up', 'down', 'left', 'right'];
@@ -840,7 +849,7 @@ class LibraryScene extends Phaser.Scene {
 
       let targetX = avatar.x;
       let targetY = avatar.y;
-      const moveAmount = Phaser.Math.Between(20, 60);
+      const moveAmount = Phaser.Math.Between(10, 30);
 
       if (dir === 'up') targetY = Math.max(baseY - rangeY, avatar.y - moveAmount);
       else if (dir === 'down') targetY = Math.min(baseY + rangeY, avatar.y + moveAmount);
@@ -849,12 +858,12 @@ class LibraryScene extends Phaser.Scene {
 
       // 장애물 체크 — 막혀있으면 이동 취소하고 재시도
       if (this.isBlocked(targetX, targetY - 15)) {
-        this.time.delayedCall(Phaser.Math.Between(1000, 3000), doMove);
+        this.time.delayedCall(Phaser.Math.Between(3000, 6000), doMove);
         return;
       }
 
       const distance = Math.abs(targetX - avatar.x) + Math.abs(targetY - avatar.y);
-      const duration = (distance / 20) * 1000;
+      const duration = (distance / 15) * 1000;
 
       avatar.play(`${charKey}_walk_${dir}`, true);
 
@@ -863,7 +872,7 @@ class LibraryScene extends Phaser.Scene {
         x: targetX,
         y: targetY,
         duration,
-        ease: 'Linear',
+        ease: 'Sine.easeInOut',
         onUpdate: () => {
           const label = avatar === this.hostAvatar ? this.hostAvatarLabel : this.visitorAvatarLabel;
           if (label) {
@@ -878,13 +887,13 @@ class LibraryScene extends Phaser.Scene {
         },
         onComplete: () => {
           if (!avatar || !avatar.active) return;
-          avatar.play(`${charKey}_idle_down`, true);
-          this.time.delayedCall(Phaser.Math.Between(3000, 7000), doMove);
+          avatar.play(`${charKey}_idle_${dir}`, true);
+          this.time.delayedCall(Phaser.Math.Between(5000, 10000), doMove);
         }
       });
     };
 
-    this.time.delayedCall(2000, doMove);
+    this.time.delayedCall(3000, doMove);
   }
 
   // 벽 인덱스: 0(상단), 1(좌측), 2(우측), 3~6(하단)
