@@ -18,10 +18,11 @@ const SIDE_BUTTONS = [
 
 const SLOT_COUNT = 10;
 const SLOT_ITEMS = [
-  { img: '/assets/items/crystal_ball.png', label: '수정구' },
-  { img: '/assets/items/cat_icon.png', label: '고양이' },
-  { img: '/assets/items/raptan_icon.png', label: '라프탄' },
-  null, null, null, null, null, null, null,
+  { img: '/assets/items/inv_item3.png', label: '테마 적용' },
+  { img: '/assets/items/inv_item4.png', label: '고양이' },
+  { img: '/assets/items/inv_item2.png', label: '리프탄' },
+  { img: '/assets/items/inv_item1.png', label: '수정구' },
+  null, null, null, null, null, null,
 ];
 const GREETING_TEXT = '맥시 : 오늘도 독서 열심히 해보자!';
 const TYPING_SPEED = 50;
@@ -78,19 +79,34 @@ function MyRoom() {
     const scene = gameRef.current?.getScene();
     if (!scene) return;
 
-    if (i === 0 && !slotApplied[0]) {
-      // 1번 슬롯: 배경 변경
-      scene.changeBackground('bg_maxy_room');
-      setSlotApplied(prev => ({ ...prev, 0: true }));
-    } else if (i === 1 && !slotApplied[1]) {
-      // 2번 슬롯: 고양이 3마리 추가
-      scene.addCats();
-      setSlotApplied(prev => ({ ...prev, 1: true }));
-    } else if (i === 2 && !slotApplied[2]) {
-      // 3번 슬롯: 라프탄 캐릭터 추가
-      scene.addRaptan();
-      setSlotApplied(prev => ({ ...prev, 2: true }));
-      setShowChat(true);
+    if (i === 0) {
+      if (!slotApplied[0]) {
+        scene.changeBackground('bg_maxy_room');
+        setSlotApplied(prev => ({ ...prev, 0: true }));
+      } else {
+        scene.restoreBackground();
+        setSlotApplied(prev => ({ ...prev, 0: false }));
+      }
+    } else if (i === 1) {
+      if (!slotApplied[1]) {
+        scene.addCats();
+        setSlotApplied(prev => ({ ...prev, 1: true }));
+      } else {
+        scene.removeCats();
+        setSlotApplied(prev => ({ ...prev, 1: false }));
+      }
+    } else if (i === 2) {
+      if (!slotApplied[2]) {
+        scene.addRaptan();
+        setSlotApplied(prev => ({ ...prev, 2: true }));
+        setShowChat(true);
+      } else {
+        scene.removeRaptan();
+        setSlotApplied(prev => ({ ...prev, 2: false }));
+        setShowChat(false);
+      }
+    } else if (i === 3) {
+      scene.onCrystalClick();
     }
   }
 
@@ -151,8 +167,8 @@ function MyRoom() {
           <div style={{ ...styles.chatArea, height: 120, minHeight: 60, maxHeight: 300, marginBottom: 'clamp(4px, 0.8vh, 8px)', resize: 'vertical', overflow: 'auto' }}>
             <ChatBox
               hostUserId={userId}
-              aiConfig={{ persona: 'sangsuri', customGreeting: '라프탄 : 마, 맥시... 무슨 이야기를 할까요?', readingData: { recentBooks: ['상수리나무 아래'], favoriteGenres: ['판타지', '로맨스'], totalBooksRead: 15 } }}
-              hostName="라프탄"
+              aiConfig={{ persona: 'sangsuri', customGreeting: '리프탄 : 마, 맥시... 무슨 이야기를 할까요?', readingData: { recentBooks: ['상수리나무 아래'], favoriteGenres: ['판타지', '로맨스'], totalBooksRead: 15 } }}
+              hostName="리프탄"
               onChatBubble={(type, value) => {
                 const scene = gameRef.current?.getScene();
                 if (!scene) return;

@@ -119,7 +119,7 @@ class LibraryScene extends Phaser.Scene {
     this.load.image('cat_black', '/assets/pets/cat_black.png');
     this.load.image('cat_gray',  '/assets/pets/cat_gray.png');
 
-    // 라프탄
+    // 리프탄
     this.load.spritesheet('raptan', '/assets/characters/raptan_sprite.webp', {
       frameWidth: 343, frameHeight: 440
     });
@@ -731,6 +731,12 @@ class LibraryScene extends Phaser.Scene {
     }
   }
 
+  restoreBackground() {
+    if (!this.bg) return;
+    this.bg.setTexture('background');
+    this.bg.setDisplaySize(this.bgW, this.bgH);
+  }
+
   addCats() {
     if (this.catsAdded) return;
     this.catsAdded = true;
@@ -765,6 +771,16 @@ class LibraryScene extends Phaser.Scene {
     });
   }
 
+  removeCats() {
+    if (!this.catsAdded) return;
+    if (this.catSprites) {
+      this.catSprites.forEach(cat => cat.destroy());
+      this.catSprites = [];
+    }
+    this.interactables = this.interactables.filter(i => !i.name.startsWith('cat_'));
+    this.catsAdded = false;
+  }
+
   onCatClick(catName) {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
@@ -792,7 +808,7 @@ class LibraryScene extends Phaser.Scene {
     if (this.raptanAdded) return;
     this.raptanAdded = true;
 
-    // 라프탄 애니메이션: 프레임 0,1 = 아래, 2,3 = 위
+    // 리프탄 애니메이션: 프레임 0,1 = 아래, 2,3 = 위
     this.anims.create({
       key: 'raptan_idle_down',
       frames: [{ key: 'raptan', frame: Math.random() < 0.5 ? 0 : 1 }],
@@ -821,7 +837,7 @@ class LibraryScene extends Phaser.Scene {
     this.raptan.setDepth(y);
     this.raptan.play('raptan_idle_down');
 
-    this.raptanLabel = this.add.text(x, y + 4, '라프탄', {
+    this.raptanLabel = this.add.text(x, y + 4, '리프탄', {
       fontSize: '10px', color: '#fff',
       backgroundColor: 'rgba(0,0,0,0.5)',
       padding: { x: 4, y: 2 }
@@ -829,7 +845,7 @@ class LibraryScene extends Phaser.Scene {
 
     this.startRaptanMovement();
 
-    // 라프탄 상호작용 등록
+    // 리프탄 상호작용 등록
     this.interactables.push({
       name: 'raptan', emoji: '💬',
       getPos: () => ({ cx: this.raptan.x, cy: this.raptan.y }),
@@ -838,18 +854,28 @@ class LibraryScene extends Phaser.Scene {
     });
   }
 
+  removeRaptan() {
+    if (!this.raptanAdded) return;
+    if (this.raptan) { this.raptan.destroy(); this.raptan = null; }
+    if (this.raptanLabel) { this.raptanLabel.destroy(); this.raptanLabel = null; }
+    if (this.raptanShadow) { this.raptanShadow.destroy(); this.raptanShadow = null; }
+    if (this.raptanMoveTimer) { this.raptanMoveTimer.remove(); this.raptanMoveTimer = null; }
+    this.interactables = this.interactables.filter(i => i.name !== 'raptan');
+    this.raptanAdded = false;
+  }
+
   onRaptanInteract() {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
     const lines = [
-      '라, 라프탄이에요... 반가워요.',
+      '라, 리프탄이에요... 반가워요.',
       '오, 오늘 읽은 책은 어떠셨어요?',
       '저, 저기... 같이 책 읽을래요?',
       '리, 리프탄이 또 뭐라 했나요...?',
       '맥, 맥시는... 참 좋은 사람이에요.',
     ];
     const line = lines[Math.floor(Math.random() * lines.length)];
-    this.showDialogue('라프탄', line, () => this.endDialogue());
+    this.showDialogue('리프탄', line, () => this.endDialogue());
   }
 
   startRaptanMovement() {
@@ -1041,7 +1067,7 @@ class LibraryScene extends Phaser.Scene {
     // 화자 이름
     const hostName = this.roomConfig?.hostName;
     const catNames = ['로라', '리프', '탄이'];
-    const nameColor = speaker === '라프탄' ? '#7ec8e3'
+    const nameColor = speaker === '리프탄' ? '#7ec8e3'
       : speaker === '거울' ? '#c0e0ff'
       : catNames.includes(speaker) ? '#f0a0c0'
       : speaker === '맥시' ? '#f0c060'
