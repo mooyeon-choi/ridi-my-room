@@ -246,16 +246,16 @@ class LibraryScene extends Phaser.Scene {
       this.physics.add.existing(zone, true);
       this.obstacleGroup.add(zone);
 
-      // [디버그] 장애물 시각화 + 명칭
-      debugGfx.lineStyle(1, 0xff0000, 0.8);
-      debugGfx.fillStyle(0xff0000, 0.25);
-      debugGfx.fillRect(rx, ry, rw, rh);
-      debugGfx.strokeRect(rx, ry, rw, rh);
-      const label = name || `#${idx}`;
-      this.add.text(rx + 2, ry + 2, label, {
-        fontSize: '8px', color: '#ffff00', backgroundColor: 'rgba(0,0,0,0.6)',
-        padding: { x: 2, y: 1 },
-      }).setDepth(1000);
+      // [디버그] 장애물 시각화 + 명칭 (비활성화)
+      // debugGfx.lineStyle(1, 0xff0000, 0.8);
+      // debugGfx.fillStyle(0xff0000, 0.25);
+      // debugGfx.fillRect(rx, ry, rw, rh);
+      // debugGfx.strokeRect(rx, ry, rw, rh);
+      // const label = name || `#${idx}`;
+      // this.add.text(rx + 2, ry + 2, label, {
+      //   fontSize: '8px', color: '#ffff00', backgroundColor: 'rgba(0,0,0,0.6)',
+      //   padding: { x: 2, y: 1 },
+      // }).setDepth(1000);
     });
 
     // 키보드 입력
@@ -403,16 +403,16 @@ class LibraryScene extends Phaser.Scene {
         action: () => this.onMagicCircleInteract(),
       });
 
-      // 디버그: 마법진 영역 시각화
-      const mcDebug = this.add.graphics().setDepth(999);
-      mcDebug.lineStyle(2, 0x00ffff, 0.8);
-      mcDebug.strokeRect(mcX * this.scaleX, mcY * this.scaleY, mcW * this.scaleX, mcH * this.scaleY);
-      mcDebug.fillStyle(0x00ffff, 0.15);
-      mcDebug.fillRect(mcX * this.scaleX, mcY * this.scaleY, mcW * this.scaleX, mcH * this.scaleY);
-      this.add.text(mcX * this.scaleX + 2, mcY * this.scaleY + 2, '마법진 (상호작용)', {
-        fontSize: '8px', color: '#00ffff', backgroundColor: 'rgba(0,0,0,0.6)',
-        padding: { x: 2, y: 1 },
-      }).setDepth(1000);
+      // [디버그] 마법진 영역 시각화 (비활성화)
+      // const mcDebug = this.add.graphics().setDepth(999);
+      // mcDebug.lineStyle(2, 0x00ffff, 0.8);
+      // mcDebug.strokeRect(mcX * this.scaleX, mcY * this.scaleY, mcW * this.scaleX, mcH * this.scaleY);
+      // mcDebug.fillStyle(0x00ffff, 0.15);
+      // mcDebug.fillRect(mcX * this.scaleX, mcY * this.scaleY, mcW * this.scaleX, mcH * this.scaleY);
+      // this.add.text(mcX * this.scaleX + 2, mcY * this.scaleY + 2, '마법진 (상호작용)', {
+      //   fontSize: '8px', color: '#00ffff', backgroundColor: 'rgba(0,0,0,0.6)',
+      //   padding: { x: 2, y: 1 },
+      // }).setDepth(1000);
     }
 
     // 문 인터랙션 (하단 벽 움푹 파인 부분)
