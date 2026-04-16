@@ -190,45 +190,49 @@ class LibraryScene extends Phaser.Scene {
 
     this.createAnimations();
 
-    // 거울 클릭 영역 (owner/sangsuri만)
+    // 거울 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
     const mirrorObs = this.currentObstacles[6]; // 거울
     if (mirrorObs) {
       const mx = mirrorObs.x * this.scaleX;
       const my = mirrorObs.y * this.scaleY;
       const mw = mirrorObs.w * this.scaleX;
-      const mh = mirrorObs.h * this.scaleY;
+      const mh = mirrorObs.h * this.scaleY + 30;
       this.mirrorZone = this.add.zone(mx + mw / 2, my + mh / 2, mw, mh)
         .setInteractive({ useHandCursor: true })
         .setDepth(50);
-      this.mirrorZone.on('pointerdown', () => this.onMirrorClick());
+      this.mirrorZone.on('pointerdown', () => {
+        if (!this.dialogueActive) this.onMirrorClick();
+      });
     }
 
-    // 책장 클릭 영역 (owner/sangsuri만)
+    // 책장 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
     const bookshelfObs = this.currentObstacles[7]; // 책장
     if (bookshelfObs) {
       const bx = bookshelfObs.x * this.scaleX;
       const by = bookshelfObs.y * this.scaleY;
       const bw = bookshelfObs.w * this.scaleX;
-      const bh = bookshelfObs.h * this.scaleY;
+      const bh = bookshelfObs.h * this.scaleY + 30;
       this.bookshelfZone = this.add.zone(bx + bw / 2, by + bh / 2, bw, bh)
         .setInteractive({ useHandCursor: true })
         .setDepth(50);
       this.bookshelfZone.on('pointerdown', () => {
-        if (this.onBookshelfClick) this.onBookshelfClick();
+        if (!this.dialogueActive && this.onBookshelfClick) this.onBookshelfClick();
       });
     }
 
-    // 수정구 클릭 영역 (owner/sangsuri만)
+    // 수정구 클릭 영역 (owner/sangsuri만) — 아래쪽으로 확장
     const crystalObs = this.currentObstacles[12]; // 수정구
     if (crystalObs) {
       const cx = crystalObs.x * this.scaleX;
       const cy = crystalObs.y * this.scaleY;
       const cw = crystalObs.w * this.scaleX;
-      const ch = crystalObs.h * this.scaleY;
+      const ch = crystalObs.h * this.scaleY + 30;
       this.crystalZone = this.add.zone(cx + cw / 2, cy + ch / 2, cw, ch)
         .setInteractive({ useHandCursor: true })
         .setDepth(50);
-      this.crystalZone.on('pointerdown', () => this.onCrystalClick());
+      this.crystalZone.on('pointerdown', () => {
+        if (!this.dialogueActive) this.onCrystalClick();
+      });
     }
 
     // 대화 시스템 초기화
@@ -375,6 +379,8 @@ class LibraryScene extends Phaser.Scene {
     const startX = this.bgW * 0.5;
     const startY = this.bgH * 0.78;
 
+    this.myAvatarShadow = this.drawPixelShadow(startX, startY + 2, startY - 0.1, 10);
+
     this.myAvatar = this.add.sprite(startX, startY, 'maxy_F1').setOrigin(0.5, 1);
     this.myAvatar.setScale(0.15);
     this.myAvatar.play('maxy_idle_down');
@@ -396,9 +402,11 @@ class LibraryScene extends Phaser.Scene {
     const hostCharKey = useCustomHost ? 'host_custom' : 'character_08';
     const hostName = this.roomConfig?.hostName || '맥시';
 
+    this.hostAvatarShadow = this.drawPixelShadow(this.bgW * 0.35, avatarY + 2, avatarY - 0.1, 10);
+
     if (useCustomHost) {
       const spriteH = this.roomConfig.spriteHeight || 571;
-      const hostScale = (98 / spriteH);  // 맥시 표시높이(98px) 기준
+      const hostScale = (98 / spriteH);
       this.hostAvatar = this.add.sprite(this.bgW * 0.35, avatarY, 'host_custom', 0).setOrigin(0.5, 1);
       this.hostAvatar.setScale(hostScale);
     } else {
@@ -416,6 +424,8 @@ class LibraryScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(avatarY + 0.1);
 
     // 방문자 (맥시) — 키보드로 이동 가능
+    this.myAvatarShadow = this.drawPixelShadow(this.bgW * 0.65, avatarY + 2, avatarY - 0.1, 10);
+
     this.myAvatar = this.add.sprite(this.bgW * 0.65, avatarY, 'maxy_F1').setOrigin(0.5, 1);
     this.myAvatar.setScale(0.15);
     this.myAvatar.play('maxy_idle_down');
@@ -696,6 +706,10 @@ class LibraryScene extends Phaser.Scene {
             label.setDepth(avatar.y + 0.1);
           }
           avatar.setDepth(avatar.y);
+          if (this.hostAvatarShadow && avatar === this.hostAvatar) {
+            this.hostAvatarShadow.setPosition(avatar.x, avatar.y + 2);
+            this.hostAvatarShadow.setDepth(avatar.y - 0.1);
+          }
         },
         onComplete: () => {
           if (!avatar || !avatar.active) return;
@@ -728,7 +742,10 @@ class LibraryScene extends Phaser.Scene {
     ];
 
     this.catSprites = [];
-    catPositions.forEach(({ key, name, x, y }) => {
+    catPositions.forEach(({ key, name, x, y }, idx) => {
+      // 픽셀 그림자
+      this.drawPixelShadow(x, y + 2, y - 0.1, 8);
+
       const cat = this.add.sprite(x, y, key).setOrigin(0.5, 1);
       cat.setScale(0.4);
       cat.setDepth(y);
@@ -796,6 +813,8 @@ class LibraryScene extends Phaser.Scene {
 
     const x = this.bgW * 0.15;
     const y = this.bgH * 0.65;
+    this.raptanShadow = this.drawPixelShadow(x, y + 2, y - 0.1, 10);
+
     this.raptan = this.add.sprite(x, y, 'raptan', 0).setOrigin(0.5, 1);
     this.raptan.setScale(0.27);
     this.raptan.setDepth(y);
@@ -859,6 +878,10 @@ class LibraryScene extends Phaser.Scene {
         ease: 'Linear',
         onUpdate: () => {
           raptan.setDepth(raptan.y);
+          if (this.raptanShadow) {
+            this.raptanShadow.setPosition(raptan.x, raptan.y + 2);
+            this.raptanShadow.setDepth(raptan.y - 0.1);
+          }
           if (label) {
             label.setPosition(raptan.x, raptan.y + 4);
             label.setDepth(raptan.y + 0.1);
@@ -1196,6 +1219,21 @@ class LibraryScene extends Phaser.Scene {
     });
   }
 
+  drawPixelShadow(x, y, depth, size) {
+    const shadow = this.add.graphics().setDepth(depth);
+    const px = 2;
+    const s = size || 8;
+    shadow.fillStyle(0x000000, 0.2);
+    // 원점 기준으로 그리기 (setPosition으로 이동 가능)
+    shadow.fillRect(-px * s / 2, 0, px * s, px);
+    shadow.fillRect(-px * (s / 2 - 1), -px, px * (s - 2), px);
+    shadow.fillRect(-px * (s / 2 - 1), px, px * (s - 2), px);
+    shadow.fillRect(-px * (s / 2 - 2), -px * 2, px * (s - 4), px);
+    shadow.fillRect(-px * (s / 2 - 2), px * 2, px * (s - 4), px);
+    shadow.setPosition(x, y);
+    return shadow;
+  }
+
   setAction(action) {
     if (this.currentAction !== action) {
       this.currentAction = action;
@@ -1258,6 +1296,10 @@ class LibraryScene extends Phaser.Scene {
         if (label) {
           label.setPosition(avatar.x, avatar.y + 4);
           label.setDepth(avatar.y + 0.1);
+        }
+        if (this.myAvatarShadow) {
+          this.myAvatarShadow.setPosition(avatar.x, avatar.y + 2);
+          this.myAvatarShadow.setDepth(avatar.y - 0.1);
         }
         if (this.onAvatarMove) this.onAvatarMove({ x: avatar.x, y: avatar.y });
       }

@@ -185,7 +185,7 @@ function VisitorRoom() {
             </div>
           </div>
         )}
-        <div style={{ ...styles.chatArea, height: CHAT_H }}>
+        <div style={{ ...styles.chatArea, height: CHAT_H, minHeight: 60, maxHeight: 300, resize: 'vertical', overflow: 'auto' }}>
           <ChatBox
             hostUserId={userId}
             aiConfig={roomData.aiConfig}

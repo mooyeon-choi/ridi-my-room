@@ -6,6 +6,7 @@ import QRCodeModal from './QRCodeModal';
 import RewardModal from './RewardModal';
 import MissionModal from './MissionModal';
 import LibraryModal from './LibraryModal';
+import ItemModal from './ItemModal';
 import { useRoomLayout } from '../hooks/useRoomLayout';
 
 const SIDE_BUTTONS = [
@@ -34,6 +35,7 @@ function MyRoom() {
 
   const [showQR, setShowQR] = useState(false);
   const [showReward, setShowReward] = useState(false);
+  const [showItem, setShowItem] = useState(false);
   const [showMission, setShowMission] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showVisitInput, setShowVisitInput] = useState(false);
@@ -60,13 +62,6 @@ function MyRoom() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const navEntries = performance.getEntriesByType('navigation');
-    if (navEntries.length > 0 && navEntries[0].type === 'back_forward') setShowReward(true);
-    function handlePageShow(e) { if (e.persisted) setShowReward(true); }
-    window.addEventListener('pageshow', handlePageShow);
-    return () => window.removeEventListener('pageshow', handlePageShow);
-  }, []);
 
   function handleSlotClick(i) {
     setActiveSlot(i);
@@ -120,6 +115,7 @@ function MyRoom() {
               onClick={() => {
                 if (btn.key === 'mission') setShowMission(true);
                 if (btn.key === 'library') setShowLibrary(true);
+                if (btn.key === 'item') setShowItem(true);
                 if (btn.key === 'share') setShowVisitInput(true);
               }}
             >
@@ -142,7 +138,7 @@ function MyRoom() {
           </div>
         )}
         {showChat && (
-          <div style={{ ...styles.chatArea, height: 120, marginBottom: 'clamp(4px, 0.8vh, 8px)' }}>
+          <div style={{ ...styles.chatArea, height: 120, minHeight: 60, maxHeight: 300, marginBottom: 'clamp(4px, 0.8vh, 8px)', resize: 'vertical', overflow: 'auto' }}>
             <ChatBox
               hostUserId={userId}
               aiConfig={{ persona: 'sangsuri', customGreeting: '라프탄 : 마, 맥시... 무슨 이야기를 할까요?', readingData: { recentBooks: ['상수리나무 아래'], favoriteGenres: ['판타지', '로맨스'], totalBooksRead: 15 } }}
@@ -200,7 +196,8 @@ function MyRoom() {
 
       {/* 모달들 */}
       {showMission  && <MissionModal onClose={() => setShowMission(false)} />}
-      {showLibrary  && <LibraryModal onClose={() => setShowLibrary(false)} />}
+      {showLibrary  && <LibraryModal onClose={() => setShowLibrary(false)} onMissionComplete={() => setShowReward(true)} />}
+      {showItem     && <ItemModal onClose={() => setShowItem(false)} />}
 
       {showVisitInput && (
         <div style={styles.visitOverlay}>

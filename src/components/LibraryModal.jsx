@@ -15,13 +15,17 @@ const AVAILABLE_BOOKS = [
   { id: 'asha',      title: '국경의 아샤',              genre: '로판>웹소설',    description: '리디 연재중',                                        img: '/assets/books/border_asha.webp',         screenshot: '/assets/screenshots/page_sangsuri.png' },
 ];
 
-const INITIAL_BOOKS = [AVAILABLE_BOOKS[0]]; // 상수리나무 아래만 기본
+const INITIAL_BOOKS = [
+  AVAILABLE_BOOKS[0], // 상수리나무 아래
+  AVAILABLE_BOOKS.find(b => b.id === 'asha'), // 국경의 아샤
+].filter(Boolean);
 
-function LibraryModal({ onClose }) {
+function LibraryModal({ onClose, onMissionComplete }) {
   const [books, setBooks] = useState(INITIAL_BOOKS);
   const [selectedBook, setSelectedBook] = useState(null);
   const [screenshotData, setScreenshotData] = useState(null); // { screenshot, pendingBook }
   const [added, setAdded] = useState(false);
+  const [missionTriggered, setMissionTriggered] = useState(false);
 
   const slots = Array.from({ length: SLOT_COUNT }, (_, i) => books[i] || null);
 
@@ -47,7 +51,14 @@ function LibraryModal({ onClose }) {
   function handleAddFromScreenshot() {
     if (!screenshotData || added) return;
     const { pendingBook } = screenshotData;
-    setBooks(prev => [...prev, pendingBook]);
+    setBooks(prev => {
+      const updated = [...prev, pendingBook];
+      if (updated.length >= 3 && !missionTriggered) {
+        setMissionTriggered(true);
+        if (onMissionComplete) onMissionComplete();
+      }
+      return updated;
+    });
     setScreenshotData(null);
     setAdded(false);
   }
@@ -97,16 +108,23 @@ function LibraryModal({ onClose }) {
         {selectedBook && (
           <div style={styles.detailPanel}>
             <div style={styles.detailInner}>
-              <img src={selectedBook.img} alt={selectedBook.title} style={styles.detailImg} />
-              <div style={styles.detailInfo}>
-                <div style={styles.detailTop}>
-                  <span style={styles.detailTitle}>{selectedBook.title}</span>
-                  <span style={styles.detailGenre}>{selectedBook.genre}</span>
+              <div style={styles.bookCover}>
+                <div style={styles.bookCoverFrame}>
+                  <img src={selectedBook.img} alt={selectedBook.title} style={styles.detailImg} />
                 </div>
-                <span style={styles.detailDesc}>{selectedBook.description}</span>
               </div>
-              <div style={styles.detailActions}>
-                <button style={styles.goBtn}>보러가기</button>
+              <div style={styles.detailRight}>
+                <div style={styles.detailInfo}>
+                  <div style={styles.detailTop}>
+                    <span style={styles.detailTitle}>{selectedBook.title}</span>
+                    <span style={styles.detailGenre}>{selectedBook.genre}</span>
+                  </div>
+                  <span style={styles.detailDesc}>{selectedBook.description}</span>
+                </div>
+                <button style={styles.goBtn} onClick={() => {
+                  setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null });
+                  setAdded(true);
+                }}>보러가기</button>
               </div>
             </div>
           </div>
@@ -237,90 +255,103 @@ const styles = {
     gap: '0',
   },
 
-  // 상단 상세보기
+  // 상단 상세보기 — 디자인 매칭
   detailPanel: {
-    background: '#c8934a',
-    border: '4px solid #5c3018',
+    background: '#b07840',
+    border: '3px solid #5c3018',
     borderBottom: '2px solid #5c3018',
     borderRadius: '8px 8px 0 0',
-    padding: 'clamp(8px, 1.5vw, 12px)',
+    padding: 'clamp(10px, 2vw, 16px)',
   },
   detailInner: {
-    background: '#e8d09a',
-    border: '2px solid #5c3018',
+    background: '#d4b080',
+    border: '2px solid #8b6030',
     borderRadius: '6px',
-    padding: 'clamp(8px, 1.5vw, 12px) clamp(10px, 2vw, 16px)',
+    padding: 'clamp(10px, 2vw, 16px)',
     display: 'flex',
     alignItems: 'center',
-    gap: 'clamp(8px, 2vw, 16px)',
+    gap: 'clamp(12px, 2.5vw, 20px)',
+  },
+  bookCover: {
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bookCoverFrame: {
+    background: '#5c3018',
+    border: '3px solid #3d1e10',
+    borderRadius: '3px',
+    padding: '4px',
+    boxShadow: '3px 4px 8px rgba(0,0,0,0.3)',
   },
   detailImg: {
-    width: 'clamp(56px, 8vw, 80px)',
-    height: 'clamp(70px, 10vw, 100px)',
+    width: 'clamp(60px, 9vw, 90px)',
+    height: 'clamp(80px, 12vw, 120px)',
     objectFit: 'cover',
-    borderRadius: '4px',
-    border: '2px solid #5c3018',
-    flexShrink: 0,
+    display: 'block',
+  },
+  detailRight: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 'clamp(10px, 2vw, 16px)',
   },
   detailInfo: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(4px, 1vw, 8px)',
+    gap: 'clamp(4px, 0.8vw, 8px)',
   },
   detailTop: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: '8px',
   },
   detailTitle: {
-    fontSize: 'clamp(14px, 2vw, 18px)',
+    fontSize: 'clamp(15px, 2.2vw, 20px)',
     fontWeight: 'bold',
     color: '#3d2210',
   },
   detailGenre: {
-    fontSize: 'clamp(10px, 1.4vw, 13px)',
+    fontSize: 'clamp(10px, 1.3vw, 13px)',
     color: '#5c3a1e',
-    background: '#d4b070',
-    padding: '2px 8px',
-    borderRadius: '4px',
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
   },
   detailDesc: {
-    fontSize: 'clamp(10px, 1.4vw, 13px)',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
     color: '#5c3a1e',
     lineHeight: '1.6',
     whiteSpace: 'pre-line',
   },
-  detailActions: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 'clamp(4px, 0.8vw, 8px)',
-    flexShrink: 0,
-  },
   goBtn: {
     background: '#5c3018',
-    border: '2px solid #3d2010',
+    border: 'none',
     borderRadius: '6px',
     color: '#f5e6c8',
-    fontSize: 'clamp(11px, 1.5vw, 14px)',
+    fontSize: 'clamp(13px, 1.8vw, 17px)',
     fontWeight: 'bold',
-    padding: 'clamp(6px, 1vh, 10px) clamp(12px, 2vw, 20px)',
+    padding: 'clamp(10px, 1.5vh, 16px) clamp(16px, 3vw, 28px)',
     cursor: 'pointer',
     whiteSpace: 'nowrap',
+    flexShrink: 0,
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
   },
 
   // 하단 그리드
   gridPanel: {
-    background: '#c8934a',
-    border: '4px solid #5c3018',
+    background: '#b07840',
+    border: '3px solid #5c3018',
     borderTop: '2px solid #5c3018',
     borderRadius: '0 0 8px 8px',
     padding: 'clamp(8px, 1.5vw, 12px)',
     boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
   },
   grid: {
-    background: '#d4a85a',
-    border: '3px solid #5c3018',
+    background: '#c8a060',
+    border: '2px solid #8b6030',
     borderRadius: '6px',
     padding: 'clamp(8px, 1.5vw, 12px)',
     display: 'grid',
@@ -329,9 +360,9 @@ const styles = {
   },
   slot: {
     aspectRatio: '98 / 116',
-    background: '#b8864a',
-    border: '2px solid #7a4e28',
-    borderRadius: '4px',
+    background: '#a07040',
+    border: '2px solid #7a5028',
+    borderRadius: '3px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -340,22 +371,25 @@ const styles = {
     boxSizing: 'border-box',
   },
   slotFilled: {
-    border: '2px solid transparent',
-    background: 'none',
+    border: '2px solid #5c3018',
+    background: '#5c3018',
+    padding: '3px',
+    boxShadow: '2px 3px 6px rgba(0,0,0,0.25)',
   },
   slotSelected: {
     border: '2px solid #fff0a0',
-    boxShadow: '0 0 6px rgba(255,240,100,0.5)',
+    boxShadow: '0 0 8px rgba(255,240,100,0.5)',
   },
   slotImg: {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
     display: 'block',
+    borderRadius: '1px',
   },
   plusIcon: {
     fontSize: 'clamp(16px, 2.5vw, 22px)',
-    color: '#7a4e28',
+    color: '#7a5028',
     lineHeight: 1,
   },
 
@@ -364,13 +398,14 @@ const styles = {
     alignSelf: 'flex-end',
     marginRight: 'calc(50% - clamp(180px, 42.5vw, 398px))',
     background: '#5c3018',
-    border: '2px solid #7a4e28',
+    border: 'none',
     borderRadius: '4px',
     color: '#f5e6c8',
     fontSize: 'clamp(11px, 1.5vw, 14px)',
     fontWeight: 'bold',
     padding: 'clamp(6px, 1vh, 10px) clamp(14px, 2.5vw, 24px)',
     cursor: 'pointer',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
   },
 };
 
