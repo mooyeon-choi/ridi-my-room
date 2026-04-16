@@ -6,7 +6,7 @@ import { useRoomLayout } from '../hooks/useRoomLayout';
 
 const USER_ROOM_DATA = {
   default: {
-    background: '/assets/backgrounds/maxy_room.webp',
+    background: '/assets/backgrounds/sangsuri_visitor.webp',
     greeting: '루스 : 찾아와 주셔서 반가워요. 편하게 둘러보세요.',
     theme: 'sangsuri',
     hostSprite: '/assets/characters/ruth_sprite.webp',
@@ -16,7 +16,7 @@ const USER_ROOM_DATA = {
     spriteHeight: 384,
   },
   sangsuri_user: {
-    background: '/assets/backgrounds/maxy_room.webp',
+    background: '/assets/backgrounds/sangsuri_visitor.webp',
     greeting: '루스 : 찾아와 주셔서 반가워요. 오늘은 읽고 싶은 책이 있으신가요?',
     theme: 'sangsuri',
     hostSprite: '/assets/characters/ruth_sprite.webp',

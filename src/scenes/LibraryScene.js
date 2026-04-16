@@ -61,6 +61,60 @@ const OBSTACLE_MAPS = {
   ],
 };
 
+// 방문 모드 전용 장애물 맵
+const VISITOR_OBSTACLE_MAPS = {
+  // 루스의 방 (상수리 방문) - 2048x1193
+  sangsuri: [
+    { x: 0,    y: 0,    w: 2048, h: 380,  name: '상단 벽' },
+    { x: 0,    y: 0,    w: 70,   h: 1193, name: '좌측 벽' },
+    { x: 1978, y: 0,    w: 70,   h: 1193, name: '우측 벽' },
+    { x: 0,    y: 1051, w: 390,  h: 142,  name: '하단벽(문좌)' },
+    { x: 550,  y: 1051, w: 1498, h: 142,  name: '하단벽(문우)' },
+    { x: 525,  y: 240,  w: 380,  h: 320,  name: '약품선반' },
+    { x: 70,   y: 300,  w: 440,  h: 300,  name: '문+벽면' },
+    { x: 920,  y: 320,  w: 220,  h: 200,  name: '책' },
+    { x: 1160, y: 350,  w: 300,  h: 250,  name: '책상+의자' },
+    { x: 1470, y: 380,  w: 120,  h: 180,  name: '지구본' },
+    { x: 1513, y: 750,  w: 187,  h: 125,  name: '가마솥' },
+    { x: 1600, y: 425,  w: 300,  h: 250,  name: '지도대' },
+    { x: 70,   y: 750,  w: 167,  h: 250,  name: '책더미(좌하)' },
+    // 마법진은 장애물이 아닌 상호작용 영역 (별도 처리)
+  ],
+  // 너를 속이는 밤 방문 - 2048x1244
+  neosokbam: [
+    { x: 0,    y: 0,    w: 2048, h: 380,  name: '상단 벽' },
+    { x: 0,    y: 0,    w: 100,  h: 1244, name: '좌측 벽' },
+    { x: 1948, y: 0,    w: 100,  h: 1244, name: '우측 벽' },
+    { x: 0,    y: 1100, w: 2048, h: 144,  name: '하단 벽' },
+    { x: 100,  y: 300,  w: 150,  h: 250,  name: '석등' },
+    { x: 350,  y: 280,  w: 250,  h: 280,  name: '병풍/족자' },
+    { x: 680,  y: 350,  w: 200,  h: 200,  name: '선반' },
+    { x: 1300, y: 250,  w: 550,  h: 450,  name: '나무+바위' },
+    { x: 100,  y: 700,  w: 150,  h: 200,  name: '항아리' },
+    { x: 280,  y: 800,  w: 100,  h: 120,  name: '양동이' },
+    { x: 650,  y: 520,  w: 280,  h: 220,  name: '궤짝' },
+    { x: 950,  y: 500,  w: 300,  h: 320,  name: '제단+촛대' },
+  ],
+  // 배덕한 타인 방문 - 2048x1194
+  betrayer: [
+    { x: 0,    y: 0,    w: 2048, h: 300,  name: '상단 벽' },
+    { x: 0,    y: 0,    w: 60,   h: 1194, name: '좌측 벽' },
+    { x: 1988, y: 0,    w: 60,   h: 1194, name: '우측 벽' },
+    { x: 0,    y: 1050, w: 2048, h: 144,  name: '하단 벽' },
+    { x: 60,   y: 280,  w: 200,  h: 200,  name: '축음기' },
+    { x: 350,  y: 260,  w: 400,  h: 280,  name: 'TV+벽면' },
+    { x: 820,  y: 260,  w: 260,  h: 280,  name: '책장' },
+    { x: 1150, y: 260,  w: 250,  h: 220,  name: '그림+와인' },
+    { x: 1500, y: 260,  w: 200,  h: 200,  name: '시계' },
+    { x: 1700, y: 300,  w: 250,  h: 400,  name: '와인셀러' },
+    { x: 60,   y: 650,  w: 200,  h: 250,  name: '화분' },
+    { x: 300,  y: 500,  w: 350,  h: 300,  name: '의자+러그' },
+    { x: 750,  y: 500,  w: 450,  h: 220,  name: '소파' },
+    { x: 750,  y: 750,  w: 350,  h: 170,  name: '테이블' },
+    { x: 1250, y: 600,  w: 120,  h: 280,  name: '공기청정기' },
+  ],
+};
+
 // 기본 장애물 (owner 모드 / sangsuri)
 const OBSTACLES = OBSTACLE_MAPS.sangsuri;
 
@@ -168,14 +222,18 @@ class LibraryScene extends Phaser.Scene {
     // 장애물 물리 그룹 생성
     this.obstacleGroup = this.physics.add.staticGroup();
 
-    // 테마에 맞는 장애물 맵 선택
+    // 테마에 맞는 장애물 맵 선택 (방문 모드는 별도 맵)
     const theme = this.roomConfig?.theme || 'sangsuri';
-    this.currentObstacles = OBSTACLE_MAPS[theme] || OBSTACLE_MAPS.sangsuri;
+    if (this.mode === 'visitor' && VISITOR_OBSTACLE_MAPS[theme]) {
+      this.currentObstacles = VISITOR_OBSTACLE_MAPS[theme];
+    } else {
+      this.currentObstacles = OBSTACLE_MAPS[theme] || OBSTACLE_MAPS.sangsuri;
+    }
 
-    // 장애물 영역 (디버그 표시 비활성화)
-    // const debugGfx = this.add.graphics().setDepth(999);
+    // 장애물 영역 (디버그 표시)
+    const debugGfx = this.add.graphics().setDepth(999);
 
-    this.currentObstacles.forEach(({ x, y, w, h }) => {
+    this.currentObstacles.forEach(({ x, y, w, h, name }, idx) => {
       const rx = x * this.scaleX;
       const ry = y * this.scaleY;
       const rw = w * this.scaleX;
@@ -184,11 +242,16 @@ class LibraryScene extends Phaser.Scene {
       this.physics.add.existing(zone, true);
       this.obstacleGroup.add(zone);
 
-      // [디버그] 주석 해제하면 장애물 시각화
-      // debugGfx.lineStyle(1, 0xff0000, 0.8);
-      // debugGfx.fillStyle(0xff0000, 0.25);
-      // debugGfx.fillRect(rx, ry, rw, rh);
-      // debugGfx.strokeRect(rx, ry, rw, rh);
+      // [디버그] 장애물 시각화 + 명칭
+      debugGfx.lineStyle(1, 0xff0000, 0.8);
+      debugGfx.fillStyle(0xff0000, 0.25);
+      debugGfx.fillRect(rx, ry, rw, rh);
+      debugGfx.strokeRect(rx, ry, rw, rh);
+      const label = name || `#${idx}`;
+      this.add.text(rx + 2, ry + 2, label, {
+        fontSize: '8px', color: '#ffff00', backgroundColor: 'rgba(0,0,0,0.6)',
+        padding: { x: 2, y: 1 },
+      }).setDepth(1000);
     });
 
     // 키보드 입력
@@ -304,6 +367,30 @@ class LibraryScene extends Phaser.Scene {
       });
     }
 
+    // 방문 모드 전용 상호작용
+    if (this.mode === 'visitor' && theme === 'sangsuri') {
+      // 마법진 상호작용 영역
+      const mcX = 920, mcY = 740, mcW = 187, mcH = 180;
+      this.interactables.push({
+        name: 'magic_circle', emoji: '🔯',
+        cx: (mcX + mcW / 2) * this.scaleX,
+        cy: (mcY + mcH / 2) * this.scaleY,
+        range: 80,
+        action: () => this.onMagicCircleInteract(),
+      });
+
+      // 디버그: 마법진 영역 시각화
+      const mcDebug = this.add.graphics().setDepth(999);
+      mcDebug.lineStyle(2, 0x00ffff, 0.8);
+      mcDebug.strokeRect(mcX * this.scaleX, mcY * this.scaleY, mcW * this.scaleX, mcH * this.scaleY);
+      mcDebug.fillStyle(0x00ffff, 0.15);
+      mcDebug.fillRect(mcX * this.scaleX, mcY * this.scaleY, mcW * this.scaleX, mcH * this.scaleY);
+      this.add.text(mcX * this.scaleX + 2, mcY * this.scaleY + 2, '마법진 (상호작용)', {
+        fontSize: '8px', color: '#00ffff', backgroundColor: 'rgba(0,0,0,0.6)',
+        padding: { x: 2, y: 1 },
+      }).setDepth(1000);
+    }
+
     // 문 인터랙션 (하단 벽 움푹 파인 부분, 항상 활성화)
     if (this.mode === 'owner') {
       const doorX = 462;
@@ -403,8 +490,8 @@ class LibraryScene extends Phaser.Scene {
     const wallAndBookshelf = [0, 1, 2, 3, 4, 5, 8];
     const crystalIndex = 13;
     for (let i = 0; i < obstacles.length; i++) {
-      // 테마 미적용 시 벽+책장만 충돌 체크
-      if (!this.themeApplied && !wallAndBookshelf.includes(i)) continue;
+      // owner 모드에서 테마 미적용 시 벽+책장만 충돌 체크
+      if (this.mode === 'owner' && !this.themeApplied && !wallAndBookshelf.includes(i)) continue;
       // 수정구는 활성화 시에만 충돌 체크
       if (i === crystalIndex && !this.crystalAdded) continue;
 
@@ -1196,6 +1283,92 @@ class LibraryScene extends Phaser.Scene {
     });
   }
 
+  // ── 마법진 상호작용 (루스방 방문) ──
+  onMagicCircleInteract() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+
+    // 빛 퍼져나가는 효과
+    const avatar = this.myAvatar;
+    if (avatar) {
+      const cx = avatar.x;
+      const cy = avatar.y - 30;
+
+      // 중심 빛
+      const glow = this.add.graphics().setDepth(900);
+      glow.fillStyle(0xffffff, 0.6);
+      glow.fillCircle(cx, cy, 5);
+      glow.setAlpha(1);
+
+      // 퍼져나가는 원 3개 (시차)
+      for (let i = 0; i < 3; i++) {
+        const ring = this.add.graphics().setDepth(899);
+        ring.lineStyle(2, 0xc4b5fd, 0.8);
+        ring.strokeCircle(0, 0, 10);
+        ring.setPosition(cx, cy);
+        ring.setAlpha(0);
+
+        this.time.delayedCall(i * 200, () => {
+          ring.setAlpha(1);
+          this.tweens.add({
+            targets: ring,
+            scaleX: 12 + i * 3,
+            scaleY: 12 + i * 3,
+            alpha: 0,
+            duration: 1200,
+            ease: 'Cubic.easeOut',
+            onComplete: () => ring.destroy(),
+          });
+        });
+      }
+
+      // 파티클 빛 입자
+      for (let i = 0; i < 12; i++) {
+        const angle = (Math.PI * 2 * i) / 12;
+        const particle = this.add.graphics().setDepth(900);
+        const colors = [0xc4b5fd, 0xe9d5ff, 0xfde68a, 0xffffff];
+        particle.fillStyle(colors[i % colors.length], 1);
+        particle.fillCircle(0, 0, 2);
+        particle.setPosition(cx, cy);
+
+        this.tweens.add({
+          targets: particle,
+          x: cx + Math.cos(angle) * 80,
+          y: cy + Math.sin(angle) * 80,
+          alpha: 0,
+          duration: 800,
+          delay: 100,
+          ease: 'Cubic.easeOut',
+          onComplete: () => particle.destroy(),
+        });
+      }
+
+      // 중심 빛 페이드아웃
+      this.tweens.add({
+        targets: glow,
+        alpha: 0,
+        scaleX: 3,
+        scaleY: 3,
+        duration: 600,
+        delay: 300,
+        onComplete: () => glow.destroy(),
+      });
+    }
+
+    const lines = [
+      { speaker: '맥시', text: '이, 이건 루스가 연구하던 마법진이잖아...! 빛이 나고 있어!' },
+      { speaker: '맥시', text: '루, 루스의 마법이 이런 거였구나... 대단해.' },
+      { speaker: '맥시', text: '상수리나무 아래에서 본 문양이랑 비슷한 것 같아...' },
+      { speaker: '맥시', text: '이 마법진... 루스가 밤마다 여기서 연구하는 거였구나.' },
+      { speaker: '맥시', text: '따, 따뜻한 기운이 느껴져... 루스의 마법은 늘 이런 느낌이야.' },
+    ];
+    const picked = lines[Math.floor(Math.random() * lines.length)];
+
+    this.time.delayedCall(500, () => {
+      this.showDialogue(picked.speaker, picked.text, () => this.endDialogue());
+    });
+  }
+
   // ── 거울 클릭 → 대화 시스템 ──
   onMirrorClick() {
     if (this.dialogueActive) return;
@@ -1554,8 +1727,8 @@ class LibraryScene extends Phaser.Scene {
     let closestDist = Infinity;
 
     for (const obj of this.interactables) {
-      // 테마 미적용 시 책장과 문만 상호작용 가능
-      if (!this.themeApplied && obj.name !== 'bookshelf' && obj.name !== 'door') continue;
+      // owner 모드에서 테마 미적용 시 책장과 문만 상호작용 가능
+      if (this.mode === 'owner' && !this.themeApplied && obj.name !== 'bookshelf' && obj.name !== 'door') continue;
       // 수정구는 추가되었을 때만 상호작용 가능
       if (obj.name === 'crystal' && !this.crystalAdded) continue;
 
