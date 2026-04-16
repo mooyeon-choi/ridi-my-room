@@ -653,8 +653,8 @@ class LibraryScene extends Phaser.Scene {
     bubble.setPosition(avatar.x, avatar.y - offsetY);
 
     const emoji = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2, '👋', {
-      fontSize: '20px',
-      padding: { top: 2, bottom: 2 },
+      fontSize: '16px',
+      padding: { top: 4, bottom: 4 },
     }).setOrigin(0.5).setDepth(21);
 
     // 매 프레임 아바타 위치 추적
@@ -1783,8 +1783,8 @@ class LibraryScene extends Phaser.Scene {
     bubble.setPosition(avatar.x, avatar.y - offsetY);
 
     const emojiText = this.add.text(avatar.x, avatar.y - offsetY - tailH - bh / 2 - 1, emoji, {
-      fontSize: '16px',
-      padding: { top: 2, bottom: 2 },
+      fontSize: '14px',
+      padding: { top: 4, bottom: 4 },
     }).setOrigin(0.5).setDepth(21);
 
     // SPACE 안내 텍스트
