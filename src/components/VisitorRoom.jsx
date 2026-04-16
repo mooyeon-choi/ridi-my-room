@@ -205,8 +205,8 @@ function VisitorRoom() {
 
       {/* 자랑하기 모달 */}
       {showVisitInput && (
-        <div style={styles.visitOverlay}>
-          <div style={styles.visitModal}>
+        <div style={styles.visitOverlay} onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}>
+          <div style={styles.visitModal} onClick={e => e.stopPropagation()}>
             <span style={styles.visitTitle}>다른 사람의 방 방문하기</span>
             <div style={styles.visitRoomList}>
               {[

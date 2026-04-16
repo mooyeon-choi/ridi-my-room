@@ -16,9 +16,9 @@ const MISSIONS = [
 
 function MissionModal({ onClose }) {
   return (
-    <div style={styles.overlay}>
+    <div style={styles.overlay} onClick={onClose}>
       {/* 모달 본체 */}
-      <div style={styles.modal}>
+      <div style={styles.modal} onClick={e => e.stopPropagation()}>
         <div style={styles.missionList}>
           {MISSIONS.map(mission => (
             <div key={mission.id} style={styles.missionRow}>
@@ -61,6 +61,7 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
+    background: 'rgba(0, 0, 0, 0.5)',
     gap: 'clamp(4px, 1vh, 8px)',
   },
   modal: {

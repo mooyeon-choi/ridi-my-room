@@ -101,8 +101,8 @@ function LibraryModal({ onClose, onMissionComplete }) {
   }
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.wrapper}>
+    <div style={styles.overlay} onClick={onClose}>
+      <div style={styles.wrapper} onClick={e => e.stopPropagation()}>
 
         {/* 상단 상세보기 패널 — 책 선택 시만 표시 */}
         {selectedBook && (
@@ -246,6 +246,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: 'clamp(4px, 1vh, 8px)',
+    background: 'rgba(0, 0, 0, 0.5)',
   },
 
   wrapper: {

@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 
 const ITEMS = [
-  { id: 'incense_burner',      name: '손오반의 모자',      description: '사성이 달린 붉은 모자. 아버지 손오공의 뜻을 이어받은 전사의 상징.', img: '/assets/items/incense_burner.png' },
-  { id: 'pocket_watch',        name: '국가 연금술사 시계', description: '군의 개라 불리는 자들이 지닌 은빛 회중시계. 등가교환의 법칙을 잊지 마라.', img: '/assets/items/pocket_watch.png' },
-  { id: 'millennium_pendant',  name: '천년 퍼즐',        description: '고대 이집트의 어둠의 힘이 깃든 역피라미드형 펜던트. 또 다른 자아가 깨어난다.', img: '/assets/items/millennium_pendant.png' },
-  { id: 'spirit_phone',        name: '탄지로의 귀걸이',   description: '히노카미 카구라와 함께 대대로 전해져 내려온 해의 귀걸이.', img: '/assets/items/spirit_phone.png' },
-  { id: 'stone_mask',          name: '석가면',           description: '죠죠의 기묘한 모험. 달빛을 받으면 인간을 초월한 존재로 각성시키는 고대의 가면.', img: '/assets/items/stone_mask.png' },
-  { id: 'grappling_hook',      name: '지하실 열쇠',      description: '진격의 거인. 그리샤 예거가 남긴 지하실의 열쇠. 세계의 진실이 잠들어 있다.', img: '/assets/items/grappling_hook.png' },
-  { id: 'wristband',           name: '닌자 머리띠',      description: '마을의 상징이 새겨진 이마보호대. 이것을 받는 순간, 닌자로 인정받는다.', img: '/assets/items/wristband.png' },
-  { id: 'jersey_10',           name: '쇼호쿠 10번 유니폼', description: '천재니까요. 전국 제패를 향한 붉은 유니폼.', img: '/assets/items/jersey_10.png' },
-  { id: 'pokedex',             name: '헌터 라이센스',     description: '헌터x헌터. 헌터 시험에 합격한 자만이 받을 수 있는 특별한 자격증.', img: '/assets/items/pokedex.png' },
-  { id: 'chain_bomb',          name: '베헤리트',          description: '붉은 눈물을 흘리는 자에게 운명의 선택을 강요하는 요석. 인과의 흐름 속에 있다.', img: '/assets/items/chain_bomb.png' },
-  { id: 'wooden_bat',          name: '드래곤 슬레이어',    description: '그것은 검이라기엔 너무나 크고, 무겁고, 거칠고, 그리고 대충 만들어져 있었다.', img: '/assets/items/wooden_bat.png' },
-  { id: 'straw_hat',           name: '밀짚모자',          description: '샹크스에게 물려받은 소중한 모자. 해적왕이 되겠다는 약속의 증거.', img: '/assets/items/straw_hat.png' },
-  { id: 'dragon_balls',        name: '드래곤볼',          description: '일곱 개를 모으면 신룡이 나타나 어떤 소원이든 이루어준다.', img: '/assets/items/dragon_balls.png' },
+  { id: 'incense_burner',      name: '사성 전사의 모자',     description: '별이 달린 붉은 모자. 위대한 전사의 아들이 쓰던 것으로, 쓰면 전투력이 급상승한다는 소문이 있다.', img: '/assets/items/incense_burner.png' },
+  { id: 'pocket_watch',        name: '등가교환의 시계',     description: '어느 국가 소속 연금술사의 은빛 회중시계. 무언가를 얻으려면 반드시 같은 값을 치러야 한다.', img: '/assets/items/pocket_watch.png' },
+  { id: 'millennium_pendant',  name: '어둠의 역피라미드',   description: '고대 왕국에서 발굴된 퍼즐. 완성한 자의 내면에 또 다른 인격이 깨어난다고 한다.', img: '/assets/items/millennium_pendant.png' },
+  { id: 'spirit_phone',        name: '태양의 귀걸이',      description: '대대로 전해 내려온 해 문양의 귀걸이. 쓰면 호흡이 깊어지고 칼날이 붉게 타오른다.', img: '/assets/items/spirit_phone.png' },
+  { id: 'stone_mask',          name: '기묘한 석가면',       description: '달빛 아래 피를 바르면 착용자를 초월적 존재로 각성시킨다는 고대의 가면. 사용에 주의할 것.', img: '/assets/items/stone_mask.png' },
+  { id: 'grappling_hook',      name: '아버지의 열쇠',       description: '벽 너머의 진실이 잠든 지하실을 여는 열쇠. 세계의 비밀을 알게 되면 돌아갈 수 없다.', img: '/assets/items/grappling_hook.png' },
+  { id: 'wristband',           name: '인정의 이마보호대',   description: '마을 문양이 새겨진 금속 머리띠. 이것을 받는 순간, 한 명의 닌자로 인정받게 된다.', img: '/assets/items/wristband.png' },
+  { id: 'jersey_10',           name: '천재의 10번 유니폼',  description: '"천재니까요." 전국 제패의 꿈을 품은 붉은 유니폼. 입으면 왠지 리바운드가 잘 된다.', img: '/assets/items/jersey_10.png' },
+  { id: 'pokedex',             name: '모험가 자격증',       description: '특별한 시험을 통과한 자만이 받을 수 있는 카드. 소유자에게 세계 어디든 갈 수 있는 자유가 주어진다.', img: '/assets/items/pokedex.png' },
+  { id: 'chain_bomb',          name: '운명의 요석',         description: '피눈물을 흘리는 자 앞에 나타나 운명의 선택을 강요하는 붉은 구슬. 인과율이 뒤틀린다.', img: '/assets/items/chain_bomb.png' },
+  { id: 'wooden_bat',          name: '거대한 철 덩어리',    description: '그것은 검이라기엔 너무 크고, 두껍고, 무겁고, 거칠었다. 그리고 대충 만들어져 있었다.', img: '/assets/items/wooden_bat.png' },
+  { id: 'straw_hat',           name: '약속의 밀짚모자',     description: '은인에게 물려받은 소중한 모자. 반드시 돌려주겠다는 약속과 함께 바다 위의 왕을 꿈꾼다.', img: '/assets/items/straw_hat.png' },
+  { id: 'dragon_balls',        name: '소원의 구슬',         description: '별이 새겨진 일곱 개의 구슬. 모두 모으면 하늘에서 거대한 용이 나타나 소원을 들어준다.', img: '/assets/items/dragon_balls.png' },
 ];
 
 const SLOT_COUNT = 20; // 4행 5열
@@ -24,8 +24,8 @@ function ItemModal({ onClose }) {
   const slots = Array.from({ length: SLOT_COUNT }, (_, i) => ITEMS[i] || null);
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.wrapper}>
+    <div style={styles.overlay} onClick={onClose}>
+      <div style={styles.wrapper} onClick={e => e.stopPropagation()}>
 
         {/* 상단 상세보기 */}
         {selectedItem && (
@@ -80,6 +80,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: 'clamp(4px, 1vh, 8px)',
+    background: 'rgba(0, 0, 0, 0.5)',
   },
 
   wrapper: {
