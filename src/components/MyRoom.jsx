@@ -19,14 +19,13 @@ const SIDE_BUTTONS = [
 ];
 
 const SLOT_COUNT = 10;
-const SLOT_ITEMS_BASE = [
-  { img: '/assets/items/inv_item3.png', label: '테마 적용' },
-  { img: '/assets/items/inv_item5.webp', label: '로라' },
-  { img: '/assets/items/inv_item6.webp', label: '리프' },
-  { img: '/assets/items/inv_item7.webp', label: '탄이' },
-  { img: '/assets/items/inv_item2.png', label: '리프탄' },
-];
-const SLOT_ITEM_CRYSTAL = { img: '/assets/items/inv_item1.png', label: '수정구' };
+// 각 아이템은 고유 key로 식별
+const ITEM_THEME   = { key: 'theme',     img: '/assets/items/inv_item3.png',  label: '테마 적용' };
+const ITEM_CAT_W   = { key: 'cat_white', img: '/assets/items/inv_item5.webp', label: '로라' };
+const ITEM_CAT_B   = { key: 'cat_black', img: '/assets/items/inv_item6.webp', label: '리프' };
+const ITEM_CAT_G   = { key: 'cat_gray',  img: '/assets/items/inv_item7.webp', label: '탄이' };
+const ITEM_RAPTAN  = { key: 'raptan',    img: '/assets/items/inv_item2.png',  label: '리프탄' };
+const ITEM_CRYSTAL = { key: 'crystal',   img: '/assets/items/inv_item1.png',  label: '수정구' };
 const GREETING_TEXT = '맥시 : 오늘도 독서 열심히 해보자!';
 const TYPING_SPEED = 50;
 const DISPLAY_DURATION = 3000;
@@ -39,6 +38,13 @@ function MyRoom() {
 
   const [showQR, setShowQR] = useState(false);
   const [showReward, setShowReward] = useState(false);
+  const [rewardMissionId, setRewardMissionId] = useState(null);
+  const [completedMissions, setCompletedMissions] = useState(() => {
+    try {
+      const saved = localStorage.getItem('myroom_completedMissions');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) { return {}; }
+  });
   const [showItem, setShowItem] = useState(false);
   const [showAchievement, setShowAchievement] = useState(false);
   const [showMission, setShowMission] = useState(false);
@@ -49,7 +55,20 @@ function MyRoom() {
   const [slotApplied, setSlotApplied] = useState(() => {
     try {
       const saved = localStorage.getItem('myroom_slotApplied');
-      return saved ? JSON.parse(saved) : {};
+      if (!saved) return {};
+      const parsed = JSON.parse(saved);
+      // 기존 인덱스 기반 → key 기반 마이그레이션
+      if (parsed[0] !== undefined && parsed.theme === undefined) {
+        const migrated = {};
+        if (parsed[0]) migrated.theme = true;
+        if (parsed[1]) migrated.cat_white = true;
+        if (parsed[2]) migrated.cat_black = true;
+        if (parsed[3]) migrated.cat_gray = true;
+        if (parsed[4]) migrated.raptan = true;
+        if (parsed[5]) migrated.crystal = true;
+        return migrated;
+      }
+      return parsed;
     } catch (e) { return {}; }
   });
   const [showChat, setShowChat] = useState(() => {
@@ -57,6 +76,7 @@ function MyRoom() {
     catch (e) { return false; }
   });
   const [showGreeting, setShowGreeting] = useState(true);
+  const [tooltipSlot, setTooltipSlot] = useState(null);
   const [displayedText, setDisplayedText] = useState('');
   const [totalPoints, setTotalPoints] = useState(() => {
     try { return parseInt(localStorage.getItem('myroom_points') || '0', 10); }
@@ -75,6 +95,9 @@ function MyRoom() {
   useEffect(() => {
     localStorage.setItem('myroom_points', String(totalPoints));
   }, [totalPoints]);
+  useEffect(() => {
+    localStorage.setItem('myroom_completedMissions', JSON.stringify(completedMissions));
+  }, [completedMissions]);
 
   // Phaser 씬 로드 후 저장된 상태 복원
   useEffect(() => {
@@ -84,12 +107,12 @@ function MyRoom() {
       if (!scene || !scene.myAvatar) return;
       clearInterval(interval);
       restoredRef.current = true;
-      if (slotApplied[0]) scene.changeBackground('bg_maxy_room');
-      if (slotApplied[5]) scene.addCrystal();
-      if (slotApplied[1]) scene.addSingleCat('white');
-      if (slotApplied[2]) scene.addSingleCat('black');
-      if (slotApplied[3]) scene.addSingleCat('gray');
-      if (slotApplied[4]) scene.addRaptan();
+      if (slotApplied.theme) scene.changeBackground('bg_maxy_room');
+      if (slotApplied.crystal) scene.addCrystal();
+      if (slotApplied.cat_white) scene.addSingleCat('white');
+      if (slotApplied.cat_black) scene.addSingleCat('black');
+      if (slotApplied.cat_gray) scene.addSingleCat('gray');
+      if (slotApplied.raptan) scene.addRaptan();
     }, 200);
     return () => clearInterval(interval);
   }, []);
@@ -139,83 +162,55 @@ function MyRoom() {
   }, []);
 
 
+  // 획득한 아이템을 왼쪽부터 채워서 슬롯 목록 생성
+  const earnedItems = [ITEM_THEME];
+  if (completedMissions.first_register) earnedItems.push(ITEM_CAT_W);
+  if (completedMissions.view_work)      earnedItems.push(ITEM_CAT_B);
+  if (completedMissions.purchase_work)  earnedItems.push(ITEM_CAT_G);
+  earnedItems.push(ITEM_RAPTAN);
+  if (slotApplied.theme) earnedItems.push(ITEM_CRYSTAL);
+  // 나머지를 null로 채워 SLOT_COUNT에 맞춤
+  const SLOT_ITEMS = [...earnedItems, ...Array(SLOT_COUNT - earnedItems.length).fill(null)];
+
   function handleSlotClick(i) {
     setActiveSlot(i);
     const scene = gameRef.current?.getScene();
     if (!scene) return;
+    const item = SLOT_ITEMS[i];
+    if (!item) return;
+    const key = item.key;
 
-    if (i === 0) {
-      // 테마 적용/해제
-      if (!slotApplied[0]) {
+    if (key === 'theme') {
+      if (!slotApplied.theme) {
         scene.changeBackground('bg_maxy_room');
-        setSlotApplied(prev => ({ ...prev, 0: true }));
+        setSlotApplied(prev => ({ ...prev, theme: true }));
       } else {
-        // 테마 해제 시 수정구도 함께 해제
-        if (slotApplied[5]) {
-          scene.removeCrystal();
-        }
+        if (slotApplied.crystal) scene.removeCrystal();
         scene.restoreBackground();
-        setSlotApplied(prev => ({ ...prev, 0: false, 5: false }));
+        setSlotApplied(prev => ({ ...prev, theme: false, crystal: false }));
       }
-    } else if (i === 1) {
-      // 흰 고양이 (로라)
+    } else if (key === 'cat_white') {
       if (!scene.themeApplied) return;
-      if (!slotApplied[1]) {
-        scene.addSingleCat('white');
-        setSlotApplied(prev => ({ ...prev, 1: true }));
-      } else {
-        scene.removeSingleCat('white');
-        setSlotApplied(prev => ({ ...prev, 1: false }));
-      }
-    } else if (i === 2) {
-      // 검정 고양이 (리프)
+      if (!slotApplied.cat_white) { scene.addSingleCat('white'); setSlotApplied(prev => ({ ...prev, cat_white: true })); }
+      else { scene.removeSingleCat('white'); setSlotApplied(prev => ({ ...prev, cat_white: false })); }
+    } else if (key === 'cat_black') {
       if (!scene.themeApplied) return;
-      if (!slotApplied[2]) {
-        scene.addSingleCat('black');
-        setSlotApplied(prev => ({ ...prev, 2: true }));
-      } else {
-        scene.removeSingleCat('black');
-        setSlotApplied(prev => ({ ...prev, 2: false }));
-      }
-    } else if (i === 3) {
-      // 회색 고양이 (탄이)
+      if (!slotApplied.cat_black) { scene.addSingleCat('black'); setSlotApplied(prev => ({ ...prev, cat_black: true })); }
+      else { scene.removeSingleCat('black'); setSlotApplied(prev => ({ ...prev, cat_black: false })); }
+    } else if (key === 'cat_gray') {
       if (!scene.themeApplied) return;
-      if (!slotApplied[3]) {
-        scene.addSingleCat('gray');
-        setSlotApplied(prev => ({ ...prev, 3: true }));
-      } else {
-        scene.removeSingleCat('gray');
-        setSlotApplied(prev => ({ ...prev, 3: false }));
-      }
-    } else if (i === 4) {
-      // 리프탄
+      if (!slotApplied.cat_gray) { scene.addSingleCat('gray'); setSlotApplied(prev => ({ ...prev, cat_gray: true })); }
+      else { scene.removeSingleCat('gray'); setSlotApplied(prev => ({ ...prev, cat_gray: false })); }
+    } else if (key === 'raptan') {
       if (!scene.themeApplied) return;
-      if (!slotApplied[4]) {
-        scene.addRaptan();
-        setSlotApplied(prev => ({ ...prev, 4: true }));
-        setShowChat(true);
-      } else {
-        scene.removeRaptan();
-        setSlotApplied(prev => ({ ...prev, 4: false }));
-        setShowChat(false);
-      }
-    } else if (i === 5) {
-      // 수정구 추가/제거
+      if (!slotApplied.raptan) { scene.addRaptan(); setSlotApplied(prev => ({ ...prev, raptan: true })); setShowChat(true); }
+      else { scene.removeRaptan(); setSlotApplied(prev => ({ ...prev, raptan: false })); setShowChat(false); }
+    } else if (key === 'crystal') {
       if (!scene.themeApplied) return;
-      if (!slotApplied[5]) {
-        scene.addCrystal();
-        setSlotApplied(prev => ({ ...prev, 5: true }));
-      } else {
-        scene.removeCrystal();
-        setSlotApplied(prev => ({ ...prev, 5: false }));
-      }
+      if (!slotApplied.crystal) { scene.addCrystal(); setSlotApplied(prev => ({ ...prev, crystal: true })); }
+      else { scene.removeCrystal(); setSlotApplied(prev => ({ ...prev, crystal: false })); }
     }
   }
-
-  // 테마 적용 시 수정구 슬롯 동적 추가
-  const SLOT_ITEMS = slotApplied[0]
-    ? [...SLOT_ITEMS_BASE, SLOT_ITEM_CRYSTAL, null, null, null, null]
-    : [...SLOT_ITEMS_BASE, null, null, null, null, null];
 
   const slotW = Math.max(36, Math.floor((L.gameW - 9 * 6 - 20) / 10));
   const slotBarMaxW = slotW * 10 + 6 * 9 + 10 * 2 + 2 * 2;
@@ -227,7 +222,7 @@ function MyRoom() {
     <div style={styles.container}>
 
       {/* 타이틀 + 포인트 */}
-      <div style={styles.titleRow}>
+      <div style={{ ...styles.titleRow, maxWidth: L.rowW }}>
         <div style={{ ...styles.titleBar, width: '100%', maxWidth: titleBarMaxW, fontSize: titleFontSize }}>
           <span style={{ ...styles.titleText, fontSize: titleFontSize }}>
             {titleText}
@@ -295,7 +290,7 @@ function MyRoom() {
         <div style={styles.slotBar}>
           {Array.from({ length: SLOT_COUNT }, (_, i) => {
             const item = SLOT_ITEMS[i];
-            const applied = slotApplied[i];
+            const applied = item ? slotApplied[item.key] : false;
             return (
               <button
                 key={i}
@@ -303,9 +298,11 @@ function MyRoom() {
                   ...styles.slot, width: slotW, height: slotW,
                   ...(activeSlot === i ? styles.slotActive : {}),
                   ...(applied ? styles.slotApplied : {}),
-                  position: 'relative', overflow: 'hidden',
+                  position: 'relative', overflow: 'visible',
                 }}
                 onClick={() => handleSlotClick(i)}
+                onMouseEnter={() => item && setTooltipSlot(i)}
+                onMouseLeave={() => setTooltipSlot(null)}
               >
                 {item ? (
                   <img
@@ -328,6 +325,9 @@ function MyRoom() {
                 {applied && (
                   <span style={styles.slotCheckmark}>✓</span>
                 )}
+                {tooltipSlot === i && item && (
+                  <span style={styles.tooltip}>{item.label}</span>
+                )}
               </button>
             );
           })}
@@ -335,8 +335,8 @@ function MyRoom() {
       </div>
 
       {/* 모달들 */}
-      {showMission  && <MissionModal onClose={() => setShowMission(false)} />}
-      {showLibrary  && <LibraryModal onClose={() => setShowLibrary(false)} onMissionComplete={() => setShowReward(true)} />}
+      {showMission  && <MissionModal onClose={() => setShowMission(false)} completedMissions={completedMissions} onSecretComplete={(missionId) => { setRewardMissionId(missionId); setShowReward(true); }} />}
+      {showLibrary  && <LibraryModal onClose={() => setShowLibrary(false)} completedMissions={completedMissions} onMissionComplete={(missionId) => { setRewardMissionId(missionId); setShowReward(true); }} />}
       {showItem     && <ItemModal onClose={() => setShowItem(false)} />}
       {showAchievement && <AchievementModal onClose={() => setShowAchievement(false)} />}
 
@@ -374,7 +374,20 @@ function MyRoom() {
       )}
 
       {showQR && <QRCodeModal url={`${window.location.origin}/${userId}/room`} onClose={() => setShowQR(false)} />}
-      {showReward && <RewardModal onConfirm={() => setShowReward(false)} onCancel={() => setShowReward(false)} />}
+      {showReward && <RewardModal missionId={rewardMissionId} onConfirm={() => {
+        setCompletedMissions(prev => ({ ...prev, [rewardMissionId]: true }));
+        // 미션별 고양이 자동 적용
+        const scene = gameRef.current?.getScene();
+        if (scene && scene.themeApplied) {
+          const catMap = { first_register: ['white', 'cat_white'], view_work: ['black', 'cat_black'], purchase_work: ['gray', 'cat_gray'] };
+          const cat = catMap[rewardMissionId];
+          if (cat && !slotApplied[cat[1]]) {
+            scene.addSingleCat(cat[0]);
+            setSlotApplied(prev => ({ ...prev, [cat[1]]: true }));
+          }
+        }
+        setShowReward(false); setRewardMissionId(null);
+      }} onCancel={() => { setCompletedMissions(prev => ({ ...prev, [rewardMissionId]: true })); setShowReward(false); setRewardMissionId(null); }} />}
     </div>
   );
 }
@@ -487,6 +500,22 @@ const styles = {
     width: 14, height: 14, borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     lineHeight: 1,
+  },
+  tooltip: {
+    position: 'absolute',
+    bottom: '110%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: '#3d2210',
+    color: '#f5e6c8',
+    fontSize: 'clamp(10px, 1.3vw, 12px)',
+    fontWeight: 'bold',
+    padding: '4px 8px',
+    borderRadius: '4px',
+    whiteSpace: 'nowrap',
+    pointerEvents: 'none',
+    zIndex: 50,
+    boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
   },
 
   visitOverlay: {

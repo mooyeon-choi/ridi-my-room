@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 
 const ITEMS = [
+  { id: 'theme_sangsuri',      name: '맥시의 테마',          description: '맥시가 정성껏 꾸민 아늑한 방. 책 냄새와 따뜻한 조명이 독서욕을 불러일으킨다.', img: '/assets/items/inv_item3.png' },
+  { id: 'cat_white',           name: '로라',                 description: '서재에 첫 작품을 들인 날 찾아온 새하얀 고양이. 조용히 곁에 앉아 함께 책을 읽는다.', img: '/assets/pets/cat_white.png' },
+  { id: 'cat_black',           name: '리프',                 description: '작품을 감상하고 돌아오면 어느새 나타나 있는 까만 고양이. 감성이 풍부해 눈물을 잘 흘린다.', img: '/assets/pets/cat_black.png' },
+  { id: 'cat_gray',            name: '탄이',                 description: '작가를 응원하는 마음에 감동받아 따라온 회색 고양이. 결제 알림 소리에 꼬리를 흔든다.', img: '/assets/pets/cat_gray.png' },
+  { id: 'crystal_ball',        name: '운명의 수정구',        description: '신비로운 빛을 품은 수정구. 들여다보면 다음에 읽을 운명의 작품이 어렴풋이 보인다는 소문.', img: '/assets/items/inv_item1.png' },
   { id: 'incense_burner',      name: '사성 전사의 모자',     description: '별이 달린 붉은 모자. 위대한 전사의 아들이 쓰던 것으로, 쓰면 전투력이 급상승한다는 소문이 있다.', img: '/assets/items/incense_burner.png' },
   { id: 'pocket_watch',        name: '등가교환의 시계',     description: '어느 국가 소속 연금술사의 은빛 회중시계. 무언가를 얻으려면 반드시 같은 값을 치러야 한다.', img: '/assets/items/pocket_watch.png' },
   { id: 'millennium_pendant',  name: '어둠의 역피라미드',   description: '고대 왕국에서 발굴된 퍼즐. 완성한 자의 내면에 또 다른 인격이 깨어난다고 한다.', img: '/assets/items/millennium_pendant.png' },

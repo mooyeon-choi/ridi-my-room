@@ -970,13 +970,13 @@ class LibraryScene extends Phaser.Scene {
     this.catClicksRemaining = 2; // 2회 포인트 획득 가능
 
     const catPositions = [
-      { key: 'cat_white', name: '로라',  x: this.bgW * 0.3,           y: this.bgH * 0.75 },  // 바닥
-      { key: 'cat_black', name: '로라',  x: 850 * this.scaleX + 22,   y: 650 * this.scaleY + 26 }, // 책상 위
-      { key: 'cat_gray',  name: '론',  x: 1600 * this.scaleX - 8,   y: 400 * this.scaleY + 90 }, // 침대 위
+      { type: 'white', key: 'cat_white', name: '로라',  x: this.bgW * 0.3,           y: this.bgH * 0.75 },  // 바닥
+      { type: 'black', key: 'cat_black', name: '리프',  x: 850 * this.scaleX + 22,   y: 650 * this.scaleY + 26 }, // 책상 위
+      { type: 'gray',  key: 'cat_gray',  name: '탄이',  x: 1600 * this.scaleX - 8,   y: 400 * this.scaleY + 90 }, // 침대 위
     ];
 
     this.catSprites = [];
-    catPositions.forEach(({ key, name, x, y }, idx) => {
+    catPositions.forEach(({ type, key, name, x, y }) => {
       // 픽셀 그림자
       this.drawPixelShadow(x, y + 2, y - 0.1, 8);
 
@@ -984,13 +984,14 @@ class LibraryScene extends Phaser.Scene {
       cat.setScale(0.4);
       cat.setDepth(y);
       cat.setInteractive({ useHandCursor: true });
+      cat.catType = type;
       cat.catName = name;
       cat.on('pointerdown', () => this.onCatClick(name));
       this.catSprites.push(cat);
 
       // 상호작용 등록
       this.interactables.push({
-        name: `cat_${name}`, emoji: '🐱',
+        name: `cat_${type}`, emoji: '🐱',
         getPos: () => ({ cx: cat.x, cy: cat.y }),
         range: 40,
         action: () => this.onCatClick(name),
@@ -1015,14 +1016,14 @@ class LibraryScene extends Phaser.Scene {
 
     const catMap = {
       white: { key: 'cat_white', name: '로라', x: this.bgW * 0.3, y: this.bgH * 0.75 },
-      black: { key: 'cat_black', name: '로라', x: 850 * this.scaleX + 22, y: 650 * this.scaleY + 26 },
-      gray:  { key: 'cat_gray',  name: '론', x: 1600 * this.scaleX - 8, y: 400 * this.scaleY + 90 },
+      black: { key: 'cat_black', name: '리프', x: 850 * this.scaleX + 22, y: 650 * this.scaleY + 26 },
+      gray:  { key: 'cat_gray',  name: '탄이', x: 1600 * this.scaleX - 8, y: 400 * this.scaleY + 90 },
     };
     const info = catMap[catType];
     if (!info) return;
 
-    // 이미 추가된 경우 무시
-    if (this.catSprites.some(c => c.catName === info.name)) return;
+    // 이미 추가된 경우 무시 (catType으로 식별)
+    if (this.catSprites.some(c => c.catType === catType)) return;
 
     this.catClicksRemaining++;
     this.drawPixelShadow(info.x, info.y + 2, info.y - 0.1, 8);
@@ -1030,12 +1031,13 @@ class LibraryScene extends Phaser.Scene {
     cat.setScale(0.4);
     cat.setDepth(info.y);
     cat.setInteractive({ useHandCursor: true });
+    cat.catType = catType;
     cat.catName = info.name;
     cat.on('pointerdown', () => this.onCatClick(info.name));
     this.catSprites.push(cat);
 
     this.interactables.push({
-      name: `cat_${info.name}`, emoji: '🐱',
+      name: `cat_${catType}`, emoji: '🐱',
       getPos: () => ({ cx: cat.x, cy: cat.y }),
       range: 40,
       action: () => this.onCatClick(info.name),
@@ -1044,16 +1046,14 @@ class LibraryScene extends Phaser.Scene {
 
   // 개별 고양이 제거
   removeSingleCat(catType) {
-    const nameMap = { white: '로라', black: '로라', gray: '론' };
-    const name = nameMap[catType];
-    if (!name || !this.catSprites) return;
+    if (!this.catSprites) return;
 
-    const idx = this.catSprites.findIndex(c => c.catName === name);
+    const idx = this.catSprites.findIndex(c => c.catType === catType);
     if (idx !== -1) {
       this.catSprites[idx].destroy();
       this.catSprites.splice(idx, 1);
     }
-    this.interactables = this.interactables.filter(i => i.name !== `cat_${name}`);
+    this.interactables = this.interactables.filter(i => i.name !== `cat_${catType}`);
   }
 
   onCatClick(catName) {
@@ -1609,7 +1609,7 @@ class LibraryScene extends Phaser.Scene {
 
     // 화자 이름
     const hostName = this.roomConfig?.hostName;
-    const catNames = ['로라', '로라', '론'];
+    const catNames = ['로라', '리프', '탄이'];
     const nameColor = speaker === '리프탄' ? '#7ec8e3'
       : speaker === '거울' ? '#c0e0ff'
       : catNames.includes(speaker) ? '#f0a0c0'

@@ -1,17 +1,22 @@
 import React from 'react';
 
-function RewardModal({ onConfirm, onCancel }) {
+const REWARD_INFO = {
+  first_register: { img: '/assets/pets/cat_white.png', alt: '흰 고양이', name: '로라' },
+  view_work:      { img: '/assets/pets/cat_black.png', alt: '검정 고양이', name: '리프' },
+  purchase_work:  { img: '/assets/pets/cat_gray.png',  alt: '회색 고양이', name: '탄이' },
+};
+
+function RewardModal({ onConfirm, onCancel, missionId }) {
+  const reward = REWARD_INFO[missionId] || REWARD_INFO.first_register;
   return (
     <div style={styles.overlay} onKeyDown={e => e.stopPropagation()}>
       <div style={styles.frame}>
         <div style={styles.inner}>
           <h2 style={styles.title}>미션 완료!</h2>
-          <p style={styles.description}>맥시의 새끼고양이 3마리를 얻었습니다!</p>
+          <p style={styles.description}>{reward.name}를 얻었습니다!</p>
 
           <div style={styles.rewardImages}>
-            <img src="/assets/pets/cat_white.png" alt="흰 고양이" style={styles.rewardImg} />
-            <img src="/assets/pets/cat_black.png" alt="검정 고양이" style={styles.rewardImg} />
-            <img src="/assets/pets/cat_gray.png" alt="회색 고양이" style={styles.rewardImg} />
+            <img src={reward.img} alt={reward.alt} style={styles.rewardImg} />
           </div>
 
           <p style={styles.question}>바로 적용하시겠습니까?</p>

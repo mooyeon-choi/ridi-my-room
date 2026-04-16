@@ -33,7 +33,7 @@ function getInitialBooks() {
   return INITIAL_BOOKS;
 }
 
-function LibraryModal({ onClose, onMissionComplete }) {
+function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [books, setBooks] = useState(getInitialBooks);
@@ -53,13 +53,27 @@ function LibraryModal({ onClose, onMissionComplete }) {
   }, []);
   const [screenshotData, setScreenshotData] = useState(null); // { screenshot, pendingBook }
   const [added, setAdded] = useState(false);
-  const [missionTriggered, setMissionTriggered] = useState(false);
+  const [missionTriggered, setMissionTriggered] = useState({});
+
+  const triggerMission = useCallback((missionId) => {
+    if (completedMissions[missionId]) return;
+    setMissionTriggered(prev => {
+      if (prev[missionId]) return prev;
+      if (onMissionComplete) onMissionComplete(missionId);
+      return { ...prev, [missionId]: true };
+    });
+  }, [completedMissions, onMissionComplete]);
 
   // 브라우저 뒤로가기로 스크린샷 닫기
   const closeScreenshotInternal = useCallback(() => {
-    setScreenshotData(null);
+    setScreenshotData(prev => {
+      if (prev?.isViewing && !completedMissions.view_work) {
+        setTimeout(() => triggerMission('view_work'), 100);
+      }
+      return null;
+    });
     setAdded(false);
-  }, []);
+  }, [completedMissions, triggerMission]);
 
   useEffect(() => {
     if (!screenshotData) return;
@@ -98,9 +112,9 @@ function LibraryModal({ onClose, onMissionComplete }) {
     const { pendingBook } = screenshotData;
     setBooks(prev => {
       const updated = [...prev, pendingBook];
-      if (updated.length >= 3 && !missionTriggered) {
-        setMissionTriggered(true);
-        if (onMissionComplete) onMissionComplete();
+      // 첫 작품 등록 미션: 새 작품을 서재에 추가할 때
+      if (!completedMissions.first_register) {
+        setTimeout(() => triggerMission('first_register'), 100);
       }
       return updated;
     });
@@ -110,6 +124,21 @@ function LibraryModal({ onClose, onMissionComplete }) {
   }
 
   function closeScreenshot() {
+    // 작품 감상 미션: "보러가기"로 감상 후 돌아올 때
+    if (screenshotData?.isViewing && !completedMissions.view_work && !missionTriggered.view_work) {
+      setTimeout(() => triggerMission('view_work'), 100);
+    }
+    setScreenshotData(null);
+    setAdded(false);
+    window.history.back();
+  }
+
+  function handlePurchase() {
+    if (!screenshotData) return;
+    // 작품 결제 미션
+    if (!completedMissions.purchase_work && !missionTriggered.purchase_work) {
+      triggerMission('purchase_work');
+    }
     setScreenshotData(null);
     setAdded(false);
     window.history.back();
@@ -139,10 +168,17 @@ function LibraryModal({ onClose, onMissionComplete }) {
           </div>
         </div>
 
-        {/* 뒤로가기 버튼 */}
-        <button style={styles.screenshotBackBtn} onClick={closeScreenshot}>
-          ← 서재로 돌아가기
-        </button>
+        {/* 하단 버튼 영역 */}
+        <div style={styles.screenshotBottomBar}>
+          {screenshotData.isViewing && !completedMissions.purchase_work && (
+            <button style={styles.purchaseBtn} onClick={handlePurchase}>
+              💰 결제하기
+            </button>
+          )}
+          <button style={styles.screenshotBackBtn} onClick={closeScreenshot}>
+            ← 서재로 돌아가기
+          </button>
+        </div>
       </div>
     );
   }
@@ -169,7 +205,7 @@ function LibraryModal({ onClose, onMissionComplete }) {
                   <span style={styles.detailDesc}>{selectedBook.description}</span>
                   <button style={styles.goBtn} onClick={() => {
                     window.history.pushState({ screenshot: true }, '', `${location.pathname}?view=book-preview`);
-                    setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null });
+                    setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null, isViewing: true });
                     setAdded(true);
                   }}>보러가기</button>
                 </div>
@@ -264,12 +300,30 @@ const styles = {
     border: '1px solid #16A34A',
     cursor: 'default',
   },
-  screenshotBackBtn: {
+  screenshotBottomBar: {
     position: 'fixed',
     bottom: 0,
     left: 0,
     width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    zIndex: 20,
+  },
+  purchaseBtn: {
+    background: '#F59E0B',
+    border: 'none',
+    borderTop: '1px solid #D97706',
+    color: '#fff',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontSize: 'clamp(13px, 1.6vw, 16px)',
+    fontWeight: '600',
+    padding: 'clamp(10px, 1.5vh, 14px) 0',
+    cursor: 'pointer',
+    textAlign: 'center',
+  },
+  screenshotBackBtn: {
     background: '#fff',
+    border: 'none',
     borderTop: '1px solid #e0e0e0',
     color: '#3B82F6',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -277,10 +331,7 @@ const styles = {
     fontWeight: '600',
     padding: 'clamp(12px, 2vh, 18px) 0',
     cursor: 'pointer',
-    zIndex: 20,
     textAlign: 'center',
-    border: 'none',
-    borderTop: '1px solid #e0e0e0',
   },
 
   // 서재 모달

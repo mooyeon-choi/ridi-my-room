@@ -2,46 +2,67 @@ import React from 'react';
 
 const MISSIONS = [
   {
-    id: 1,
-    title: '컬렉션 자랑하기',
-    description: '나의서재에 새 컬렉션 추가하고 자랑하기',
-    rewards: [
-      { img: '/assets/pets/cat_white.png', alt: '흰 고양이' },
-      { img: '/assets/pets/cat_black.png', alt: '검은 고양이' },
-      { img: '/assets/pets/cat_gray.png',  alt: '회색 고양이' },
-    ],
-    rewardText: '맥시의 새끼\n고양이 3마리',
+    id: 'first_register',
+    title: '첫 작품 등록',
+    description: '서재가 텅 비었잖아! 첫 작품을 들여놓자',
+    reward: { img: '/assets/pets/cat_white.png', alt: '흰 고양이' },
+    rewardText: '로라',
+    secretComplete: false,
+  },
+  {
+    id: 'view_work',
+    title: '작품 감상하기',
+    description: '눈으로 읽어야 진짜 독서! 작품 속으로 빠져보자',
+    reward: { img: '/assets/pets/cat_black.png', alt: '검정 고양이' },
+    rewardText: '리프',
+    secretComplete: true,
+  },
+  {
+    id: 'purchase_work',
+    title: '작품 결제하기',
+    description: '좋은 작품엔 지갑을 열어야지! 작가님 응원 고고',
+    reward: { img: '/assets/pets/cat_gray.png', alt: '회색 고양이' },
+    rewardText: '탄이',
+    secretComplete: true,
   },
 ];
 
-function MissionModal({ onClose }) {
+function MissionModal({ onClose, completedMissions = {}, onSecretComplete }) {
   return (
     <div style={styles.overlay} onClick={onClose} onKeyDown={e => e.stopPropagation()}>
       {/* 모달 본체 */}
       <div style={styles.modal} onClick={e => e.stopPropagation()}>
         <div style={styles.missionList}>
-          {MISSIONS.map(mission => (
-            <div key={mission.id} style={styles.missionRow}>
-              {/* 좌측: 제목 + 설명 */}
-              <div style={styles.missionInfo}>
-                <span style={styles.missionTitle}>{mission.title}</span>
-                <span style={styles.missionDesc}>{mission.description}</span>
-              </div>
+          {MISSIONS.map(mission => {
+            const completed = completedMissions[mission.id];
+            const canSecret = mission.secretComplete && !completed && onSecretComplete;
+            return (
+              <div key={mission.id} style={{ ...styles.missionRow, ...(completed ? styles.missionRowCompleted : {}) }}>
+                {/* 좌측: 제목 + 설명 */}
+                <div style={styles.missionInfo}>
+                  <span style={styles.missionTitle}>
+                    {completed && <span style={styles.checkIcon}>✓ </span>}
+                    {mission.title}
+                  </span>
+                  <span style={styles.missionDesc}>{mission.description}</span>
+                </div>
 
-              {/* 우측: 보상 */}
-              <div style={styles.rewardSection}>
-                <div style={styles.rewardBadge}>보상</div>
-                <div style={styles.rewardItems}>
-                  {mission.rewards.map((r, i) => (
-                    <div key={i} style={styles.rewardSlot}>
-                      <img src={r.img} alt={r.alt} style={styles.rewardImg} />
+                {/* 우측: 보상 */}
+                <div
+                  style={styles.rewardSection}
+                  onClick={canSecret ? () => onSecretComplete(mission.id) : undefined}
+                >
+                  <div style={styles.rewardBadge}>{completed ? '완료' : '보상'}</div>
+                  <div style={styles.rewardItems}>
+                    <div style={styles.rewardSlot}>
+                      <img src={mission.reward.img} alt={mission.reward.alt} style={styles.rewardImg} />
                     </div>
-                  ))}
-                  <span style={styles.rewardText}>{mission.rewardText}</span>
+                    <span style={styles.rewardText}>{mission.rewardText}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -89,6 +110,13 @@ const styles = {
     borderRadius: '4px',
     overflow: 'hidden',
     border: '2px solid #7a4e28',
+  },
+  missionRowCompleted: {
+    opacity: 0.6,
+    border: '2px solid #4ade80',
+  },
+  checkIcon: {
+    color: '#4ade80',
   },
   missionInfo: {
     flex: 1,
