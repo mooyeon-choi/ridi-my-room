@@ -58,6 +58,24 @@ function MyRoom() {
     }
   }, [anyModalOpen]);
 
+  // 스페이스바/ESC로 모달 닫기
+  useEffect(() => {
+    if (!anyModalOpen) return;
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' || e.key === ' ') {
+        e.preventDefault();
+        if (showMission) setShowMission(false);
+        else if (showLibrary) setShowLibrary(false);
+        else if (showItem) setShowItem(false);
+        else if (showVisitInput) { setShowVisitInput(false); setVisitUserId(''); }
+        else if (showQR) setShowQR(false);
+        else if (showReward) setShowReward(false);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [anyModalOpen, showMission, showLibrary, showItem, showVisitInput, showQR, showReward]);
+
   useEffect(() => {
     if (!showGreeting) return;
     let i = 0;

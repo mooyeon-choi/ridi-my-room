@@ -73,6 +73,20 @@ function VisitorRoom() {
     }
   }, [showVisitInput]);
 
+  // 스페이스바/ESC로 모달 닫기
+  useEffect(() => {
+    if (!showVisitInput) return;
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' || e.key === ' ') {
+        e.preventDefault();
+        setShowVisitInput(false);
+        setVisitUserId('');
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showVisitInput]);
+
   useEffect(() => { loadRoomData(); }, [userId]);
 
   useEffect(() => {

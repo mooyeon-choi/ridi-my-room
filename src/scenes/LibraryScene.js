@@ -248,7 +248,15 @@ class LibraryScene extends Phaser.Scene {
     this.interactTarget = null; // 현재 상호작용 가능한 대상
     this.interactBubble = null; // 상호작용 힌트 말풍선
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     this.spaceJustPressed = false;
+
+    // ESC로 대화/운세 강제 종료
+    this.escKey.on('down', () => {
+      if (this.dialogueActive) {
+        this.endDialogue();
+      }
+    });
 
     // 상호작용 가능 오브젝트 정의
     this.interactables = [];
@@ -1038,7 +1046,7 @@ class LibraryScene extends Phaser.Scene {
     this.dialogueContainer.add(fortuneText);
 
     // 닫기 안내
-    const closeText = this.add.text(width / 2, cardY + cardH - 20, '화면을 터치하면 닫힙니다', {
+    const closeText = this.add.text(width / 2, cardY + cardH - 20, '터치 / Space / ESC 로 닫기', {
       fontSize: '10px', color: '#7c7c9c',
     }).setOrigin(0.5, 1);
     this.dialogueContainer.add(closeText);
@@ -1145,6 +1153,7 @@ class LibraryScene extends Phaser.Scene {
             advanced = true;
             if (this._dialogueSpaceHandler) {
               this.spaceKey.off('down', this._dialogueSpaceHandler);
+              this.escKey.off('down', this._dialogueSpaceHandler);
               this._dialogueSpaceHandler = null;
             }
             if (onComplete) onComplete();
@@ -1152,6 +1161,7 @@ class LibraryScene extends Phaser.Scene {
           clickZone.once('pointerdown', advance);
           this._dialogueSpaceHandler = advance;
           this.spaceKey.on('down', advance);
+          this.escKey.on('down', advance);
         }
       },
       loop: true,
@@ -1268,6 +1278,7 @@ class LibraryScene extends Phaser.Scene {
   clearDialogueUI() {
     if (this._dialogueSpaceHandler) {
       this.spaceKey.off('down', this._dialogueSpaceHandler);
+      this.escKey.off('down', this._dialogueSpaceHandler);
       this._dialogueSpaceHandler = null;
     }
     if (this._removeChoiceKeys) {
