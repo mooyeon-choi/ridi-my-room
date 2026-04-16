@@ -171,87 +171,89 @@ const styles = {
     flexDirection: 'column',
     height: '100%',
     width: '100%',
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   messages: {
     flex: 1,
     overflowY: 'auto',
-    padding: 'clamp(6px, 1.2vh, 10px) clamp(8px, 1.5vw, 12px)',
+    padding: 'clamp(4px, 0.8vh, 8px) clamp(6px, 1vw, 10px)',
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(4px, 0.6vh, 6px)',
-    WebkitOverflowScrolling: 'touch'
+    gap: 'clamp(3px, 0.5vh, 5px)',
+    WebkitOverflowScrolling: 'touch',
   },
   messageBubble: {
-    maxWidth: '85%',
-    padding: 'clamp(5px, 1vh, 8px) clamp(8px, 1.5vw, 12px)',
-    borderRadius: 'clamp(8px, 1.5vw, 12px)',
-    fontSize: 'clamp(11px, 1.4vw, 13px)',
-    lineHeight: '1.5',
-    wordBreak: 'break-word'
+    maxWidth: '80%',
+    padding: 'clamp(4px, 0.7vh, 7px) clamp(6px, 1vw, 10px)',
+    borderRadius: '8px',
+    fontSize: 'clamp(10px, 1.3vw, 12px)',
+    lineHeight: '1.4',
+    wordBreak: 'break-word',
   },
   userBubble: {
     alignSelf: 'flex-end',
-    background: '#8b5e3c',
-    color: '#f5e6c8',
-    borderBottomRightRadius: '4px'
+    background: '#6b4423',
+    color: '#f0ddb8',
+    borderBottomRightRadius: '2px',
+    border: '1px solid #8b5e3c',
   },
   aiBubble: {
     alignSelf: 'flex-start',
-    background: '#5c3322',
-    color: '#f5e6c8',
-    borderBottomLeftRadius: '4px'
+    background: '#3d1e10',
+    color: '#f0ddb8',
+    borderBottomLeftRadius: '2px',
+    border: '1px solid #5c3322',
   },
   aiLabel: {
     display: 'inline-block',
-    fontSize: 'clamp(8px, 1.1vw, 10px)',
+    fontSize: 'clamp(8px, 1vw, 10px)',
     fontWeight: 'bold',
     color: '#d4a843',
-    marginBottom: '2px'
+    marginBottom: '1px',
   },
   messageText: {
-    margin: 0
+    margin: 0,
   },
   loadingDots: {
     display: 'flex',
-    gap: '2px'
+    gap: '2px',
   },
   dot: {
-    fontSize: 'clamp(14px, 2vw, 20px)',
+    fontSize: 'clamp(12px, 1.8vw, 18px)',
     color: '#d4a843',
     animation: 'blink 1s infinite',
-    lineHeight: '1'
+    lineHeight: '1',
   },
   inputArea: {
     display: 'flex',
-    gap: 'clamp(4px, 0.6vw, 6px)',
-    padding: 'clamp(5px, 1vh, 8px) clamp(6px, 1.2vw, 10px)',
-    borderTop: '2px solid #8b6914',
-    background: '#c4a050',
-    flexShrink: 0
+    gap: 'clamp(3px, 0.5vw, 5px)',
+    padding: 'clamp(4px, 0.7vh, 6px) clamp(5px, 1vw, 8px)',
+    borderTop: '1px solid #5c3018',
+    background: '#3a1a0a',
+    flexShrink: 0,
   },
   input: {
     flex: 1,
-    padding: 'clamp(5px, 1vh, 8px) clamp(8px, 1.5vw, 12px)',
-    borderRadius: '6px',
-    border: '2px solid #8b6914',
-    background: '#e8cfa0',
-    color: '#3d2210',
-    fontSize: 'clamp(11px, 1.4vw, 13px)',
+    padding: 'clamp(4px, 0.7vh, 6px) clamp(6px, 1vw, 10px)',
+    borderRadius: '4px',
+    border: '1px solid #5c3018',
+    background: '#1a0a04',
+    color: '#f0ddb8',
+    fontSize: 'clamp(10px, 1.3vw, 12px)',
     outline: 'none',
-    WebkitAppearance: 'none'
+    WebkitAppearance: 'none',
   },
   sendBtn: {
-    padding: 'clamp(5px, 1vh, 8px) clamp(8px, 1.5vw, 14px)',
-    borderRadius: '6px',
-    border: '2px solid #8b6914',
-    background: '#5c3322',
-    color: '#f5e6c8',
-    fontSize: 'clamp(10px, 1.3vw, 12px)',
+    padding: 'clamp(4px, 0.7vh, 6px) clamp(6px, 1vw, 12px)',
+    borderRadius: '4px',
+    border: '1px solid #5c3018',
+    background: '#5c3018',
+    color: '#f0ddb8',
+    fontSize: 'clamp(9px, 1.2vw, 11px)',
     fontWeight: 'bold',
     cursor: 'pointer',
-    flexShrink: 0
-  }
+    flexShrink: 0,
+  },
 };
 
 export default ChatBox;

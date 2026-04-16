@@ -574,7 +574,7 @@ class LibraryScene extends Phaser.Scene {
     // 채팅 말풍선 표시 시 타이핑 말풍선 해제
     if (avatarType === 'my') this.showTypingBubble(false);
 
-    const avatar = avatarType === 'host' ? this.hostAvatar : this.myAvatar;
+    const avatar = avatarType === 'host' ? (this.hostAvatar || this.raptan) : this.myAvatar;
     if (!avatar || !avatar.active) return;
 
     const bw = 52;

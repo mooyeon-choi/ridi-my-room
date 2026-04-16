@@ -304,9 +304,10 @@ const styles = {
   },
   dialogueText: { color: '#3d2210', fontSize: 'clamp(13px, 2vw, 18px)', lineHeight: '1.5', fontWeight: '500', flex: 1 },
   chatArea: {
-    width: '100%', background: '#3a1010',
-    border: '2px solid #6b3a1a', borderRadius: '6px',
+    width: '100%', background: '#2a1508',
+    border: '2px solid #5c3018', borderRadius: '6px',
     overflow: 'hidden', display: 'flex', flexDirection: 'column',
+    boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
   },
 
   visitOverlay: {

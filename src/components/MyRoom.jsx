@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PhaserGame from './PhaserGame';
+import ChatBox from './ChatBox';
 import QRCodeModal from './QRCodeModal';
 import RewardModal from './RewardModal';
 import MissionModal from './MissionModal';
@@ -39,6 +40,7 @@ function MyRoom() {
   const [visitUserId, setVisitUserId] = useState('');
   const [activeSlot, setActiveSlot] = useState(0);
   const [slotApplied, setSlotApplied] = useState({});
+  const [showChat, setShowChat] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
   const gameRef = useRef(null);
@@ -83,6 +85,7 @@ function MyRoom() {
       // 3번 슬롯: 라프탄 캐릭터 추가
       scene.addRaptan();
       setSlotApplied(prev => ({ ...prev, 2: true }));
+      setShowChat(true);
     }
   }
 
@@ -126,8 +129,8 @@ function MyRoom() {
         </div>
       </div>
 
-      {/* 하단: 대화창 + 슬롯바 */}
-      <div style={{ ...styles.bottomWrapper, width: '100%', maxWidth: slotBarMaxW, margin: '0 auto' }}>
+      {/* 하단: 대화창 + 채팅 + 슬롯바 */}
+      <div style={{ ...styles.bottomWrapper, width: '100%', maxWidth: showChat ? L.rowW : slotBarMaxW, margin: '0 auto' }}>
         {showGreeting && (
           <div style={styles.dialogueOverlay}>
             <div style={{ ...styles.portraitWrapper, width: L.portraitW, left: L.portraitLeft, bottom: L.portraitBottom }}>
@@ -136,6 +139,21 @@ function MyRoom() {
             <div style={{ ...styles.dialogueBox, padding: `12px 20px 12px ${L.dialoguePaddingLeft}px` }}>
               <span style={styles.dialogueText}>{displayedText}</span>
             </div>
+          </div>
+        )}
+        {showChat && (
+          <div style={{ ...styles.chatArea, height: 120, marginBottom: 'clamp(4px, 0.8vh, 8px)' }}>
+            <ChatBox
+              hostUserId={userId}
+              aiConfig={{ persona: 'sangsuri', customGreeting: '라프탄 : 마, 맥시... 무슨 이야기를 할까요?', readingData: { recentBooks: ['상수리나무 아래'], favoriteGenres: ['판타지', '로맨스'], totalBooksRead: 15 } }}
+              hostName="라프탄"
+              onChatBubble={(type, value) => {
+                const scene = gameRef.current?.getScene();
+                if (!scene) return;
+                if (type === 'typing') scene.showTypingBubble(value);
+                else scene.showChatBubble(type, value);
+              }}
+            />
           </div>
         )}
         <div style={styles.slotBar}>
@@ -285,6 +303,12 @@ const styles = {
     borderRadius: '4px', cursor: 'pointer',
     display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start',
     padding: '3px', flexShrink: 0,
+  },
+  chatArea: {
+    width: '100%', background: '#2a1508',
+    border: '2px solid #5c3018', borderRadius: '6px',
+    overflow: 'hidden', display: 'flex', flexDirection: 'column',
+    boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
   },
   slotActive: { border: '2px solid #fff8c0', boxShadow: '0 0 6px rgba(255,240,150,0.6)' },
   slotApplied: { border: '2px solid #4ade80' },
