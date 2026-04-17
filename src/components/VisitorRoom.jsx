@@ -283,7 +283,7 @@ function VisitorRoom() {
       {/* 구경가기 모달 */}
       {showVisitInput && (
         <div style={styles.visitOverlay} onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}>
-          <div style={styles.visitModal} onClick={e => e.stopPropagation()}>
+          <div style={{ ...styles.visitModal, background: tc.fill, borderColor: tc.line }} onClick={e => e.stopPropagation()}>
             <span style={styles.visitTitle}>다른 사람의 방 방문하기</span>
             <div style={styles.visitRoomList}>
               {[
@@ -291,15 +291,15 @@ function VisitorRoom() {
                 { id: 'neosokbam_user',   label: '너를 속이는 밤 서재', theme: '너속밤' },
                 { id: 'betrayer_user',    label: '배덕한 타인 서재',    theme: '배덕' },
               ].map(room => (
-                <button key={room.id} style={styles.visitRoomBtn} onClick={() => navigate(`/web/${room.id}/room`)}>
-                  <span style={styles.visitRoomTheme}>{room.theme}</span>
+                <button key={room.id} style={{ ...styles.visitRoomBtn, background: tc.bg, borderColor: tc.line }} onClick={() => navigate(`/web/${room.id}/room`)}>
+                  <span style={{ ...styles.visitRoomTheme, background: tc.line, color: '#f5e6c8' }}>{room.theme}</span>
                   <span style={styles.visitRoomLabel}>{room.label}</span>
                 </button>
               ))}
             </div>
-            <div style={styles.visitDivider} />
+            <div style={{ ...styles.visitDivider, borderColor: tc.line }} />
             <input
-              style={styles.visitInput}
+              style={{ ...styles.visitInput, background: tc.bg, borderColor: tc.line, color: '#f5e6c8' }}
               type="text"
               placeholder="유저 ID 직접 입력"
               value={visitUserId}
@@ -307,8 +307,8 @@ function VisitorRoom() {
               onKeyDown={e => { if (e.key === 'Enter' && visitUserId.trim()) navigate(`/web/${visitUserId.trim()}/room`); }}
             />
             <div style={styles.visitBtns}>
-              <button style={styles.visitCancelBtn} onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}>취소</button>
-              <button style={styles.visitConfirmBtn} onClick={() => { if (visitUserId.trim()) navigate(`/web/${visitUserId.trim()}/room`); }}>방문하기</button>
+              <button style={{ ...styles.visitCancelBtn, background: tc.bg, borderColor: tc.line }} onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}>취소</button>
+              <button style={{ ...styles.visitConfirmBtn, background: tc.line, borderColor: tc.line }} onClick={() => { if (visitUserId.trim()) navigate(`/web/${visitUserId.trim()}/room`); }}>방문하기</button>
             </div>
           </div>
         </div>
