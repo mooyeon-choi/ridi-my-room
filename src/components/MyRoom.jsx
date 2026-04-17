@@ -7,7 +7,7 @@ import RewardModal from './RewardModal';
 import MissionModal from './MissionModal';
 import LibraryModal from './LibraryModal';
 import ItemModal from './ItemModal';
-import AchievementModal from './AchievementModal';
+import AchievementModal, { AchievementToast, checkAchievements } from './AchievementModal';
 import { useRoomLayout } from '../hooks/useRoomLayout';
 
 const SIDE_BUTTONS = [
@@ -77,6 +77,8 @@ function MyRoom() {
   });
   const [showGreeting, setShowGreeting] = useState(true);
   const [tooltipSlot, setTooltipSlot] = useState(null);
+  const [achievementToast, setAchievementToast] = useState(null);
+  const prevAchievementsRef = useRef(null);
   const [displayedText, setDisplayedText] = useState('');
   const [totalPoints, setTotalPoints] = useState(() => {
     try { return parseInt(localStorage.getItem('myroom_points') || '0', 10); }
@@ -98,6 +100,19 @@ function MyRoom() {
   useEffect(() => {
     localStorage.setItem('myroom_completedMissions', JSON.stringify(completedMissions));
   }, [completedMissions]);
+
+  // 업적 달성 체크 (모달 닫힐 때 등 상태 변경 시)
+  useEffect(() => {
+    const current = checkAchievements();
+    const prev = prevAchievementsRef.current;
+    if (prev) {
+      const newlyUnlocked = current.find(a => a.unlocked && a.img && !prev.find(p => p.id === a.id && p.unlocked));
+      if (newlyUnlocked && !achievementToast) {
+        setAchievementToast(newlyUnlocked);
+      }
+    }
+    prevAchievementsRef.current = current;
+  }, [showLibrary, showMission, showItem, showAchievement, slotApplied, completedMissions]);
 
   // Phaser 씬 로드 후 저장된 상태 복원
   useEffect(() => {
@@ -374,6 +389,10 @@ function MyRoom() {
       )}
 
       {showQR && <QRCodeModal url={`${window.location.origin}/${userId}/room`} onClose={() => setShowQR(false)} />}
+      {achievementToast && (
+        <AchievementToast achievement={achievementToast} onDone={() => setAchievementToast(null)} />
+      )}
+
       {showReward && <RewardModal missionId={rewardMissionId} onConfirm={() => {
         setCompletedMissions(prev => ({ ...prev, [rewardMissionId]: true }));
         // 미션별 고양이 자동 적용

@@ -4,16 +4,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const SLOT_COUNT = 14; // 2행 7열
 
 const AVAILABLE_BOOKS = [
-  { id: 'sangsuri',  title: '상수리나무 아래',          genre: '웹툰>로판',      description: '그림서말, 나무 글\n김수지 원작\n리디 출판 총 146화', img: '/assets/books/sangsuri.png',              screenshot: '/assets/screenshots/page_sangsuri.png' },
-  { id: 'pumgyeok',  title: '품격을 배반한다',          genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n리디 연재중',                    img: '/assets/books/betraying_dignity.png',   screenshot: '/assets/screenshots/page_pumgyeok.png' },
-  { id: 'angae',     title: '안개를 삼킨 나비',         genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n매주 화 연재',                   img: '/assets/books/fog_butterfly.png',       screenshot: '/assets/screenshots/page_angae.png' },
-  { id: 'nampyeon',  title: '남편에게 쫓기고 있습니다', genre: '웹툰>로판',      description: '소통팬엔터/소.그림\n매주 일요일 연재',               img: '/assets/books/chased_by_husband.png',   screenshot: '/assets/screenshots/page_nampyeon.png' },
-  { id: 'merry',     title: '메리 사이코',              genre: '로맨스>웹소설',  description: '진예서 글\n매주 금 연재',                            img: '/assets/books/merry_psycho.png',        screenshot: '/assets/screenshots/page_merry.png' },
-  { id: 'neoreul',   title: '너를 속이는 밤',           genre: '로맨스>웹소설',  description: '소통팬엔터/소.그림\n매주 화요일 연재',               img: '/assets/books/night_deceiving_you.png', screenshot: '/assets/screenshots/page_neoreul.png' },
-  { id: 'dephase',   title: '데페이즈망',               genre: '로맨스>웹소설',  description: '소통팬엔터/소.그림\n매주 목요일 연재',               img: '/assets/books/dephase.png',             screenshot: '/assets/screenshots/page_dephase.png' },
-  { id: 'owol',      title: '오월의 정원에서',          genre: '로판>웹소설',    description: '봄봄 글\n매주 화 연재',                              img: '/assets/books/may_garden.png',          screenshot: '/assets/screenshots/page_owol.png' },
-  { id: 'pyeha',     title: '폐하의 밤',                genre: '로판>웹소설',    description: '리디 출판\n완결',                                    img: '/assets/books/night_of_majesty.png',    screenshot: '/assets/screenshots/page_pyeha.png' },
-  { id: 'asha',      title: '국경의 아샤',              genre: '로판>웹소설',    description: '리디 연재중',                                        img: '/assets/books/border_asha.png',         screenshot: '/assets/screenshots/page_sangsuri.png' },
+  { id: 'sangsuri',  title: '상수리나무 아래',          genre: '웹툰>로판',      tag: '로판', description: '그림 P, 글 서말, 나무\n원작 김수지\n리디 출판 총 146화', img: '/assets/books/sangsuri.png',              screenshot: '/assets/screenshots/page_sangsuri.png' },
+  { id: 'pumgyeok',  title: '품격을 배반한다',          genre: '웹툰>로판',      tag: '로판', description: '글, 그림 스르륵코믹스\n원작 김빠\n스르륵코믹스 출판 총 83화', img: '/assets/books/betraying_dignity.png',   screenshot: '/assets/screenshots/page_pumgyeok.png' },
+  { id: 'angae',     title: '안개를 삼킨 나비',         genre: '웹툰>로판',      tag: '로판', description: '글, 그림 스르륵코믹스\n원작 박오롯\n스르륵코믹스 출판 총 35화', img: '/assets/books/fog_butterfly.png',       screenshot: '/assets/screenshots/page_angae.png' },
+  { id: 'nampyeon',  title: '남편에게 쫓기고 있습니다', genre: '웹툰>로판',      tag: '로판', description: '글, 그림 스르륵코믹스\n원작 유나진\n스르륵코믹스 출판 총 54화', img: '/assets/books/chased_by_husband.png',   screenshot: '/assets/screenshots/page_nampyeon.png' },
+  { id: 'merry',     title: '메리 사이코',              genre: '로맨스>웹소설',  tag: '현대물', description: '저자 건어물녀\n에이블 출판 총 270화',                 img: '/assets/books/merry_psycho.png',        screenshot: '/assets/screenshots/page_merry.png' },
+  { id: 'neoreul',   title: '너를 속이는 밤',           genre: '로맨스>웹소설',  tag: '로맨스', description: '그림 스르륵코믹스\n원작 정은동\n스르륵코믹스 출판 총 23화', img: '/assets/books/night_deceiving_you.png', screenshot: '/assets/screenshots/page_neoreul.png' },
+  { id: 'dephase',   title: '데페이즈망',               genre: '로맨스>웹소설',  tag: '로판', description: '글, 그림 스르륵코믹스\n스르륵코믹스 출판 총 15화',    img: '/assets/books/dephase.png',             screenshot: '/assets/screenshots/page_dephase.png' },
+  { id: 'owol',      title: '오월의 정원에서',          genre: '로판>웹소설',    tag: '로판', description: '저자 서당연\n로즈엔 출판 총 154화',                   img: '/assets/books/may_garden.png',          screenshot: '/assets/screenshots/page_owol.png' },
+  { id: 'pyeha',     title: '폐하의 밤',                genre: '로판>웹소설',    tag: '로판', description: '저자 타야베\n라렌느 출판 총 150화',                   img: '/assets/books/night_of_majesty.png',    screenshot: '/assets/screenshots/page_pyeha.png' },
+  { id: 'asha',      title: '국경의 아샤',              genre: '웹툰>로판',      tag: '로판', description: '글, 그림 스르륵코믹스\n리디 출판 총 70화',             img: '/assets/books/border_asha.png',         screenshot: '/assets/screenshots/page_sangsuri.png', comingSoon: true },
 ];
 
 const INITIAL_BOOKS = [
@@ -54,6 +54,7 @@ function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
   const [screenshotData, setScreenshotData] = useState(null); // { screenshot, pendingBook }
   const [added, setAdded] = useState(false);
   const [missionTriggered, setMissionTriggered] = useState({});
+  const [showBookList, setShowBookList] = useState(false);
 
   const triggerMission = useCallback((missionId) => {
     if (completedMissions[missionId]) return;
@@ -89,22 +90,23 @@ function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
   function handleSlotClick(book, isEmptySlot) {
     if (book) {
       setSelectedBook(prev => prev?.id === book.id ? null : book);
+      setShowBookList(false);
     } else if (isEmptySlot) {
-      openScreenshotPage();
+      setShowBookList(true);
+      setSelectedBook(null);
     }
   }
 
-  function openScreenshotPage() {
-    const existingIds = new Set(books.map(b => b.id));
-    const available = AVAILABLE_BOOKS.filter(b => !existingIds.has(b.id));
-    if (available.length === 0) return;
-
-    const pendingBook = available[Math.floor(Math.random() * available.length)];
-
-    // 히스토리에 스크린샷 상태 push
+  function openScreenshotForBook(pendingBook) {
+    setShowBookList(false);
     window.history.pushState({ screenshot: true }, '', `${location.pathname}?view=book-preview`);
     setScreenshotData({ screenshot: pendingBook.screenshot, pendingBook });
     setAdded(false);
+  }
+
+  function handleRemoveBook(bookId) {
+    setBooks(prev => prev.filter(b => b.id !== bookId));
+    setSelectedBook(null);
   }
 
   function handleAddFromScreenshot() {
@@ -203,11 +205,18 @@ function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
                 </div>
                 <div style={styles.detailMiddle}>
                   <span style={styles.detailDesc}>{selectedBook.description}</span>
-                  <button style={styles.goBtn} onClick={() => {
-                    window.history.pushState({ screenshot: true }, '', `${location.pathname}?view=book-preview`);
-                    setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null, isViewing: true });
-                    setAdded(true);
-                  }}>보러가기</button>
+                  <div style={styles.detailBtns}>
+                    {selectedBook.comingSoon ? (
+                      <span style={styles.comingSoonBadge}>오픈 예정</span>
+                    ) : (
+                      <button style={styles.goBtn} onClick={() => {
+                        window.history.pushState({ screenshot: true }, '', `${location.pathname}?view=book-preview`);
+                        setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null, isViewing: true });
+                        setAdded(true);
+                      }}>보러가기</button>
+                    )}
+                    <button style={styles.removeBtn} onClick={() => handleRemoveBook(selectedBook.id)}>제거</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -236,6 +245,36 @@ function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
             ))}
           </div>
         </div>
+
+        {/* 책 추가 목록 패널 */}
+        {showBookList && (() => {
+          const existingIds = new Set(books.map(b => b.id));
+          const available = AVAILABLE_BOOKS.filter(b => !existingIds.has(b.id));
+          return (
+            <div style={styles.bookListPanel}>
+              <div style={styles.bookListHeader}>
+                <span style={styles.bookListTitle}>작품 추가하기</span>
+                <button style={styles.bookListCloseBtn} onClick={() => setShowBookList(false)}>✕</button>
+              </div>
+              {available.length === 0 ? (
+                <div style={styles.bookListEmpty}>추가할 수 있는 작품이 없습니다</div>
+              ) : (
+                <div style={styles.bookListItems}>
+                  {available.map(book => (
+                    <div key={book.id} style={styles.bookListItem} onClick={() => openScreenshotForBook(book)}>
+                      <img src={book.img} alt={book.title} style={styles.bookListImg} />
+                      <div style={styles.bookListInfo}>
+                        <span style={styles.bookListItemTitle}>{book.title}</span>
+                        <span style={styles.bookListItemGenre}>{book.genre}</span>
+                      </div>
+                      {book.comingSoon && <span style={styles.bookListComingSoon}>오픈 예정</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
       </div>
 
@@ -444,6 +483,119 @@ const styles = {
     whiteSpace: 'nowrap',
     flexShrink: 0,
     boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+  },
+  detailBtns: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'clamp(4px, 0.8vh, 8px)',
+    flexShrink: 0,
+  },
+  removeBtn: {
+    background: 'transparent',
+    border: '2px solid #87452E',
+    borderRadius: '6px',
+    color: '#87452E',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
+    fontWeight: 'bold',
+    padding: 'clamp(6px, 1vh, 10px) clamp(12px, 2vw, 20px)',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  comingSoonBadge: {
+    background: '#a07040',
+    border: '2px solid #7a5028',
+    borderRadius: '6px',
+    color: '#f5e6c8',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
+    fontWeight: 'bold',
+    padding: 'clamp(8px, 1.2vh, 12px) clamp(12px, 2vw, 20px)',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+    textAlign: 'center',
+  },
+
+  // 책 추가 목록
+  bookListPanel: {
+    background: '#b07840',
+    border: '3px solid #5c3018',
+    borderTop: 'none',
+    borderRadius: '0 0 8px 8px',
+    padding: 'clamp(8px, 1.5vw, 12px)',
+    marginTop: '-1px',
+  },
+  bookListHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 'clamp(6px, 1vw, 10px)',
+  },
+  bookListTitle: {
+    color: '#f5e6c8',
+    fontSize: 'clamp(12px, 1.6vw, 15px)',
+    fontWeight: 'bold',
+  },
+  bookListCloseBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: '#f5e6c8',
+    fontSize: 'clamp(14px, 1.8vw, 18px)',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+  },
+  bookListItems: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'clamp(4px, 0.6vw, 6px)',
+    maxHeight: 'clamp(120px, 20vh, 200px)',
+    overflowY: 'auto',
+  },
+  bookListItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 'clamp(8px, 1.5vw, 12px)',
+    background: '#5c3018',
+    border: '2px solid #7a4e28',
+    borderRadius: '4px',
+    padding: 'clamp(4px, 0.8vw, 8px)',
+    cursor: 'pointer',
+  },
+  bookListImg: {
+    width: 'clamp(30px, 4vw, 42px)',
+    height: 'clamp(39px, 5.2vw, 55px)',
+    objectFit: 'cover',
+    borderRadius: '2px',
+    flexShrink: 0,
+  },
+  bookListInfo: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  bookListItemTitle: {
+    color: '#f0c060',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
+    fontWeight: 'bold',
+  },
+  bookListItemGenre: {
+    color: '#c8a878',
+    fontSize: 'clamp(9px, 1.2vw, 11px)',
+  },
+  bookListComingSoon: {
+    background: '#a07040',
+    border: '1px solid #7a5028',
+    borderRadius: '4px',
+    color: '#f5e6c8',
+    fontSize: 'clamp(8px, 1vw, 10px)',
+    fontWeight: 'bold',
+    padding: '2px 6px',
+    flexShrink: 0,
+  },
+  bookListEmpty: {
+    color: '#c8a878',
+    fontSize: 'clamp(11px, 1.5vw, 13px)',
+    textAlign: 'center',
+    padding: 'clamp(12px, 2vh, 20px)',
   },
 
   // 하단 그리드
