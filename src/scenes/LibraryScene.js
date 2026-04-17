@@ -624,6 +624,8 @@ class LibraryScene extends Phaser.Scene {
     }
     this.hostAvatar.play(`${hostCharKey}_idle_down`);
     this.hostAvatar.setDepth(avatarY);
+    this.hostAvatar.setInteractive({ useHandCursor: true });
+    this.hostAvatar.on('pointerdown', () => this.onHostInteract());
 
     const labelY = useCustomHost ? avatarY + 4 : this.hostAvatar.y + 56;
     this.hostAvatarLabel = this.add.text(this.hostAvatar.x, labelY, hostName, {
@@ -1177,6 +1179,8 @@ class LibraryScene extends Phaser.Scene {
     this.raptan.setScale(0.27);
     this.raptan.setDepth(y);
     this.raptan.play('raptan_idle_down');
+    this.raptan.setInteractive({ useHandCursor: true });
+    this.raptan.on('pointerdown', () => this.onRaptanInteract());
 
     this.raptanLabel = this.add.text(x, y + 4, '리프탄', {
       fontSize: '10px', color: '#fff',
