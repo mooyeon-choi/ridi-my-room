@@ -2,8 +2,8 @@ import React from 'react';
 
 const REWARD_INFO = {
   first_register: { img: '/assets/pets/cat_white.png', alt: '흰 고양이', name: '로라' },
-  view_work:      { img: '/assets/pets/cat_black.png', alt: '검정 고양이', name: '리프' },
-  purchase_work:  { img: '/assets/pets/cat_gray.png',  alt: '회색 고양이', name: '탄이' },
+  view_work:      { img: '/assets/pets/cat_black.png', alt: '검정 고양이', name: '로이' },
+  purchase_work:  { img: '/assets/pets/cat_gray.png',  alt: '회색 고양이', name: '론' },
 };
 
 function RewardModal({ onConfirm, onCancel, missionId }) {

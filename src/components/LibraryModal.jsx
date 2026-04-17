@@ -55,6 +55,7 @@ function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
   const [added, setAdded] = useState(false);
   const [missionTriggered, setMissionTriggered] = useState({});
   const [showBookList, setShowBookList] = useState(false);
+  const [removeConfirm, setRemoveConfirm] = useState(null);
 
   const triggerMission = useCallback((missionId) => {
     if (completedMissions[missionId]) return;
@@ -205,18 +206,15 @@ function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
                 </div>
                 <div style={styles.detailMiddle}>
                   <span style={styles.detailDesc}>{selectedBook.description}</span>
-                  <div style={styles.detailBtns}>
-                    {selectedBook.comingSoon ? (
-                      <span style={styles.comingSoonBadge}>오픈 예정</span>
-                    ) : (
-                      <button style={styles.goBtn} onClick={() => {
-                        window.history.pushState({ screenshot: true }, '', `${location.pathname}?view=book-preview`);
-                        setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null, isViewing: true });
-                        setAdded(true);
-                      }}>보러가기</button>
-                    )}
-                    <button style={styles.removeBtn} onClick={() => handleRemoveBook(selectedBook.id)}>제거</button>
-                  </div>
+                  {selectedBook.comingSoon ? (
+                    <span style={styles.comingSoonBadge}>오픈 예정</span>
+                  ) : (
+                    <button style={styles.goBtn} onClick={() => {
+                      window.history.pushState({ screenshot: true }, '', `${location.pathname}?view=book-preview`);
+                      setScreenshotData({ screenshot: selectedBook.screenshot, pendingBook: null, isViewing: true });
+                      setAdded(true);
+                    }}>보러가기</button>
+                  )}
                 </div>
               </div>
             </div>
@@ -237,7 +235,16 @@ function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
                 onClick={() => handleSlotClick(book, !book)}
               >
                 {book ? (
-                  <img src={book.img} alt={book.title} style={styles.slotImg} />
+                  <>
+                    <img src={book.img} alt={book.title} style={styles.slotImg} />
+                    <button
+                      style={styles.slotRemoveBtn}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setRemoveConfirm(book);
+                      }}
+                    >✕</button>
+                  </>
                 ) : (
                   <span style={styles.plusIcon}>+</span>
                 )}
@@ -277,6 +284,23 @@ function LibraryModal({ onClose, onMissionComplete, completedMissions = {} }) {
         })()}
 
       </div>
+
+      {/* 제거 확인 모달 */}
+      {removeConfirm && (
+        <div style={styles.confirmOverlay} onClick={() => setRemoveConfirm(null)}>
+          <div style={styles.confirmModal} onClick={e => e.stopPropagation()}>
+            <div style={styles.confirmInner}>
+              <img src={removeConfirm.img} alt={removeConfirm.title} style={styles.confirmBookImg} />
+              <span style={styles.confirmTitle}>{removeConfirm.title}</span>
+              <span style={styles.confirmText}>서재에서 제거하시겠습니까?</span>
+              <div style={styles.confirmBtns}>
+                <button style={styles.confirmBtnNo} onClick={() => setRemoveConfirm(null)}>취소</button>
+                <button style={styles.confirmBtnYes} onClick={() => { handleRemoveBook(removeConfirm.id); setRemoveConfirm(null); }}>제거</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 닫기 버튼 — 모달 외부 */}
       <button style={styles.closeBtn} onClick={onClose}>✕ 닫기</button>
@@ -484,23 +508,6 @@ const styles = {
     flexShrink: 0,
     boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
   },
-  detailBtns: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 'clamp(4px, 0.8vh, 8px)',
-    flexShrink: 0,
-  },
-  removeBtn: {
-    background: 'transparent',
-    border: '2px solid #87452E',
-    borderRadius: '6px',
-    color: '#87452E',
-    fontSize: 'clamp(11px, 1.5vw, 14px)',
-    fontWeight: 'bold',
-    padding: 'clamp(6px, 1vh, 10px) clamp(12px, 2vw, 20px)',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-  },
   comingSoonBadge: {
     background: '#a07040',
     border: '2px solid #7a5028',
@@ -633,6 +640,28 @@ const styles = {
     background: '#5c3018',
     padding: '3px',
     boxShadow: '2px 3px 6px rgba(0,0,0,0.25)',
+    position: 'relative',
+    overflow: 'visible',
+  },
+  slotRemoveBtn: {
+    position: 'absolute',
+    top: '-6px',
+    right: '-6px',
+    width: 'clamp(14px, 2vw, 18px)',
+    height: 'clamp(14px, 2vw, 18px)',
+    background: '#5c3018',
+    border: '1.5px solid #7a4e28',
+    borderRadius: '50%',
+    color: '#f5e6c8',
+    fontSize: 'clamp(7px, 1vw, 9px)',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: 1,
+    padding: 0,
+    zIndex: 1,
   },
   slotSelected: {
     border: '2px solid #fff0a0',
@@ -649,6 +678,83 @@ const styles = {
     fontSize: 'clamp(16px, 2.5vw, 22px)',
     color: '#7a5028',
     lineHeight: 1,
+  },
+
+  // 제거 확인 모달
+  confirmOverlay: {
+    position: 'fixed',
+    top: 0, left: 0,
+    width: '100%', height: '100%',
+    background: 'rgba(0, 0, 0, 0.6)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 300,
+  },
+  confirmModal: {
+    background: '#c4a050',
+    border: '4px solid #8b6914',
+    borderRadius: '8px',
+    padding: 'clamp(3px, 0.5vw, 5px)',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+    maxWidth: 'clamp(240px, 45vw, 320px)',
+    width: 'calc(100% - 40px)',
+  },
+  confirmInner: {
+    background: 'linear-gradient(180deg, #f5e6c8 0%, #e8d5a8 100%)',
+    borderRadius: '4px',
+    border: '2px solid #d4a843',
+    padding: 'clamp(16px, 3vw, 24px)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 'clamp(8px, 1.5vh, 14px)',
+  },
+  confirmBookImg: {
+    width: 'clamp(50px, 8vw, 70px)',
+    height: 'clamp(65px, 10.4vw, 91px)',
+    objectFit: 'cover',
+    borderRadius: '3px',
+    border: '2px solid #5c3018',
+    boxShadow: '2px 3px 6px rgba(0,0,0,0.3)',
+  },
+  confirmTitle: {
+    fontSize: 'clamp(13px, 1.8vw, 16px)',
+    fontWeight: 'bold',
+    color: '#3d2210',
+    textAlign: 'center',
+  },
+  confirmText: {
+    fontSize: 'clamp(11px, 1.4vw, 13px)',
+    color: '#5c3a1e',
+    textAlign: 'center',
+  },
+  confirmBtns: {
+    display: 'flex',
+    gap: 'clamp(8px, 1.5vw, 14px)',
+    marginTop: '4px',
+  },
+  confirmBtnNo: {
+    width: 'clamp(70px, 11vw, 100px)',
+    padding: 'clamp(6px, 1vh, 10px) 0',
+    borderRadius: '6px',
+    border: '2px solid #5c3322',
+    background: '#fff',
+    color: '#5c3322',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
+  confirmBtnYes: {
+    width: 'clamp(70px, 11vw, 100px)',
+    padding: 'clamp(6px, 1vh, 10px) 0',
+    borderRadius: '6px',
+    border: '2px solid #8b3232',
+    background: '#8b3232',
+    color: '#f5e6c8',
+    fontSize: 'clamp(11px, 1.5vw, 14px)',
+    fontWeight: 'bold',
+    cursor: 'pointer',
   },
 
   // 닫기 버튼

@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PhaserGame from './PhaserGame';
 import ChatBox from './ChatBox';
+import VisitorLibraryModal from './VisitorLibraryModal';
+import VisitorAchievementModal from './VisitorAchievementModal';
 import { useRoomLayout } from '../hooks/useRoomLayout';
 
 const USER_ROOM_DATA = {
   default: {
     background: '/assets/backgrounds/sangsuri_visitor.webp',
-    greeting: '루스 : 찾아와 주셔서 반가워요. 편하게 둘러보세요.',
+    greeting: '찾아와 주셔서 반가워요. 편하게 둘러보세요.',
     theme: 'sangsuri',
     hostSprite: '/assets/characters/ruth_sprite.webp',
     hostName: '루스',
@@ -17,7 +19,7 @@ const USER_ROOM_DATA = {
   },
   sangsuri_user: {
     background: '/assets/backgrounds/sangsuri_visitor.webp',
-    greeting: '루스 : 찾아와 주셔서 반가워요. 오늘은 읽고 싶은 책이 있으신가요?',
+    greeting: '찾아와 주셔서 반가워요. 오늘은 읽고 싶은 책이 있으신가요?',
     theme: 'sangsuri',
     hostSprite: '/assets/characters/ruth_sprite.webp',
     hostName: '루스',
@@ -101,30 +103,34 @@ function VisitorRoom() {
   const [displayedText, setDisplayedText] = useState('');
   const [visitUserId, setVisitUserId] = useState('');
   const [showVisitInput, setShowVisitInput] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
   const gameRef = useRef(null);
 
   // 모달이 열리거나 닫힐 때 Phaser 입력 비활성화/활성화
+  const anyModalOpen = showVisitInput || showLibrary || showAchievement;
   useEffect(() => {
-    if (showVisitInput) {
+    if (anyModalOpen) {
       gameRef.current?.disableInput();
     } else {
       gameRef.current?.enableInput();
     }
-  }, [showVisitInput]);
+  }, [anyModalOpen]);
 
   // 스페이스바/ESC로 모달 닫기
   useEffect(() => {
-    if (!showVisitInput) return;
+    if (!anyModalOpen) return;
     function handleKeyDown(e) {
       if (e.key === 'Escape' || e.key === ' ') {
         e.preventDefault();
-        setShowVisitInput(false);
-        setVisitUserId('');
+        if (showVisitInput) { setShowVisitInput(false); setVisitUserId(''); }
+        else if (showLibrary) setShowLibrary(false);
+        else if (showAchievement) setShowAchievement(false);
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showVisitInput]);
+  }, [anyModalOpen, showVisitInput, showLibrary, showAchievement]);
 
   useEffect(() => { loadRoomData(); }, [userId]);
 
@@ -240,12 +246,23 @@ function VisitorRoom() {
           </div>
         </div>
         <div style={{ ...styles.sideButtons }}>
-          <button
-            style={{ ...styles.sideBtn, background: tc.fill, borderColor: tc.line, width: L.sideBtnW, padding: `${L.sideBtnPadding}px 0`, fontSize: L.sideBtnFontSize }}
-            onClick={() => setShowVisitInput(true)}
-          >
-            구경가기
-          </button>
+          {[
+            { key: 'library', label: '서재' },
+            { key: 'achievement', label: '업적' },
+            { key: 'visit', label: '구경가기' },
+          ].map(btn => (
+            <button
+              key={btn.key}
+              style={{ ...styles.sideBtn, background: tc.fill, borderColor: tc.line, width: L.sideBtnW, padding: `${L.sideBtnPadding}px 0`, fontSize: L.sideBtnFontSize }}
+              onClick={() => {
+                if (btn.key === 'library') setShowLibrary(true);
+                if (btn.key === 'achievement') setShowAchievement(true);
+                if (btn.key === 'visit') setShowVisitInput(true);
+              }}
+            >
+              {btn.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -256,7 +273,7 @@ function VisitorRoom() {
             <div style={{ ...styles.portraitWrapper, width: L.portraitW, left: L.portraitLeft, bottom: L.portraitBottom }}>
               <img src={roomData.roomConfig.hostPortrait || '/assets/characters/portraits/maxy.png'} alt={roomData.roomConfig.hostName || '맥시'} style={styles.portraitImg} />
             </div>
-            <div style={{ ...styles.dialogueBox, ...(tc.dialogue || {}), padding: `12px 20px 12px ${L.dialoguePaddingLeft}px` }}>
+            <div style={{ ...styles.dialogueBox, ...(tc.dialogue || {}), padding: `12px 20px 12px ${Math.round(L.dialoguePaddingLeft * 0.75)}px` }}>
               <span style={{ ...styles.dialogueText, color: tc.dialogue?.color || '#3d2210' }}>{displayedText}</span>
             </div>
           </div>
@@ -313,6 +330,9 @@ function VisitorRoom() {
           </div>
         </div>
       )}
+
+      {showLibrary && <VisitorLibraryModal onClose={() => setShowLibrary(false)} roomTheme={roomData.roomConfig.theme} themeColors={tc} />}
+      {showAchievement && <VisitorAchievementModal onClose={() => setShowAchievement(false)} roomTheme={roomData.roomConfig.theme} themeColors={tc} />}
     </div>
   );
 }

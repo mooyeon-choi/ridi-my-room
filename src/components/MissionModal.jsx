@@ -14,7 +14,7 @@ const MISSIONS = [
     title: '작품 감상하기',
     description: '눈으로 읽어야 진짜 독서! 작품 속으로 빠져보자',
     reward: { img: '/assets/pets/cat_black.png', alt: '검정 고양이' },
-    rewardText: '리프',
+    rewardText: '로이',
     secretComplete: true,
   },
   {
@@ -22,7 +22,7 @@ const MISSIONS = [
     title: '작품 결제하기',
     description: '좋은 작품엔 지갑을 열어야지! 작가님 응원 고고',
     reward: { img: '/assets/pets/cat_gray.png', alt: '회색 고양이' },
-    rewardText: '탄이',
+    rewardText: '론',
     secretComplete: true,
   },
 ];

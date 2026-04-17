@@ -22,8 +22,8 @@ const SLOT_COUNT = 10;
 // 각 아이템은 고유 key로 식별
 const ITEM_THEME   = { key: 'theme',     img: '/assets/items/inv_item3.png',  label: '테마 적용' };
 const ITEM_CAT_W   = { key: 'cat_white', img: '/assets/items/inv_item5.webp', label: '로라' };
-const ITEM_CAT_B   = { key: 'cat_black', img: '/assets/items/inv_item6.webp', label: '리프' };
-const ITEM_CAT_G   = { key: 'cat_gray',  img: '/assets/items/inv_item7.webp', label: '탄이' };
+const ITEM_CAT_B   = { key: 'cat_black', img: '/assets/items/inv_item6.webp', label: '로이' };
+const ITEM_CAT_G   = { key: 'cat_gray',  img: '/assets/items/inv_item7.webp', label: '론' };
 const ITEM_RAPTAN  = { key: 'raptan',    img: '/assets/items/inv_item2.png',  label: '리프탄' };
 const ITEM_CRYSTAL = { key: 'crystal',   img: '/assets/items/inv_item1.png',  label: '수정구' };
 const GREETING_TEXT = '맥시 : 오늘도 독서 열심히 해보자!';

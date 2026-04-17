@@ -1036,8 +1036,8 @@ class LibraryScene extends Phaser.Scene {
 
     const catPositions = [
       { type: 'white', key: 'cat_white', name: '로라',  x: this.bgW * 0.3,           y: this.bgH * 0.75 },  // 바닥
-      { type: 'black', key: 'cat_black', name: '리프',  x: 850 * this.scaleX + 22,   y: 650 * this.scaleY + 26 }, // 책상 위
-      { type: 'gray',  key: 'cat_gray',  name: '탄이',  x: 1600 * this.scaleX - 8,   y: 400 * this.scaleY + 90 }, // 침대 위
+      { type: 'black', key: 'cat_black', name: '로이',  x: 850 * this.scaleX + 22,   y: 650 * this.scaleY + 26 }, // 책상 위
+      { type: 'gray',  key: 'cat_gray',  name: '론',    x: 1600 * this.scaleX - 8,   y: 400 * this.scaleY + 90 }, // 침대 위
     ];
 
     this.catSprites = [];
@@ -1081,8 +1081,8 @@ class LibraryScene extends Phaser.Scene {
 
     const catMap = {
       white: { key: 'cat_white', name: '로라', x: this.bgW * 0.3, y: this.bgH * 0.75 },
-      black: { key: 'cat_black', name: '리프', x: 850 * this.scaleX + 22, y: 650 * this.scaleY + 26 },
-      gray:  { key: 'cat_gray',  name: '탄이', x: 1600 * this.scaleX - 8, y: 400 * this.scaleY + 90 },
+      black: { key: 'cat_black', name: '로이', x: 850 * this.scaleX + 22, y: 650 * this.scaleY + 26 },
+      gray:  { key: 'cat_gray',  name: '론',   x: 1600 * this.scaleX - 8, y: 400 * this.scaleY + 90 },
     };
     const info = catMap[catType];
     if (!info) return;
@@ -1704,7 +1704,7 @@ class LibraryScene extends Phaser.Scene {
 
     // 화자 이름
     const hostName = this.roomConfig?.hostName;
-    const catNames = ['로라', '리프', '탄이'];
+    const catNames = ['로라', '로이', '론'];
     const nameColor = speaker === '리프탄' ? '#7ec8e3'
       : speaker === '거울' ? '#c0e0ff'
       : catNames.includes(speaker) ? '#f0a0c0'
