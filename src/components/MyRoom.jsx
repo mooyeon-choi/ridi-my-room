@@ -124,9 +124,12 @@ function MyRoom() {
       restoredRef.current = true;
       if (slotApplied.theme) scene.changeBackground('bg_maxy_room');
       if (slotApplied.crystal) scene.addCrystal();
-      if (slotApplied.cat_white) scene.addSingleCat('white');
-      if (slotApplied.cat_black) scene.addSingleCat('black');
-      if (slotApplied.cat_gray) scene.addSingleCat('gray');
+      if (slotApplied.cat_white && completedMissions.first_register) scene.addSingleCat('white');
+      else if (slotApplied.cat_white) setSlotApplied(prev => ({ ...prev, cat_white: false }));
+      if (slotApplied.cat_black && completedMissions.view_work) scene.addSingleCat('black');
+      else if (slotApplied.cat_black) setSlotApplied(prev => ({ ...prev, cat_black: false }));
+      if (slotApplied.cat_gray && completedMissions.purchase_work) scene.addSingleCat('gray');
+      else if (slotApplied.cat_gray) setSlotApplied(prev => ({ ...prev, cat_gray: false }));
       if (slotApplied.raptan) scene.addRaptan();
     }, 200);
     return () => clearInterval(interval);
@@ -378,11 +381,11 @@ function MyRoom() {
               placeholder="유저 ID 직접 입력"
               value={visitUserId}
               onChange={e => setVisitUserId(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && visitUserId.trim()) navigate(`/web/${visitUserId.trim()}/room`); }}
+              onKeyDown={e => { if (e.key === 'Enter' && visitUserId.trim()) { if (visitUserId.trim() === 'clear') { localStorage.clear(); window.location.reload(); } else { navigate(`/web/${visitUserId.trim()}/room`); } } }}
             />
             <div style={styles.visitBtns}>
               <button style={styles.visitCancelBtn} onClick={() => { setShowVisitInput(false); setVisitUserId(''); }}>취소</button>
-              <button style={styles.visitConfirmBtn} onClick={() => { if (visitUserId.trim()) navigate(`/web/${visitUserId.trim()}/room`); }}>방문하기</button>
+              <button style={styles.visitConfirmBtn} onClick={() => { if (visitUserId.trim()) { if (visitUserId.trim() === 'clear') { localStorage.clear(); window.location.reload(); } else { navigate(`/web/${visitUserId.trim()}/room`); } } }}>방문하기</button>
             </div>
           </div>
         </div>

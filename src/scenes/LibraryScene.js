@@ -257,12 +257,7 @@ class LibraryScene extends Phaser.Scene {
 
     // 키보드 입력
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.wasd = this.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-    });
+    // WASD는 텍스트 입력과 충돌하므로 방향키만 사용
 
     this.createAnimations();
 
@@ -1849,8 +1844,6 @@ class LibraryScene extends Phaser.Scene {
     // 키보드: 위/아래로 선택, 스페이스/엔터로 확정
     const upKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     const downKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
-    const wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-    const sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     const enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
 
     const onUp = () => updateSelection((selectedIdx - 1 + choices.length) % choices.length);
@@ -1861,17 +1854,13 @@ class LibraryScene extends Phaser.Scene {
     };
 
     upKey.on('down', onUp);
-    wKey.on('down', onUp);
     downKey.on('down', onDown);
-    sKey.on('down', onDown);
     this.spaceKey.on('down', onConfirm);
     enterKey.on('down', onConfirm);
 
     this._removeChoiceKeys = () => {
       upKey.off('down', onUp);
-      wKey.off('down', onUp);
       downKey.off('down', onDown);
-      sKey.off('down', onDown);
       this.spaceKey.off('down', onConfirm);
       enterKey.off('down', onConfirm);
       this._removeChoiceKeys = null;
@@ -1936,10 +1925,10 @@ class LibraryScene extends Phaser.Scene {
     const label = this.myAvatarLabel;
     const charKey = this.ownerCharKey || 'maxy';
 
-    const up    = this.cursors.up.isDown    || this.wasd.up.isDown;
-    const down  = this.cursors.down.isDown  || this.wasd.down.isDown;
-    const left  = this.cursors.left.isDown  || this.wasd.left.isDown;
-    const right = this.cursors.right.isDown || this.wasd.right.isDown;
+    const up    = this.cursors.up.isDown;
+    const down  = this.cursors.down.isDown;
+    const left  = this.cursors.left.isDown;
+    const right = this.cursors.right.isDown;
 
     let moved = false;
     let dx = 0, dy = 0;
