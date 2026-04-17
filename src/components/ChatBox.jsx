@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur, onChatBubble }) {
+function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur, onChatBubble, themeColors }) {
+  const tc = themeColors || {};
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -121,18 +122,20 @@ function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur, on
             key={i}
             style={{
               ...styles.messageBubble,
-              ...(msg.role === 'user' ? styles.userBubble : styles.aiBubble)
+              ...(msg.role === 'user'
+                ? { ...styles.userBubble, ...(tc.userBubble || {}) }
+                : { ...styles.aiBubble, ...(tc.aiBubble || {}) })
             }}
           >
             {msg.role === 'assistant' && (
-              <span style={styles.aiLabel}>{hostName || '맥시'}</span>
+              <span style={{ ...styles.aiLabel, ...(tc.aiLabel || {}) }}>{hostName || '맥시'}</span>
             )}
             <div style={styles.messageText}>{msg.content}</div>
           </div>
         ))}
         {loading && (
-          <div style={{ ...styles.messageBubble, ...styles.aiBubble }}>
-            <span style={styles.aiLabel}>{hostName || '맥시'}</span>
+          <div style={{ ...styles.messageBubble, ...styles.aiBubble, ...(tc.aiBubble || {}) }}>
+            <span style={{ ...styles.aiLabel, ...(tc.aiLabel || {}) }}>{hostName || '맥시'}</span>
             <div style={styles.loadingDots}>
               <span style={styles.dot}>.</span>
               <span style={{ ...styles.dot, animationDelay: '0.2s' }}>.</span>
@@ -144,7 +147,7 @@ function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur, on
       </div>
 
       {/* 입력 영역 */}
-      <form onSubmit={sendMessage} style={styles.inputArea}>
+      <form onSubmit={sendMessage} style={{ ...styles.inputArea, ...(tc.inputArea || {}) }}>
         <input
           ref={inputRef}
           type="text"
@@ -154,13 +157,14 @@ function ChatBox({ hostUserId, aiConfig, hostName, onInputFocus, onInputBlur, on
           onBlur={handleBlur}
           placeholder="메시지를 입력하세요..."
           disabled={loading}
-          style={styles.input}
+          style={{ ...styles.input, ...(tc.input || {}) }}
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
           style={{
             ...styles.sendBtn,
+            ...(tc.sendBtn || {}),
             opacity: (loading || !input.trim()) ? 0.5 : 1
           }}
         >

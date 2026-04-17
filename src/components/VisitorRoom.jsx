@@ -51,6 +51,45 @@ const TYPING_SPEED = 50;
 const DISPLAY_DURATION = 3000;
 const CHAT_H = 160;
 
+const THEME_COLORS = {
+  sangsuri: {
+    bg: '#171729', fill: '#2C2C4E', line: '#47476E',
+    dialogue: { background: 'linear-gradient(135deg, #C8C8E8 0%, #B0B0D8 50%, #A0A0C8 100%)', border: '3px solid #47476E', color: '#1E1E3A' },
+    chat: {
+      userBubble: { background: '#3D3D6B', border: '1px solid #47476E' },
+      aiBubble:   { background: '#1E1E3A', border: '1px solid #33335A' },
+      aiLabel:    { color: '#8B8BCC' },
+      inputArea:  { background: '#1A1A30', borderTop: '1px solid #47476E' },
+      input:      { background: '#12122A', border: '1px solid #47476E', color: '#C8C8E8' },
+      sendBtn:    { background: '#47476E', border: '1px solid #5A5A8E', color: '#E0E0F0' },
+    },
+  },
+  betrayer: {
+    bg: '#131418', fill: '#292C34', line: '#666B78',
+    dialogue: { background: 'linear-gradient(135deg, #C8CAD0 0%, #B0B2B8 50%, #A0A2A8 100%)', border: '3px solid #666B78', color: '#1E2028' },
+    chat: {
+      userBubble: { background: '#3A3D48', border: '1px solid #666B78' },
+      aiBubble:   { background: '#1E2028', border: '1px solid #444854' },
+      aiLabel:    { color: '#999EAE' },
+      inputArea:  { background: '#1A1C22', borderTop: '1px solid #666B78' },
+      input:      { background: '#101218', border: '1px solid #666B78', color: '#C8CAD0' },
+      sendBtn:    { background: '#666B78', border: '1px solid #888D9A', color: '#E8EAF0' },
+    },
+  },
+  neosokbam: {
+    bg: '#8C5C14', fill: '#A06F25', line: '#E8AF5A',
+    dialogue: { background: 'linear-gradient(135deg, #F5E6C8 0%, #E8D5A8 50%, #DCC090 100%)', border: '3px solid #E8AF5A', color: '#3D2810' },
+    chat: {
+      userBubble: { background: '#8C6B2E', border: '1px solid #E8AF5A' },
+      aiBubble:   { background: '#6B4E18', border: '1px solid #A07830' },
+      aiLabel:    { color: '#F0D080' },
+      inputArea:  { background: '#5C4010', borderTop: '1px solid #E8AF5A' },
+      input:      { background: '#4A3408', border: '1px solid #E8AF5A', color: '#F5E6C8' },
+      sendBtn:    { background: '#E8AF5A', border: '1px solid #F0C070', color: '#3D2810' },
+    },
+  },
+};
+
 function VisitorRoom() {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -88,6 +127,18 @@ function VisitorRoom() {
   }, [showVisitInput]);
 
   useEffect(() => { loadRoomData(); }, [userId]);
+
+  // 방문 기록 저장
+  useEffect(() => {
+    if (!userId) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem('visited_rooms') || '[]');
+      if (!saved.includes(userId)) {
+        saved.push(userId);
+        localStorage.setItem('visited_rooms', JSON.stringify(saved));
+      }
+    } catch (e) {}
+  }, [userId]);
 
   useEffect(() => {
     if (!roomData) return;
@@ -155,8 +206,10 @@ function VisitorRoom() {
     );
   }
 
+  const tc = THEME_COLORS[roomData.roomConfig.theme] || THEME_COLORS.sangsuri;
+
   return (
-    <div style={styles.container}>
+    <div style={{ ...styles.container, background: tc.bg }}>
 
       {/* 타이틀 */}
       {(() => {
@@ -164,7 +217,7 @@ function VisitorRoom() {
         const titleLabel = `${userId}님의 서재`;
         const titleBarMaxW = `${(titleLabel.length + 2) * 1.5 + 8}em`; // +2 for ← button
         return (
-          <div style={{ ...styles.titleBar, width: '100%', maxWidth: titleBarMaxW, margin: '0 auto', marginBottom: '4vh', fontSize: titleFontSize }}>
+          <div style={{ ...styles.titleBar, background: tc.fill, borderColor: tc.line, width: '100%', maxWidth: titleBarMaxW, margin: '0 auto', marginBottom: '4vh', fontSize: titleFontSize }}>
             <button style={styles.backBtn} onClick={() => navigate('/web/my-room')}>←</button>
             <span style={{ ...styles.titleText, fontSize: titleFontSize }}>
               {titleLabel}
@@ -188,7 +241,7 @@ function VisitorRoom() {
         </div>
         <div style={{ ...styles.sideButtons }}>
           <button
-            style={{ ...styles.sideBtn, width: L.sideBtnW, padding: `${L.sideBtnPadding}px 0`, fontSize: L.sideBtnFontSize }}
+            style={{ ...styles.sideBtn, background: tc.fill, borderColor: tc.line, width: L.sideBtnW, padding: `${L.sideBtnPadding}px 0`, fontSize: L.sideBtnFontSize }}
             onClick={() => setShowVisitInput(true)}
           >
             구경가기
@@ -203,16 +256,17 @@ function VisitorRoom() {
             <div style={{ ...styles.portraitWrapper, width: L.portraitW, left: L.portraitLeft, bottom: L.portraitBottom }}>
               <img src={roomData.roomConfig.hostPortrait || '/assets/characters/portraits/maxy.png'} alt={roomData.roomConfig.hostName || '맥시'} style={styles.portraitImg} />
             </div>
-            <div style={{ ...styles.dialogueBox, padding: `12px 20px 12px ${L.dialoguePaddingLeft}px` }}>
-              <span style={styles.dialogueText}>{displayedText}</span>
+            <div style={{ ...styles.dialogueBox, ...(tc.dialogue || {}), padding: `12px 20px 12px ${L.dialoguePaddingLeft}px` }}>
+              <span style={{ ...styles.dialogueText, color: tc.dialogue?.color || '#3d2210' }}>{displayedText}</span>
             </div>
           </div>
         )}
-        <div style={{ ...styles.chatArea, height: CHAT_H, minHeight: 60, maxHeight: 300, resize: 'vertical', overflow: 'auto' }}>
+        <div style={{ ...styles.chatArea, background: tc.fill, borderColor: tc.line, height: CHAT_H, minHeight: 60, maxHeight: 300, resize: 'vertical', overflow: 'auto' }}>
           <ChatBox
             hostUserId={userId}
             aiConfig={roomData.aiConfig}
             hostName={roomData.roomConfig.hostName}
+            themeColors={tc.chat}
             onChatBubble={(type, value) => {
               const scene = gameRef.current?.getScene();
               if (!scene) return;

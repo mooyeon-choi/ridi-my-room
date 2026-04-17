@@ -1682,13 +1682,23 @@ class LibraryScene extends Phaser.Scene {
     const boxX = (width - boxW) / 2;
     const boxY = height - boxH - 20;
 
+    // 테마별 대화창 색상
+    const theme = this.roomConfig?.theme || 'sangsuri';
+    const dialogueThemes = {
+      sangsuri:  { bgColor: 0x1E1E3A, borderColor: 0x47476E, textColor: '#C8C8E8' },
+      betrayer:  { bgColor: 0x1E2028, borderColor: 0x666B78, textColor: '#C8CAD0' },
+      neosokbam: { bgColor: 0x4A3408, borderColor: 0xE8AF5A, textColor: '#F5E6C8' },
+    };
+    const ownerTheme = { bgColor: 0x3d2210, borderColor: 0x753F22, textColor: '#f5e6c8' };
+    const dt = this.mode === 'visitor' ? (dialogueThemes[theme] || ownerTheme) : ownerTheme;
+
     this.dialogueContainer = this.add.container(0, 0).setDepth(1000);
 
     // 배경 박스
     const bg = this.add.graphics();
-    bg.fillStyle(0x3d2210, 0.92);
+    bg.fillStyle(dt.bgColor, 0.92);
     bg.fillRoundedRect(boxX, boxY, boxW, boxH, 10);
-    bg.lineStyle(3, 0x753F22, 1);
+    bg.lineStyle(3, dt.borderColor, 1);
     bg.strokeRoundedRect(boxX, boxY, boxW, boxH, 10);
     this.dialogueContainer.add(bg);
 
@@ -1708,7 +1718,7 @@ class LibraryScene extends Phaser.Scene {
 
     // 대사 텍스트 (타이핑 효과)
     const msgText = this.add.text(boxX + 16, boxY + 32, '', {
-      fontSize: '14px', color: '#f5e6c8', wordWrap: { width: boxW - 32 }, lineSpacing: 4,
+      fontSize: '14px', color: dt.textColor, wordWrap: { width: boxW - 32 }, lineSpacing: 4,
     });
     this.dialogueContainer.add(msgText);
 
@@ -1756,13 +1766,23 @@ class LibraryScene extends Phaser.Scene {
     const boxX = (width - boxW) / 2;
     const boxY = height - totalH - 30;
 
+    // 테마별 선택지 색상
+    const theme = this.roomConfig?.theme || 'sangsuri';
+    const choiceThemes = {
+      sangsuri:  { bgColor: 0x1E1E3A, borderColor: 0x47476E, btnNormal: 0x2C2C4E, btnHighlight: 0x3D3D6B, btnBorder: 0x47476E, btnHiBorder: 0x8B8BCC },
+      betrayer:  { bgColor: 0x1E2028, borderColor: 0x666B78, btnNormal: 0x292C34, btnHighlight: 0x3A3D48, btnBorder: 0x444854, btnHiBorder: 0x999EAE },
+      neosokbam: { bgColor: 0x4A3408, borderColor: 0xE8AF5A, btnNormal: 0x6B4E18, btnHighlight: 0x8C6B2E, btnBorder: 0xA07830, btnHiBorder: 0xF0D080 },
+    };
+    const ownerChoice = { bgColor: 0x3d2210, borderColor: 0x753F22, btnNormal: 0x5c3018, btnHighlight: 0x7a4e28, btnBorder: 0x7a4e28, btnHiBorder: 0xf0c060 };
+    const ct = this.mode === 'visitor' ? (choiceThemes[theme] || ownerChoice) : ownerChoice;
+
     this.dialogueContainer = this.add.container(0, 0).setDepth(1000);
 
     // 배경
     const bg = this.add.graphics();
-    bg.fillStyle(0x3d2210, 0.92);
+    bg.fillStyle(ct.bgColor, 0.92);
     bg.fillRoundedRect(boxX, boxY, boxW, totalH, 10);
-    bg.lineStyle(3, 0x753F22, 1);
+    bg.lineStyle(3, ct.borderColor, 1);
     bg.strokeRoundedRect(boxX, boxY, boxW, totalH, 10);
     this.dialogueContainer.add(bg);
 
@@ -1775,14 +1795,14 @@ class LibraryScene extends Phaser.Scene {
       const bY = boxY + 12 + idx * (btnH + gap);
       btnBg.clear();
       if (highlighted) {
-        btnBg.fillStyle(0x7a4e28, 1);
+        btnBg.fillStyle(ct.btnHighlight, 1);
         btnBg.fillRoundedRect(boxX + 12, bY, boxW - 24, btnH, 6);
-        btnBg.lineStyle(2, 0xf0c060, 1);
+        btnBg.lineStyle(2, ct.btnHiBorder, 1);
         btnBg.strokeRoundedRect(boxX + 12, bY, boxW - 24, btnH, 6);
       } else {
-        btnBg.fillStyle(0x5c3018, 1);
+        btnBg.fillStyle(ct.btnNormal, 1);
         btnBg.fillRoundedRect(boxX + 12, bY, boxW - 24, btnH, 6);
-        btnBg.lineStyle(2, 0x7a4e28, 1);
+        btnBg.lineStyle(2, ct.btnBorder, 1);
         btnBg.strokeRoundedRect(boxX + 12, bY, boxW - 24, btnH, 6);
       }
     };
@@ -1799,8 +1819,10 @@ class LibraryScene extends Phaser.Scene {
       btnBgs.push(btnBg);
       this.dialogueContainer.add(btnBg);
 
+      const choiceTextColors = { sangsuri: '#C8C8E8', betrayer: '#C8CAD0', neosokbam: '#F5E6C8' };
+      const choiceTextColor = this.mode === 'visitor' ? (choiceTextColors[theme] || '#f5e6c8') : '#f5e6c8';
       const btnText = this.add.text(boxX + boxW / 2, bY + btnH / 2, choice.text, {
-        fontSize: '13px', color: '#f5e6c8',
+        fontSize: '13px', color: choiceTextColor,
       }).setOrigin(0.5).setDepth(1001);
       btnTexts.push(btnText);
       this.dialogueContainer.add(btnText);
