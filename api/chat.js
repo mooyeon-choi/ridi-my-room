@@ -6,11 +6,12 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { userId, message, chatHistory } = req.body || {};
+  const { userId, message, chatHistory, persona: reqPersona, context } = req.body || {};
   const roomData = rooms[userId] || rooms['default'];
 
-  const persona = roomData.aiConfig.persona || 'sangsuri';
-  const fallbackEmojis = { sangsuri: '📚', neosokbam: '🌙', betrayer: '🍷' };
+  // 클라이언트에서 보낸 persona를 우선 사용
+  const persona = reqPersona || roomData.aiConfig.persona || 'sangsuri';
+  const fallbackEmojis = { sangsuri: '📚', neosokbam: '🌙', betrayer: '🍷', riftan: '⚔️' };
 
   // OpenAI 키가 없으면 폴백 응답
   const openai = getOpenAIClient();
@@ -19,7 +20,11 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const systemPrompt = createPersonaPrompt(roomData.aiConfig, 'chat');
+    const aiConfig = { ...roomData.aiConfig, persona };
+    if (context) {
+      aiConfig.readingData = context;
+    }
+    const systemPrompt = createPersonaPrompt(aiConfig, 'chat');
 
     const messages = [
       { role: 'system', content: systemPrompt + `\n\n중요: 응답의 맨 마지막 줄에 답변의 감정을 나타내는 이모지를 하나만 추가하세요. 반드시 마지막 줄에 이모지 하나만 단독으로 적어주세요.\n예시:\n좋은 질문이네요. 저도 생각해볼게요.\n😊` }
