@@ -242,6 +242,7 @@ function VisitorRoom() {
               hostUserId={userId}
               roomConfig={roomData.roomConfig}
               aiConfig={roomData.aiConfig}
+              onBookshelfClick={() => setShowLibrary(true)}
             />
           </div>
         </div>

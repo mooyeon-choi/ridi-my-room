@@ -97,7 +97,7 @@ const VISITOR_OBSTACLE_MAPS = {
     { x: 175,  y: 600,  w: 150,  h: 200,  name: '항아리' },
     { x: 280,  y: 860,  w: 100,  h: 60,   name: '양동이' },
     { x: 934,  y: 593,  w: 190,  h: 147,  name: '궤짝' },
-    { x: 1250, y: 500,  w: 300,  h: 320,  name: '제단+촛대' },
+    { x: 1310, y: 553,  w: 190,  h: 221,  name: '제단+촛대' },
   ],
   // 배덕한 타인 방문 - 2048x1194
   betrayer: [
@@ -107,8 +107,11 @@ const VISITOR_OBSTACLE_MAPS = {
     { x: 0,    y: 1050, w: 340,  h: 144,  name: '하단벽(문좌)' },
     { x: 540,  y: 1050, w: 1508, h: 144,  name: '하단벽(문우)' },
     { x: 340,  y: 1164, w: 200,  h: 30,   name: '하단벽(문바닥)' },
-    { x: 280,  y: 260,  w: 480,  h: 120,  name: 'TV' },
-    { x: 800,  y: 200,  w: 300,  h: 340,  name: '책장' },
+    { x: 360,  y: 174,  w: 320,  h: 180,  name: 'TV' },
+    { x: 950,  y: 115,  w: 300,  h: 340,  name: '책장' },
+    { x: 1700, y: 290,  w: 88,   h: 90,   name: '와인' },
+    { x: 1019, y: 594,  w: 450,  h: 71,   name: '소파' },
+    { x: 1100, y: 835,  w: 280,  h: 85,   name: '테이블' },
   ],
 };
 
@@ -365,48 +368,110 @@ class LibraryScene extends Phaser.Scene {
 
     // 상호작용 오브젝트 등록 (betrayer 테마)
     if (theme === 'betrayer') {
-      // 책장 → 서재 (방문 모드: 인덱스 6, 오너 모드: 인덱스 7)
-      const bookIdx = this.mode === 'visitor' ? 6 : 7;
-      const bookOb = this.currentObstacles[bookIdx];
-      if (bookOb) this.interactables.push({
-        name: 'bookshelf', emoji: '📚',
-        cx: (bookOb.x + bookOb.w / 2) * this.scaleX,
-        cy: (bookOb.y + bookOb.h) * this.scaleY,
-        range: 50, action: () => { if (this.onBookshelfClick) this.onBookshelfClick(); },
-      });
-      // TV → 운세 (방문 모드: 인덱스 5, 오너 모드: 인덱스 6)
-      const tvIdx = this.mode === 'visitor' ? 5 : 6;
-      const tvOb = this.currentObstacles[tvIdx];
+      // 책장 → 서재 (인덱스 7) — 장애물 영역과 동일한 크기
+      const bookOb = this.currentObstacles[7];
+      if (bookOb) {
+        const bCx = (bookOb.x + bookOb.w / 2) * this.scaleX;
+        const bCy = (bookOb.y + bookOb.h / 2 + 30) * this.scaleY;
+        const bW = (bookOb.w + 40) * this.scaleX;
+        const bH = (bookOb.h + 60) * this.scaleY;
+        this.interactables.push({
+          name: 'bookshelf', emoji: '📚',
+          cx: bCx, cy: bCy,
+          range: Math.max(bW, bH) / 2,
+          action: () => { if (this.onBookshelfClick) this.onBookshelfClick(); },
+          _zoneSize: { w: bW, h: bH },
+        });
+      }
+      // TV → 작품 추천 (인덱스 6)
+      const tvOb = this.currentObstacles[6];
       if (tvOb) this.interactables.push({
         name: 'tv', emoji: '📺',
         cx: (tvOb.x + tvOb.w / 2) * this.scaleX,
         cy: (tvOb.y + tvOb.h + 20) * this.scaleY,
-        range: 50, action: () => this.onTvFortuneClick(),
+        range: 50, action: () => this.onTvRecommendClick(),
       });
+      // 와인 → 운세 (인덱스 8)
+      const wineOb = this.currentObstacles[8];
+      if (wineOb) {
+        const wCx = (wineOb.x + wineOb.w / 2) * this.scaleX;
+        const wCy = (wineOb.y + wineOb.h / 2 + 20) * this.scaleY;
+        const wW = (wineOb.w + 30) * this.scaleX;
+        const wH = (wineOb.h + 40) * this.scaleY;
+        this.interactables.push({
+          name: 'wine', emoji: '🍷',
+          cx: wCx, cy: wCy,
+          range: Math.max(wW, wH) / 2,
+          action: () => this.onCrystalClick(),
+          _zoneSize: { w: wW, h: wH },
+        });
+      }
     }
 
     // 상호작용 오브젝트 등록 (neosokbam 테마)
     if (theme === 'neosokbam') {
+      // 선반 → 서재 (인덱스 8)
+      const shelfOb = this.currentObstacles[8];
+      if (shelfOb) this.interactables.push({
+        name: 'bookshelf', emoji: '📚',
+        cx: (shelfOb.x + shelfOb.w / 2) * this.scaleX,
+        cy: (shelfOb.y + shelfOb.h + 30) * this.scaleY,
+        range: 70, action: () => { if (this.onBookshelfClick) this.onBookshelfClick(); },
+      });
+      // 병풍/족자 → 부적 문 대사 (인덱스 7)
+      const doorOb = this.currentObstacles[7];
+      if (doorOb) this.interactables.push({
+        name: 'talisman_door', emoji: '🚪',
+        cx: (doorOb.x + doorOb.w / 2) * this.scaleX,
+        cy: (doorOb.y + doorOb.h) * this.scaleY,
+        range: 50, action: () => this.onTalismanDoorClick(),
+      });
       // 제단+촛대 → 운세 (인덱스 13)
       const altarOb = this.currentObstacles[13];
       if (altarOb) this.interactables.push({
         name: 'altar', emoji: '🔮',
         cx: (altarOb.x + altarOb.w / 2) * this.scaleX,
-        cy: (altarOb.y + altarOb.h) * this.scaleY,
-        range: 50, action: () => this.onAltarFortuneClick(),
+        cy: (altarOb.y + altarOb.h + 40) * this.scaleY,
+        range: 80, action: () => this.onAltarFortuneClick(),
       });
-      // 나무+바위 → 추천작품 (인덱스 9)
+      // 나무+바위 → 거울 대사 (인덱스 9, "영험한 나무")
       const treeOb = this.currentObstacles[9];
       if (treeOb) this.interactables.push({
-        name: 'tree', emoji: '📚',
+        name: 'tree', emoji: '🌳',
         cx: (treeOb.x + treeOb.w / 2) * this.scaleX,
-        cy: (treeOb.y + treeOb.h) * this.scaleY,
-        range: 50, action: () => this.onTreeRecommendClick(),
+        cy: (treeOb.y + treeOb.h + 30) * this.scaleY,
+        range: Math.max(treeOb.w, treeOb.h) * this.scaleX * 0.4,
+        action: () => this.onSacredTreeClick(),
       });
     }
 
-    // 방문 모드 전용 상호작용
+    // 방문 모드 전용 상호작용 (sangsuri)
     if (this.mode === 'visitor' && theme === 'sangsuri') {
+      // 약품선반 → 서재 (인덱스 5)
+      const shelfOb = this.currentObstacles[5];
+      if (shelfOb) this.interactables.push({
+        name: 'bookshelf', emoji: '📚',
+        cx: (shelfOb.x + shelfOb.w / 2) * this.scaleX,
+        cy: (shelfOb.y + shelfOb.h) * this.scaleY,
+        range: 50, action: () => { if (this.onBookshelfClick) this.onBookshelfClick(); },
+      });
+      // 책 → 운세 (인덱스 7)
+      const bookOb = this.currentObstacles[7];
+      if (bookOb) this.interactables.push({
+        name: 'book_fortune', emoji: '📖',
+        cx: (bookOb.x + bookOb.w / 2) * this.scaleX,
+        cy: (bookOb.y + bookOb.h) * this.scaleY,
+        range: 50, action: () => this.onCrystalClick(),
+      });
+      // 가마솥 → 거울 대사 (인덱스 10, "이상한 액체")
+      const cauldronOb = this.currentObstacles[10];
+      if (cauldronOb) this.interactables.push({
+        name: 'cauldron', emoji: '🧪',
+        cx: (cauldronOb.x + cauldronOb.w / 2) * this.scaleX,
+        cy: (cauldronOb.y + cauldronOb.h) * this.scaleY,
+        range: 50, action: () => this.onCauldronClick(),
+      });
+
       // 마법진 상호작용 영역
       const mcX = 920, mcY = 740, mcW = 187, mcH = 180;
       this.interactables.push({
@@ -446,6 +511,35 @@ class LibraryScene extends Phaser.Scene {
         action: () => { if (this.onDoorClick) this.onDoorClick(); },
       });
     }
+
+    // 모든 interactable에 클릭 zone 추가
+    const interactDebug = this.add.graphics().setDepth(998);
+    this.interactables.forEach(obj => {
+      const getCx = obj.getPos ? () => obj.getPos().cx : () => obj.cx;
+      const getCy = obj.getPos ? () => obj.getPos().cy : () => obj.cy;
+      const zw = obj._zoneSize ? obj._zoneSize.w : (obj.range || 40) * 2;
+      const zh = obj._zoneSize ? obj._zoneSize.h : (obj.range || 40) * 2;
+      const cx = getCx();
+      const cy = getCy();
+      const zone = this.add.zone(cx, cy, zw, zh)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(999);
+      zone.on('pointerdown', () => {
+        if (!this.dialogueActive && obj.action) obj.action();
+      });
+
+      // 인터렉션 영역 디버그 표시
+      if (showDebug) {
+        interactDebug.lineStyle(2, 0x00ff00, 0.8);
+        interactDebug.fillStyle(0x00ff00, 0.15);
+        interactDebug.fillRect(cx - zw / 2, cy - zh / 2, zw, zh);
+        interactDebug.strokeRect(cx - zw / 2, cy - zh / 2, zw, zh);
+        this.add.text(cx, cy - zh / 2 + 2, obj.name, {
+          fontSize: '8px', color: '#00ff00', backgroundColor: 'rgba(0,0,0,0.6)',
+          padding: { x: 2, y: 1 },
+        }).setOrigin(0.5, 0).setDepth(1000);
+      }
+    });
   }
 
   createAnimations() {
@@ -630,9 +724,11 @@ class LibraryScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(avatarY + 0.1);
 
     // 방문자 (맥시) — 키보드로 이동 가능
-    this.myAvatarShadow = this.drawPixelShadow(this.bgW * 0.65, avatarY + 2, avatarY - 0.1, 10);
+    const theme_ = this.roomConfig?.theme || 'sangsuri';
+    const maxyStartX = theme_ === 'betrayer' ? this.bgW * 0.8 : this.bgW * 0.65;
+    this.myAvatarShadow = this.drawPixelShadow(maxyStartX, avatarY + 2, avatarY - 0.1, 10);
 
-    this.myAvatar = this.add.sprite(this.bgW * 0.65, avatarY, 'maxy_F1').setOrigin(0.5, 1);
+    this.myAvatar = this.add.sprite(maxyStartX, avatarY, 'maxy_F1').setOrigin(0.5, 1);
     this.myAvatar.setScale(0.15);
     this.myAvatar.play('maxy_idle_down');
     this.myAvatar.setDepth(avatarY);
@@ -1311,50 +1407,58 @@ class LibraryScene extends Phaser.Scene {
       this.dialogueContainer.add(cardBg);
     }
 
+    // 테마별 운세 텍스트 색상
+    const fortuneColors = {
+      sangsuri:  { title: '#c4b5fd', line: 0x8b5cf6, quote: '#e9d5ff', source: '#a78bfa', fortune: '#fde68a', close: '#7c7c9c' },
+      neosokbam: { title: '#8B4513', line: 0xC4956A, quote: '#5C3018', source: '#8B6914', fortune: '#6B3A1a', close: '#A07040' },
+      betrayer:  { title: '#999EAE', line: 0x666B78, quote: '#C8CAD0', source: '#888D9A', fortune: '#E8AF5A', close: '#666B78' },
+    };
+    const fc = fortuneColors[theme] || fortuneColors.sangsuri;
+
     // 제목
     const topPad = cardH * 0.15;
-    const titleText = this.add.text(width / 2, cardY + topPad, '🔮 오늘의 운세', {
-      fontSize: '16px', fontStyle: 'bold', color: '#c4b5fd',
+    const titleText = this.add.text(width / 2, cardY + topPad, '오늘의 운세', {
+      fontSize: '16px', fontStyle: 'bold', color: fc.title,
     }).setOrigin(0.5, 0);
     this.dialogueContainer.add(titleText);
 
     // 구분선
     const line = this.add.graphics();
-    line.lineStyle(1, 0x8b5cf6, 0.4);
+    line.lineStyle(1, fc.line, 0.4);
     line.lineBetween(cardX + 20, cardY + topPad + 30, cardX + cardW - 20, cardY + topPad + 30);
     this.dialogueContainer.add(line);
 
     // 명대사
     const quoteY = cardY + topPad + 46;
     const quoteText = this.add.text(width / 2, quoteY, fortune.quote, {
-      fontSize: '14px', fontStyle: 'italic', color: '#e9d5ff',
+      fontSize: '14px', fontStyle: 'italic', color: fc.quote,
       wordWrap: { width: cardW - 48 }, lineSpacing: 6, align: 'center',
     }).setOrigin(0.5, 0);
     this.dialogueContainer.add(quoteText);
 
     // 출처
     const sourceText = this.add.text(width / 2, quoteY + quoteText.height + 10, `— ${fortune.source}`, {
-      fontSize: '11px', color: '#a78bfa',
+      fontSize: '11px', color: fc.source,
     }).setOrigin(0.5, 0);
     this.dialogueContainer.add(sourceText);
 
     // 구분선 2
     const line2Y = quoteY + quoteText.height + 10 + sourceText.height + 14;
     const line2 = this.add.graphics();
-    line2.lineStyle(1, 0x8b5cf6, 0.3);
+    line2.lineStyle(1, fc.line, 0.3);
     line2.lineBetween(cardX + 40, line2Y, cardX + cardW - 40, line2Y);
     this.dialogueContainer.add(line2);
 
     // 운세 내용
     const fortuneText = this.add.text(width / 2, line2Y + 14, fortune.fortune, {
-      fontSize: '13px', color: '#fde68a',
+      fontSize: '13px', color: fc.fortune,
       wordWrap: { width: cardW - 48 }, lineSpacing: 6, align: 'center',
     }).setOrigin(0.5, 0);
     this.dialogueContainer.add(fortuneText);
 
     // 닫기 안내
     const closeText = this.add.text(width / 2, cardY + cardH - 20, '터치 / Space / ESC 로 닫기', {
-      fontSize: '10px', color: '#7c7c9c',
+      fontSize: '10px', color: fc.close,
     }).setOrigin(0.5, 1);
     this.dialogueContainer.add(closeText);
 
@@ -1369,41 +1473,139 @@ class LibraryScene extends Phaser.Scene {
 
   // ── 제사상 운세 (너를 속이는 밤) ──
   onAltarFortuneClick() {
+    this.onCrystalClick();
+  }
+
+  // ── 부적 문 상호작용 (너속밤 방문) ──
+  onTalismanDoorClick() {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
 
-    const lines = [
-      '…향이 피어오르고 있어. 무언가 알려주려는 걸까.',
-      '제사상 위의 촛불이 흔들리고 있어… 점괘를 봐도 될까?',
-      '오래된 기운이 느껴져. 오늘의 운세를 알려줄지도 몰라.',
+    const dialogues = [
+      {
+        host: '이 문에는 함부로 손대지 마세요. 부적이 붙어 있는 데는 이유가 있어요.',
+        maxy: '무, 무슨 이유인데요...?',
+        host2: '...알지 않는 편이 좋을 거예요. 진심이에요.',
+      },
+      {
+        host: '궁금해요? 이 문 너머에 뭐가 있는지.',
+        maxy: '네, 네... 조금요...',
+        host2: '거짓말은 못 속여요. 많이 궁금하잖아요. 하지만 오늘은 안 돼요.',
+      },
+      {
+        host: '부적이 오래되어서 갈아야 하는데... 귀찮네요.',
+        maxy: '저, 저도 도와드릴까요?',
+        host2: '고마워요. 하지만 이건 제가 직접 해야 해요. 다른 사람이 만지면... 좀 곤란해지거든요.',
+      },
     ];
-    const picked = lines[Math.floor(Math.random() * lines.length)];
+    const picked = dialogues[Math.floor(Math.random() * dialogues.length)];
 
-    this.showDialogue('제사상', picked, () => {
-      this.endDialogue();
-      this.time.delayedCall(200, () => {
-        this.onCrystalClick();
+    this.showDialogue('고유주', picked.host, () => {
+      this.showDialogue('맥시', picked.maxy, () => {
+        this.showDialogue('고유주', picked.host2, () => {
+          this.endDialogue();
+        });
       });
     });
   }
 
-  // ── TV 운세 (배덕한 타인) ──
-  onTvFortuneClick() {
+  // ── 영험한 나무 상호작용 (너속밤 방문) ──
+  onSacredTreeClick() {
     if (this.dialogueActive) return;
     this.dialogueActive = true;
 
-    const lines = [
-      'TV 화면에 무언가 떠오르고 있어… 오늘의 운세일까?',
-      '화면이 갑자기 바뀌더니 의미심장한 문구가 나타났어.',
-      '누군가 TV에 메시지를 남겨둔 것 같아…',
-    ];
-    const picked = lines[Math.floor(Math.random() * lines.length)];
+    const books = ['상수리나무 아래', '배덕한 타인에게', '안개를 삼킨 나비', '메리 사이코', '너를 속이는 밤', '데페이즈망', '폐하의 밤'];
+    const bookName = books[Math.floor(Math.random() * books.length)];
 
-    this.showDialogue('TV', picked, () => {
-      this.endDialogue();
-      this.time.delayedCall(200, () => {
-        this.onCrystalClick();
-      });
+    this.showDialogue('영험한 나무', `바람에 나뭇잎이 흔들리며 <${bookName}>의 이야기를 속삭이고 있어...`, () => {
+      this.showChoices([
+        {
+          text: '귀 기울여 볼까...?',
+          onSelect: () => {
+            this.showDialogue('영험한 나무', '좋은 선택이야... 이 이야기를 끝까지 들으면 특별한 인연을 만나게 될 거야.', () => {
+              this.endDialogue();
+            });
+          }
+        },
+        {
+          text: '조, 조금 무서운데...',
+          onSelect: () => {
+            this.showDialogue('맥시', '조, 조금 무서운데...', () => {
+              this.showDialogue('영험한 나무', '걱정 마. 이 나무는 오래전부터 이곳을 지켜왔으니까... 해치지 않아.', () => {
+                this.showDialogue('맥시', '나, 나무가 말을 하다니...!', () => {
+                  this.endDialogue();
+                });
+              });
+            });
+          }
+        }
+      ]);
+    });
+  }
+
+  // ── 가마솥 상호작용 (루스방 방문) ──
+  onCauldronClick() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+
+    const books = ['상수리나무 아래', '배덕한 타인에게', '안개를 삼킨 나비', '메리 사이코', '너를 속이는 밤', '데페이즈망', '폐하의 밤'];
+    const bookName = books[Math.floor(Math.random() * books.length)];
+
+    this.showDialogue('이상한 액체', `부글부글... 액체 속에 <${bookName}>의 글자가 떠오르고 있어...`, () => {
+      this.showChoices([
+        {
+          text: '읽어볼까...?',
+          onSelect: () => {
+            this.showDialogue('이상한 액체', '좋은 선택이야... 3회차를 읽으면 특별한 존재가 찾아올지도...', () => {
+              this.endDialogue();
+            });
+          }
+        },
+        {
+          text: '무, 무서워서 못 보겠어...',
+          onSelect: () => {
+            this.showDialogue('맥시', '무, 무서워서 못 보겠어...', () => {
+              this.showDialogue('이상한 액체', '...괜찮아. 루스가 만든 거니까 위험하진 않을 거야. 아마도.', () => {
+                this.showDialogue('맥시', '아, 아마도...?!', () => {
+                  this.endDialogue();
+                });
+              });
+            });
+          }
+        }
+      ]);
+    });
+  }
+
+  // ── TV 작품 추천 (배덕한 타인) ──
+  onTvRecommendClick() {
+    if (this.dialogueActive) return;
+    this.dialogueActive = true;
+
+    const books = ['상수리나무 아래', '배덕한 타인에게', '안개를 삼킨 나비', '메리 사이코', '너를 속이는 밤', '데페이즈망', '폐하의 밤'];
+    const bookName = books[Math.floor(Math.random() * books.length)];
+
+    this.showDialogue('TV', `화면에 <${bookName}>의 예고편이 흘러나오고 있어...`, () => {
+      this.showChoices([
+        {
+          text: '흥미로운데... 봐볼까?',
+          onSelect: () => {
+            this.showDialogue('TV', '좋은 취향이군요. 이 작품, 후회하지 않을 거예요.', () => {
+              this.endDialogue();
+            });
+          }
+        },
+        {
+          text: '채널 돌려야겠다...',
+          onSelect: () => {
+            this.showDialogue('맥시', '다, 다른 거 볼래요...', () => {
+              this.showDialogue('TV', '...리모컨이 어디 갔지? 박치경씨가 또 숨겨둔 건가...', () => {
+                this.endDialogue();
+              });
+            });
+          }
+        }
+      ]);
     });
   }
 
